@@ -440,7 +440,13 @@ nav.dragging .tbub{transition:transform .16s var(--ios),scale .3s var(--soft);sc
 nav .tbub{transition:transform .34s var(--soft),width .3s var(--ios),scale .25s var(--soft)}
 nav.dragging .tbub{transition:scale .12s linear;scale:1.1 1.1;background:rgba(255,255,255,.16);box-shadow:inset 0 1px 1px rgba(255,255,255,.45),inset 0 -1px 1px rgba(255,255,255,.12),inset 0 0 0 .5px rgba(255,255,255,.25),0 6px 18px rgba(0,0,0,.28)}
 html[data-theme=light] nav.dragging .tbub{background:rgba(255,255,255,.55);box-shadow:inset 0 1px 1px #fff,inset 0 0 0 .5px rgba(0,0,0,.06),0 6px 18px rgba(0,0,0,.14)}
-nav.dragging button,nav.dragging button.on{color:color-mix(in srgb,var(--blue) var(--p,0%),var(--label3))}
+nav.tinting button,nav.tinting button.on{color:color-mix(in srgb,var(--blue) var(--p,0%),var(--label3))}
+/* tab bar v3: physics in JS, no CSS motion fighting it */
+nav{touch-action:none;-webkit-user-select:none;user-select:none}
+nav .tbub,nav.dragging .tbub{transition:background .2s,box-shadow .2s;will-change:transform,scale}
+nav:active .tbub{scale:none}
+nav button,nav button:active,nav.dragging button,nav.dragging button:active{transform:none;transition:color .12s}
+nav button.on svg{animation:none}
 nav.dragging button,nav.dragging button:active{transform:none;transition:color .12s}
 nav button{transition:transform .3s var(--soft),color .15s}
 /* top buttons: no backdrop blur (it smudged them against the status bar) */
@@ -2014,7 +2020,8 @@ function navTo(tab){
   $$("nav button").forEach(k => k.classList.toggle("on", k.dataset.tab === tab)); navBubble();
   requestAnimationFrame(() => requestAnimationFrame(() => go(tab)));
 }
-$$("nav button").forEach(b => b.onclick = () => navTo(b.dataset.tab));
+let navSkipClick = 0;
+$$("nav button").forEach(b => b.onclick = () => { if(Date.now() < navSkipClick) return; navTo(b.dataset.tab); });
 $("#refreshBtn").onclick = async () => { const b = $("#refreshBtn"); b.style.opacity = .4; await refresh(true); b.style.opacity = 1; };
 $("#setBtn").onclick = openSettings;
 let lastY = 0;
@@ -2034,73 +2041,105 @@ const haptic = (() => { let l = null; return () => { try{
     const i = document.createElement("input"); i.type = "checkbox"; i.setAttribute("switch", ""); i.tabIndex = -1; l.appendChild(i); document.body.appendChild(l); }
   l.click();
 }catch(e){} }; })();
-document.addEventListener("click", e => { if(e.target.closest("nav button, .seg button, .chip, #refreshBtn, #chSend, #fab")) haptic(); }, true);
+document.addEventListener("click", e => { if(e.target.closest(".seg button, .chip, #refreshBtn, #chSend, #fab")) haptic(); }, true);
 document.addEventListener("touchstart", () => {}, {passive:true}); // lets :active press states fire on iOS
 
 /* liquid glass bubble that slides under the selected tab */
-function navBubble(){
-  const w = $("#nav .wrap"), on = $("#nav button.on"); if(!w || !on) return;
-  if(!on.offsetWidth){ requestAnimationFrame(() => { if(on.offsetWidth) navBubble(); }); return; }
-  let b = w.querySelector(".tbub"), first = !b;
-  if(first){ b = document.createElement("i"); b.className = "tbub"; w.prepend(b); b.style.transition = "none"; }
-  b.style.width = on.offsetWidth + "px"; b.style.transform = `translateX(${on.offsetLeft}px)`;
-  if(first){ void b.offsetWidth; b.style.transition = ""; }
-}
-addEventListener("resize", () => navBubble());
-/* hold or slide on the tab bar to drag the glass lens to a tab */
-(function(){
-  const nav = $("#nav"); let st = null, raf = 0;
+/* =============== tab bar: one spring drives the glass lens =============== */
+const TB = (() => {
+  const nav = $("#nav");
+  let b = null, pos = null, vel = 0, target = 0, lift = 0, liftT = 0, raf = 0, last = 0, tint = false, st = null;
+  const wrap = () => nav.querySelector(".wrap");
   const btns = () => [...nav.querySelectorAll("button[data-tab]")];
-  function frame(){
-    raf = 0; if(!st || !st.drag) return;
-    const b = nav.querySelector(".tbub"); if(!b) return;
-    const bw = st.bw, left = Math.max(0, Math.min(st.ww - bw, st.x - st.wl - bw / 2));
-    // velocity: stretch the lens in the direction of travel, then settle
-    const now = performance.now(), dt = Math.max(1, now - st.t); st.v = st.v * .8 + ((left - st.left) / dt) * .2; st.left = left; st.t = now;
-    const k = Math.min(.24, Math.abs(st.v) * .16);
-    b.style.transform = `translateX(${left}px)`;
-    b.style.scale = `${(1.1 + k).toFixed(3)} ${(1.1 - k * .45).toFixed(3)}`;
-    // tint each tab by how much of the lens covers it
-    let best = null, bo = -1;
-    st.btns.forEach((el, i) => {
-      const [l, r] = st.rel[i], ov = Math.max(0, Math.min(1, (Math.min(left + bw, r) - Math.max(left, l)) / (r - l)));
-      el.style.setProperty("--p", Math.round(ov * 100) + "%"); if(ov > bo){ bo = ov; best = el; }
-    });
-    if(best !== st.cur){ if(st.cur) haptic(); st.cur = best; }
-    if(Math.abs(st.v) > .01) raf = requestAnimationFrame(frame); else b.style.scale = "";
+  function ensure(){ const w = wrap(); if(!w) return null; b = w.querySelector(".tbub"); if(!b){ b = document.createElement("i"); b.className = "tbub"; w.prepend(b); } return b; }
+  function geom(){ const bs = btns(), w = wrap(); return {bs, rel:bs.map(e => [e.offsetLeft, e.offsetLeft + e.offsetWidth]), bw:bs[0] ? bs[0].offsetWidth : 0, ww:w ? w.offsetWidth : 0}; }
+  function paint(g){
+    const k = Math.min(.2, Math.abs(vel) / 4200), sc = 1 + lift * .1;
+    b.style.width = g.bw + "px";
+    b.style.transform = `translateX(${pos.toFixed(2)}px)`;
+    b.style.scale = (k > .002 || lift > .002) ? `${(sc + k).toFixed(3)} ${(sc - k * .45).toFixed(3)}` : "";
+    if(tint) g.bs.forEach((el, i) => { const [l, r] = g.rel[i], ov = Math.max(0, Math.min(1, (Math.min(pos + g.bw, r) - Math.max(pos, l)) / (r - l))); el.style.setProperty("--p", Math.round(ov * 100) + "%"); });
   }
-  const queue = () => { if(!raf) raf = requestAnimationFrame(frame); };
-  function start(){
+  function settle(g){
+    pos = target; vel = 0; lift = liftT; paint(g); b.style.scale = "";
+    if(tint){ tint = false; nav.classList.remove("tinting"); g.bs.forEach(e => e.style.removeProperty("--p")); }
+    nav.classList.remove("dragging"); last = 0;
+  }
+  function tick(now){
+    raf = 0; if(!ensure() || pos == null) return;
+    const g = geom(), dt = last ? Math.min(.034, (now - last) / 1000) : 1 / 60; last = now;
+    const drag = !!(st && st.drag), K = drag ? 1500 : 560, C = 2 * Math.sqrt(K) * (drag ? .92 : .86);
+    for(let i = 0; i < 2; i++){ const h = dt / 2; vel += (K * (target - pos) - C * vel) * h; pos += vel * h; }
+    lift += (liftT - lift) * Math.min(1, dt * 16);
+    paint(g);
+    if(!drag && Math.abs(target - pos) < .4 && Math.abs(vel) < 12 && Math.abs(liftT - lift) < .02){ settle(g); return; }
+    raf = requestAnimationFrame(tick);
+  }
+  const run = () => { if(!raf){ last = 0; raf = requestAnimationFrame(tick); } };
+  function startTint(){ tint = true; nav.classList.add("tinting"); }
+  function to(btn, instant){
+    if(st && st.drag) return;
+    if(!ensure() || !btn || !btn.offsetWidth) return;
+    target = btn.offsetLeft;
+    if(pos == null || instant){ pos = target; vel = 0; settle(geom()); return; }
+    if(Math.abs(target - pos) > 1){ startTint(); run(); }
+  }
+  function nearestTo(left){ const g = geom(); let best = 0, bd = Infinity; g.rel.forEach(([l, r], i) => { const d = Math.abs((l + r) / 2 - (left + g.bw / 2)); if(d < bd){ bd = d; best = i; } }); return g.bs[best]; }
+  function fingerLeft(x){
+    const g = geom(), wl = wrap().getBoundingClientRect().left, max = g.ww - g.bw;
+    let l = x - wl - g.bw / 2;
+    if(l < 0) l = -Math.sqrt(-l) * 2; else if(l > max) l = max + Math.sqrt(l - max) * 2; // rubber band at the ends
+    return l;
+  }
+  function beginDrag(){
     if(!st || st.drag) return; st.drag = true;
-    const wr = nav.querySelector(".wrap").getBoundingClientRect(), b = nav.querySelector(".tbub");
-    st.wl = wr.left; st.ww = wr.width; st.btns = btns(); st.bw = b ? b.offsetWidth : wr.width / 5;
-    st.rel = st.btns.map(el => [el.offsetLeft, el.offsetLeft + el.offsetWidth]);
-    st.left = st.x - st.wl - st.bw / 2; st.t = performance.now(); st.v = 0;
-    nav.classList.add("dragging"); queue();
+    nav.classList.add("dragging"); startTint(); liftT = 1;
+    target = fingerLeft(st.x); st.cur = nearestTo(target); run();
   }
-  function finish(){
-    nav.classList.remove("dragging"); cancelAnimationFrame(raf); raf = 0;
-    const b = nav.querySelector(".tbub"); if(b) b.style.scale = "";
-    btns().forEach(k => k.style.removeProperty("--p"));
-  }
-  nav.addEventListener("touchstart", e => { const t = e.touches[0]; st = {x0:t.clientX, y0:t.clientY, x:t.clientX, drag:false, cur:null}; st.timer = setTimeout(start, 260); }, {passive:true});
-  nav.addEventListener("touchmove", e => {
-    if(!st) return; const t = e.touches[0]; st.x = t.clientX;
+  function release(){ if(!st) return; clearTimeout(st.timer); st = null; liftT = 0; }
+  nav.addEventListener("pointerdown", e => {
+    if(e.pointerType === "mouse" && e.button !== 0) return;
+    if(!ensure() || pos == null) navBubble();
+    try{ nav.setPointerCapture(e.pointerId); }catch(_){}
+    st = {id:e.pointerId, x0:e.clientX, y0:e.clientY, x:e.clientX, drag:false, cur:null, btn:e.target.closest("button[data-tab]")};
+    st.timer = setTimeout(beginDrag, 230);
+  });
+  nav.addEventListener("pointermove", e => {
+    if(!st || e.pointerId !== st.id) return; st.x = e.clientX;
     if(!st.drag){
-      if(Math.abs(t.clientX - st.x0) > 6){ clearTimeout(st.timer); start(); }
-      else if(Math.abs(t.clientY - st.y0) > 12){ clearTimeout(st.timer); st = null; }
+      if(Math.abs(e.clientX - st.x0) > 7){ clearTimeout(st.timer); beginDrag(); }
+      else if(Math.abs(e.clientY - st.y0) > 34){ release(); const on = nav.querySelector("button.on"); if(on){ target = on.offsetLeft; run(); } }
       return;
     }
-    e.preventDefault(); queue();
-  }, {passive:false});
-  const end = e => {
-    if(!st) return; clearTimeout(st.timer); const s0 = st; st = null; if(!s0.drag) return;
-    e.preventDefault(); finish();
-    const tab = s0.cur && s0.cur.dataset.tab;
-    if(tab && tab !== S.tab) navTo(tab); else navBubble();
-  };
-  nav.addEventListener("touchend", end); nav.addEventListener("touchcancel", end);
+    target = fingerLeft(st.x);
+    const n = nearestTo(target); if(n !== st.cur){ st.cur = n; haptic(); }
+    run();
+  });
+  nav.addEventListener("pointerup", e => {
+    if(!st || e.pointerId !== st.id) return;
+    const s0 = st; release(); navSkipClick = Date.now() + 450;
+    if(!s0.drag){
+      const hit = document.elementFromPoint(e.clientX, e.clientY), btn = (hit && hit.closest && hit.closest("nav button[data-tab]")) || s0.btn;
+      if(btn){ haptic(); navTo(btn.dataset.tab); }
+      return;
+    }
+    // a flick carries the lens on toward the next tab
+    const g = geom(), proj = Math.max(0, Math.min(g.ww - g.bw, pos + vel * .09)), btn = nearestTo(proj);
+    target = btn.offsetLeft; run();
+    if(btn.dataset.tab !== S.tab){ haptic(); navTo(btn.dataset.tab); }
+  });
+  nav.addEventListener("pointercancel", e => {
+    if(!st || e.pointerId !== st.id) return; release();
+    const on = nav.querySelector("button.on"); if(on){ target = on.offsetLeft; run(); }
+  });
+  return {to};
 })();
+function navBubble(instant){
+  const on = $("#nav button.on"); if(!on) return;
+  if(!on.offsetWidth){ requestAnimationFrame(() => { if(on.offsetWidth) navBubble(true); }); return; }
+  TB.to(on, instant);
+}
+addEventListener("resize", () => navBubble(true));
 
 /* large title shrinks and fades into the bar; stretches on overscroll */
 function titleFx(y){
