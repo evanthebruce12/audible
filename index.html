@@ -2054,7 +2054,7 @@ const TB = (() => {
   function ensure(){ const w = wrap(); if(!w) return null; b = w.querySelector(".tbub"); if(!b){ b = document.createElement("i"); b.className = "tbub"; w.prepend(b); } return b; }
   function geom(){ const bs = btns(), w = wrap(); return {bs, rel:bs.map(e => [e.offsetLeft, e.offsetLeft + e.offsetWidth]), bw:bs[0] ? bs[0].offsetWidth : 0, ww:w ? w.offsetWidth : 0}; }
   function paint(g){
-    const k = Math.min(.2, Math.abs(vel) / 4200), sc = 1 + lift * .1;
+    const k = Math.min(.16, Math.abs(vel) / 4800), sc = 1 + lift * .07;
     b.style.width = g.bw + "px";
     b.style.transform = `translateX(${pos.toFixed(2)}px)`;
     b.style.scale = (k > .002 || lift > .002) ? `${(sc + k).toFixed(3)} ${(sc - k * .45).toFixed(3)}` : "";
@@ -2066,7 +2066,11 @@ const TB = (() => {
     nav.classList.remove("dragging"); last = 0;
   }
   function tick(now){
-    raf = 0; if(!ensure() || pos == null) return;
+    raf = 0;
+    try{ step(now); }catch(err){ console.error(err); if(pos != null && ensure()){ try{ settle(geom()); }catch(_){} } }
+  }
+  function step(now){
+    if(!ensure() || pos == null) return;
     const g = geom(), dt = last ? Math.min(.034, (now - last) / 1000) : 1 / 60; last = now;
     const drag = !!(st && st.drag), K = drag ? 1500 : 560, C = 2 * Math.sqrt(K) * (drag ? .92 : .86);
     for(let i = 0; i < 2; i++){ const h = dt / 2; vel += (K * (target - pos) - C * vel) * h; pos += vel * h; }
@@ -2088,7 +2092,8 @@ const TB = (() => {
   function fingerLeft(x){
     const g = geom(), wl = wrap().getBoundingClientRect().left, max = g.ww - g.bw;
     let l = x - wl - g.bw / 2;
-    if(l < 0) l = -Math.sqrt(-l) * 2; else if(l > max) l = max + Math.sqrt(l - max) * 2; // rubber band at the ends
+    const band = d => 14 * (1 - 1 / (1 + d / 70)); // never more than ~14px past the edge, with growing resistance
+    if(l < 0) l = -band(-l); else if(l > max) l = max + band(l - max);
     return l;
   }
   function beginDrag(){
@@ -2111,8 +2116,9 @@ const TB = (() => {
       else if(Math.abs(e.clientY - st.y0) > 34){ release(); const on = nav.querySelector("button.on"); if(on){ target = on.offsetLeft; run(); } }
       return;
     }
-    target = fingerLeft(st.x);
-    const n = nearestTo(target); if(n !== st.cur){ st.cur = n; haptic(); }
+    target = fingerLeft(st.x); st.moved = performance.now();
+    const n = nearestTo(target);
+    if(n !== st.cur){ const g = geom(), c = st.cur ? st.cur.offsetLeft : -1e9; if(Math.abs(target - c) > g.bw * .58){ st.cur = n; haptic(); } }
     run();
   });
   nav.addEventListener("pointerup", e => {
@@ -2128,10 +2134,16 @@ const TB = (() => {
     target = btn.offsetLeft; run();
     if(btn.dataset.tab !== S.tab){ haptic(); navTo(btn.dataset.tab); }
   });
-  nav.addEventListener("pointercancel", e => {
-    if(!st || e.pointerId !== st.id) return; release();
+  function abort(){
+    if(!st) return; release();
     const on = nav.querySelector("button.on"); if(on){ target = on.offsetLeft; run(); }
-  });
+  }
+  nav.addEventListener("pointercancel", e => { if(st && e.pointerId === st.id) abort(); });
+  nav.addEventListener("lostpointercapture", e => { if(st && e.pointerId === st.id) setTimeout(() => { if(st && st.id === e.pointerId) abort(); }, 0); });
+  addEventListener("blur", abort);
+  document.addEventListener("visibilitychange", () => { if(document.hidden){ abort(); if(pos != null && ensure()){ cancelAnimationFrame(raf); raf = 0; settle(geom()); } } });
+  // safety net: if the lens is ever left lifted or tinted with no finger down, put it back
+  setInterval(() => { if(!st && !raf && (lift > .01 || tint || nav.classList.contains("dragging"))){ liftT = 0; const on = nav.querySelector("button.on"); if(on) target = on.offsetLeft; run(); } }, 400);
   return {to};
 })();
 function navBubble(instant){
