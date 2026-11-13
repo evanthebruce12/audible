@@ -466,7 +466,8 @@ html[data-theme=light] .circ svg{stroke:#000}
 .chin textarea{background:none;border-radius:0;padding:7px 0;max-height:110px}
 .chin button{width:32px;height:32px}
 .chin button svg{width:16px;height:16px}
-.chat.kb .chin{margin-bottom:6px}
+.chat.kb .chin{margin-bottom:8px}
+.chat{box-sizing:border-box}
 .chat.kb .chd{padding-top:6px;padding-bottom:6px}
 /* game sheet */
 .gbox{transition:background .4s}
@@ -980,10 +981,10 @@ function md(t){
 const SUGG = ["Give me my weekly briefing", "Who should I start at flex this week?", "Any waiver adds worth making?", "Is there a trade I should look at?", "How do my playoff chances look?"];
 function openChat(prefill){
   $("#chName").textContent = S.set.botName; $("#chBot").innerHTML = abot("a28"); loadChat(); renderChat(); setTimeout(abPop, 60);
-  $("#chat").classList.add("on"); document.body.style.overflow = "hidden"; $("#app").inert = true; chatFit();
+  $("#chat").classList.add("on"); document.body.style.overflow = "hidden"; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = true; }); chatFit();
   if(prefill) sendChat(prefill);
 }
-function closeChat(){ $("#chat").classList.remove("on"); document.body.style.overflow = ""; $("#app").inert = false; $("#chText").blur(); chatFit(); }
+function closeChat(){ $("#chat").classList.remove("on"); document.body.style.overflow = ""; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = false; }); $("#chText").blur(); chatFit(); }
 function renderChat(){
   const log = $("#chLog");
   if(!S.set.apiKey){
@@ -1099,9 +1100,11 @@ async function sendChat(text){
 let chatKb = false;
 function chatFit(){
   const vv = window.visualViewport, ch = $("#chat"); if(!vv) return;
-  if(!ch.classList.contains("on")){ ch.style.top = ch.style.height = ch.style.bottom = ""; ch.classList.remove("kb"); chatKb = false; return; }
-  ch.style.top = vv.offsetTop + "px"; ch.style.height = vv.height + "px"; ch.style.bottom = "auto";
-  const kb = innerHeight - vv.height > 120; ch.classList.toggle("kb", kb);
+  if(!ch.classList.contains("on")){ ch.style.top = ch.style.height = ch.style.bottom = ch.style.paddingBottom = ""; ch.classList.remove("kb"); chatKb = false; return; }
+  const top = Math.max(0, vv.offsetTop), cover = Math.max(vv.height, innerHeight - top), under = Math.max(0, cover - vv.height);
+  ch.style.top = top + "px"; ch.style.height = cover + "px"; ch.style.bottom = "auto";
+  const kb = under > 120; ch.classList.toggle("kb", kb);
+  ch.style.paddingBottom = kb ? under + "px" : "";
   if(kb !== chatKb){ chatKb = kb; const lg = $("#chLog"); lg.scrollTop = lg.scrollHeight; }
 }
 if(window.visualViewport){ visualViewport.addEventListener("resize", chatFit); visualViewport.addEventListener("scroll", chatFit); }
@@ -2037,9 +2040,9 @@ document.addEventListener("visibilitychange", () => { if(document.visibilityStat
 /* haptic tap: vibrate where supported, iOS switch-click trick on iPhone */
 const haptic = (() => { let l = null; return () => { try{
   if(navigator.vibrate){ navigator.vibrate(8); return; }
-  if(!l){ l = document.createElement("label"); l.setAttribute("aria-hidden", "true"); l.style.cssText = "position:fixed;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none";
-    const i = document.createElement("input"); i.type = "checkbox"; i.setAttribute("switch", ""); i.tabIndex = -1; l.appendChild(i); document.body.appendChild(l); }
-  l.click();
+  l = document.createElement("label"); l.setAttribute("aria-hidden", "true"); l.style.cssText = "position:fixed;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none";
+  const i = document.createElement("input"); i.type = "checkbox"; i.setAttribute("switch", ""); i.tabIndex = -1; l.appendChild(i); document.body.appendChild(l);
+  l.click(); l.remove();
 }catch(e){} }; })();
 document.addEventListener("click", e => { if(e.target.closest(".seg button, .chip, #refreshBtn, #chSend, #fab")) haptic(); }, true);
 document.addEventListener("touchstart", () => {}, {passive:true}); // lets :active press states fire on iOS
