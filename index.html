@@ -6,12 +6,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gameday">
+<meta name="apple-mobile-web-app-title" content="Audible">
 <meta name="theme-color" content="#000000">
 <link rel="apple-touch-icon" href="icon.png">
-<link rel="icon" href="icon.png">
+<link rel="icon" href="favicon.png">
 <link rel="manifest" href="manifest.json">
-<title>Gameday</title>
+<title>Audible</title>
 <style>
 :root{
   --bg:#000;--bg2:#1c1c1e;--bg3:#2c2c2e;--bg4:#3a3a3c;--sep:rgba(84,84,88,.55);
@@ -247,6 +247,27 @@ html[data-theme=light] .sheet{background:var(--bg)}
 .loading{padding:90px 0;text-align:center;color:var(--label2)}
 .spin{width:24px;height:24px;border:2.5px solid var(--bg4);border-top-color:var(--label2);border-radius:50%;margin:0 auto 12px;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+
+/* audible bot */
+.abot{display:block;flex:none;overflow:visible}
+.abot .b{transform-box:fill-box;transform-origin:center}
+.abot .bd.hop{animation:abhop .85s cubic-bezier(.3,1.4,.5,1)}
+.abot .bd.shake{animation:abshake .55s ease}
+.abot .bd.sink{transform:translateY(4px);transition:transform .6s ease}
+.abot .bd.tilt{transform:rotate(-6deg);transition:transform .45s cubic-bezier(.3,1.3,.5,1)}
+.abot .bd.breathe{animation:abbreathe 3.2s ease-in-out infinite}
+.abot .bd.popin{animation:abpop .55s cubic-bezier(.3,1.6,.5,1)}
+.abot .fc{transition:transform .11s ease-in}.abot .ey{transition:transform .08s ease-in}
+.abot .led.flash{animation:abflash .25s 4 alternate}
+.abot .zz{opacity:0}.abot.sleep .zz{animation:abzz 2.6s ease-in infinite}.abot.sleep .zz2{animation-delay:1.3s}
+@keyframes abhop{30%{transform:translateY(-8px) rotate(-3deg)}55%{transform:translateY(0)}72%{transform:translateY(-2.5px)}100%{transform:none}}
+@keyframes abshake{20%{transform:rotate(-6deg)}40%{transform:rotate(5deg)}60%{transform:rotate(-3deg)}80%{transform:rotate(2deg)}100%{transform:none}}
+@keyframes abbreathe{50%{transform:translateY(2px) scale(.985)}}
+@keyframes abpop{0%{transform:scale(.4) translateY(20px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes abflash{to{opacity:.15}}
+@keyframes abzz{0%{opacity:0;transform:translate(0,0)}25%{opacity:1}100%{opacity:0;transform:translate(6px,-12px)}}
+.abot.a28{width:30px;height:30px}.abot.a40{width:40px;height:40px}.abot.a64{width:66px;height:66px;margin:0 auto 12px}.abot.a18{width:22px;height:22px}
+.reduce .abot *{animation:none!important;transition:none!important}
 .reduce .toast,.reduce .pop,.reduce .flash{animation:none!important}
 
 /* ===== app feel ===== */
@@ -265,8 +286,8 @@ nav button:active{transform:scale(.9)}
 @keyframes shim{to{background-position:-200% 0}}
 
 /* fab */
-.fab{position:fixed;right:16px;bottom:calc(66px + var(--sab));z-index:29;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));box-shadow:0 8px 24px rgba(10,132,255,.4);display:grid;place-items:center}
-.fab svg{width:26px;height:26px;fill:#fff}
+.fab{position:fixed;right:16px;bottom:calc(66px + var(--sab));z-index:29;width:58px;height:58px;border-radius:50%;padding:0;box-shadow:0 8px 24px rgba(10,132,255,.38)}
+.fab .abot{width:58px;height:58px}
 @media(min-width:640px){.fab{right:calc(50% - 284px)}}
 
 /* chat */
@@ -356,6 +377,8 @@ nav button:active{transform:scale(.9)}
 .play .pr{flex:none;text-align:right;display:flex;flex-direction:column;align-items:flex-end;min-width:44px}
 .play .pr b{font-size:16px}.play .pr small{font-size:10px;color:var(--label3)}.play .pr span{font-size:12px;font-weight:600}
 .play.big .pt{font-weight:600}
+.relv{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 6px}
+.relt{font-size:22px;letter-spacing:-.02em;margin:4px 2px 12px}
 .bigpts{font-size:46px;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
 </style>
 </head>
@@ -377,9 +400,9 @@ nav button:active{transform:scale(.9)}
   <button data-tab="players"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.8.8 2.8 2.6 3 5.2"/></svg>Players</button>
   <button data-tab="league"><svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5.5h3V7a3 3 0 0 1-3 3M7 5.5H4V7a3 3 0 0 0 3 3M12 14v4M8 21h8"/></svg>League</button>
 </div></nav>
-<button class="fab" id="fab" style="display:none" aria-label="Ask Audible"><svg viewBox="0 0 24 24"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 15l.9 2.6 2.6.9-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9z"/></svg></button>
+<button class="fab" id="fab" style="display:none" aria-label="Ask Audible"></button>
 <div class="chat" id="chat">
-  <div class="chd"><button id="chClose" class="chbtn">Done</button><div class="chtitle"><div class="boticon sm2"><svg viewBox="0 0 24 24"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 15l.9 2.6 2.6.9-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9z"/></svg></div><b id="chName">Audible</b></div><button id="chClear" class="chbtn">Clear</button></div>
+  <div class="chd"><button id="chClose" class="chbtn">Done</button><div class="chtitle"><span id="chBot"></span><b id="chName">Audible</b></div><button id="chClear" class="chbtn">Clear</button></div>
   <div class="chlog" id="chLog"></div>
   <form class="chin" id="chForm"><textarea id="chText" rows="1" placeholder="Ask about your team…"></textarea><button type="submit" id="chSend" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>
 </div>
@@ -404,6 +427,47 @@ const S = {
   myRid:null, tab:"home", seg:{players:"trending", league:"standings", news:"mine"}, pos:"ALL", q:"",
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
+
+const VERSION = "1.3";
+const RELEASES = [
+  {v:"1.3", date:"Nov 13, 2026", title:"Meet Audible", items:[
+    ["New name, new face","Gameday is now Audible, with a new app icon and a coach-in-a-headset mascot with an LED face."],
+    ["Audible has moods","He blinks, thinks with a head tilt while writing, hops on big plays, shakes his head when your lineup needs a fix, and sleeps late at night."],
+    ["Notifications","Lineup alerts, a Saturday night check, lead changes, close games, final results, waivers, trades, and a Tuesday briefing. Turn them on in Settings."],
+    ["Quiet hours","Nothing from 10pm to 8am except live game alerts. Adjustable."],
+    ["Backup with a PIN","Your settings, API key, league, and chats are saved. If your phone ever loses them, sign in and enter your PIN to restore."],
+    ["Tap to jump","Tapping a notification opens the right screen."]]},
+  {v:"1.2", date:"Nov 13, 2026", title:"Audible chat, My Team, and the game tracker", items:[
+    ["Chat with Audible","Tap the sparkle button anywhere to ask about lineups, waivers, trades, or any player. Answers stream in live."],
+    ["My Team","A Sleeper-style roster view with starters, bench, IR, game times, and status flags."],
+    ["Game tracker","A live field on every player card. Tap any of his plays to replay it, with yards and fantasy points per play."],
+    ["Full game view","Tap any NFL game on Today for the field, current drive, and scoring plays."],
+    ["Live box scores","Passing, rushing, receiving, kicking, and defense stats, plus a scoring breakdown in your league's settings."],
+    ["Smoother feel","Screens slide in, buttons press, and cards swipe down to close."],
+    ["Model setting","Pick Haiku (cheapest) or Sonnet (smarter) for Audible."]]},
+  {v:"1.1", date:"Nov 13, 2026", title:"The Apple-style rebuild", items:[
+    ["New design","Inspired by Apple Sports, with five tabs and light and dark mode."],
+    ["Audible briefing","A weekly rundown: lineup problems, byes, start/sit upgrades, win odds, and waiver targets."],
+    ["Projections and win probability","See projected scores and your chance to win."],
+    ["NFL games, odds, and news","Live scores, betting lines, and ESPN news filtered to your players."],
+    ["League activity","Trades, waiver claims, and adds/drops."],
+    ["Settings","Appearance, auto-refresh, animations, and your Claude API key."]]},
+  {v:"1.0", date:"Nov 13, 2026", title:"First release", items:[
+    ["Live matchup","Your score against your opponent, refreshed every 30 seconds, with a pop-up when your players score."],
+    ["Lineup check","Flags empty slots and injured starters, and suggests bench swaps."],
+    ["Waivers and standings","Trending pickups available in your league, plus standings."]]}
+];
+function whatsNewBody(all){
+  return (all ? RELEASES : RELEASES.slice(0,1)).map((r, i) => `<div class="${i ? "relold" : ""}" style="${i ? "margin-top:26px" : ""}">
+    <div class="relv"><span class="tag b">Version ${r.v}</span><span class="xs c3">${r.date}</span></div><h3 class="relt">${esc(r.title)}</h3>
+    <div class="grp">${r.items.map(([t, d]) => `<div class="cell noimg" style="align-items:flex-start"><div class="main"><div class="t1" style="white-space:normal">${esc(t)}</div><div class="t2" style="white-space:normal;line-height:1.4">${esc(d)}</div></div></div>`).join("")}</div></div>`).join("")
+    + (all ? "" : `<div class="btns"><button class="btn gray" id="allRel">See all release notes</button></div>`);
+}
+function openWhatsNew(all){
+  openSheet(all ? "Release notes" : "What's New", whatsNewBody(all));
+  const b = $("#allRel"); if(b) b.onclick = () => openWhatsNew(true);
+  store.set("gd_seen_ver", VERSION);
+}
 
 /* =============== utils =============== */
 const $ = s => document.querySelector(s);
@@ -434,7 +498,7 @@ const CHEV = '<svg class="chev" viewBox="0 0 8 13"><path d="M1.5 1.5 6.5 6.5 1.5
 
 /* =============== settings & theme =============== */
 function loadSettings(){ S.set = {...DEF_SET, ...(store.get("gd_settings") || {})}; applyTheme(); }
-function saveSettings(){ store.set("gd_settings", S.set); applyTheme(); }
+function saveSettings(){ store.set("gd_settings", S.set); applyTheme(); if(typeof scheduleBackup === "function") scheduleBackup(); }
 function applyTheme(){
   const t = S.set.theme === "system" ? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : S.set.theme;
   document.documentElement.dataset.theme = t;
@@ -764,7 +828,7 @@ async function loadWeekStats(force){
 /* =============== Audible chat =============== */
 const chatKey = () => "gd_chat_" + (S.league ? S.league.league_id : "");
 function loadChat(){ S.chat = store.get(chatKey()) || []; }
-function saveChat(){ store.set(chatKey(), S.chat.filter(m => !m.streaming).slice(-30)); }
+function saveChat(){ store.set(chatKey(), S.chat.filter(m => !m.streaming).slice(-30)); scheduleBackup(); }
 function md(t){
   const lines = esc(t).split(/\n/); let h = "", list = false;
   for(const ln of lines){
@@ -776,7 +840,7 @@ function md(t){
 }
 const SUGG = ["Give me my weekly briefing", "Who should I start at flex this week?", "Any waiver adds worth making?", "Is there a trade I should look at?", "How do my playoff chances look?"];
 function openChat(prefill){
-  $("#chName").textContent = S.set.botName; loadChat(); renderChat();
+  $("#chName").textContent = S.set.botName; $("#chBot").innerHTML = abot("a28"); loadChat(); renderChat(); setTimeout(abPop, 60);
   $("#chat").classList.add("on"); document.body.style.overflow = "hidden";
   if(prefill) sendChat(prefill);
 }
@@ -785,14 +849,14 @@ function renderChat(){
   const log = $("#chLog");
   if(!S.set.apiKey){
     $("#chForm").style.display = "none";
-    log.innerHTML = `<div class="chintro"><div class="boticon">${BOT_SVG}</div><b>${esc(S.set.botName)}</b>Add your Claude API key to chat about your team.</div>
+    log.innerHTML = `<div class="chintro">${abot("a64")}<b>${esc(S.set.botName)}</b>Add your Claude API key to chat about your team.</div>
       <div class="keybox"><input id="keyIn" type="password" placeholder="sk-ant-…" autocomplete="off" autocapitalize="none"><button class="btn" id="keySave">Save key</button><div class="xs c2">Get one at console.anthropic.com. It's saved only on this phone.</div></div>`;
     $("#keySave").onclick = () => { const v = $("#keyIn").value.trim(); if(!v) return; S.set.apiKey = v; saveSettings(); renderChat(); };
     return;
   }
   $("#chForm").style.display = "";
   let h = "";
-  if(!S.chat.length) h += `<div class="chintro"><div class="boticon">${BOT_SVG}</div><b>${esc(S.set.botName)}</b>Ask me anything about your lineup, matchup, waivers, or trades. I can see your whole league.</div><div class="sugg">${SUGG.map(s => `<button data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>`;
+  if(!S.chat.length) h += `<div class="chintro">${abot("a64")}<b>${esc(S.set.botName)}</b>Ask me anything about your lineup, matchup, waivers, or trades. I can see your whole league.</div><div class="sugg">${SUGG.map(s => `<button data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>`;
   h += S.chat.map(m => `<div class="msg ${m.role === "user" ? "u" : m.err ? "e" : "a"}">${m.role === "user" || m.err ? esc(m.content) : (m.content ? md(m.content) : '<span class="typing"><i></i><i></i><i></i></span>')}</div>`).join("");
   if(S.chatBusy && !(S.chat.length && S.chat[S.chat.length-1].streaming)) h += `<div class="msg a"><span class="typing"><i></i><i></i><i></i></span></div>`;
   log.innerHTML = h;
@@ -824,7 +888,7 @@ OTHER ROSTERS:\n${others}
 RECENT LEAGUE TRANSACTIONS:\n${tx || "none"}`;
 }
 function sysPrompt(){
-  return `You are ${S.set.botName}, the fantasy football assistant inside the user's personal app "Gameday". You can see their Sleeper league data below, current as of right now.
+  return `You are ${S.set.botName}, the fantasy football assistant and the name of the user's personal fantasy app. You can see their Sleeper league data below, current as of right now.
 How to answer:
 - Lead with a clear recommendation, then a short reason. Talk like a sharp friend who knows football, not a robot.
 - Keep it short enough for a phone: usually under 120 words. Use "- " bullets when listing. Bold player names with **.
@@ -844,7 +908,7 @@ function friendlyErr(st, m){
 }
 async function sendChat(text){
   text = (text || "").trim(); if(!text || S.chatBusy || !S.set.apiKey) return;
-  S.chat.push({role:"user", content:text}); S.chatBusy = true;
+  S.chat.push({role:"user", content:text}); S.chatBusy = true; abHold = "thinking"; abApply("thinking", true);
   $("#chText").value = ""; autosize(); renderChat();
   const msgs = S.chat.filter(m => !m.err).slice(-12).map(m => ({role:m.role, content:m.content}));
   const out = {role:"assistant", content:"", streaming:true};
@@ -864,7 +928,7 @@ async function sendChat(text){
           const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
           if(!line.startsWith("data:")) continue;
           let ev; try{ ev = JSON.parse(line.slice(5)); }catch(e){ continue; }
-          if(ev.type === "content_block_delta" && ev.delta && ev.delta.text){ out.content += ev.delta.text; bubble.innerHTML = md(out.content); const lg = $("#chLog"); lg.scrollTop = lg.scrollHeight; }
+          if(ev.type === "content_block_delta" && ev.delta && ev.delta.text){ if(abHold){ abHold = null; abApply(abBase(), true); } out.content += ev.delta.text; bubble.innerHTML = md(out.content); const lg = $("#chLog"); lg.scrollTop = lg.scrollHeight; }
           else if(ev.type === "error") throw new Error(friendlyErr(0, (ev.error && ev.error.message) || "Something went wrong."));
         }
       }
@@ -877,7 +941,7 @@ async function sendChat(text){
     const i = S.chat.indexOf(out); if(i >= 0 && !out.content) S.chat.splice(i, 1);
     S.chat.push({role:"assistant", err:true, content: e instanceof TypeError ? "Couldn't connect to Claude. Check your internet and try again." : (e.message || "Something went wrong.")});
   }
-  delete out.streaming; S.chatBusy = false; saveChat(); renderChat();
+  delete out.streaming; S.chatBusy = false; if(abHold){ abHold = null; abApply(abBase(), true); } saveChat(); renderChat();
 }
 function autosize(){ const t = $("#chText"); t.style.height = "auto"; t.style.height = Math.min(120, t.scrollHeight) + "px"; }
 $("#chText").addEventListener("input", autosize);
@@ -913,6 +977,7 @@ function startLive(){
   if(+S.set.refresh > 0) S.timer = setInterval(() => { if(document.visibilityState === "visible") refresh(false); }, S.set.refresh * 1000);
 }
 function celebrate(g){
+  if(g.list.some(([, d]) => d >= 5.5) || (g.me[0] <= g.op[0] && g.me[1] > g.op[1] && g.op[1] > 0)) abFlash("touchdown", 3500);
   if(g.me[1] > g.me[0] + .05) countUp($("#scA"), g.me[0], g.me[1]);
   if(g.op[1] > g.op[0] + .05) countUp($("#scB"), g.op[0], g.op[1]);
   g.list.slice(0,3).forEach(([id, d], i) => setTimeout(() => {
@@ -1114,6 +1179,221 @@ async function fillGame(gid){
   bindPlayers($("#shBody"));
 }
 
+/* =============== Audible bot (moods + animation) =============== */
+const AB_B = "#64d2ff", AB_O = "#ff9f0a", AB_D = "#3f8fb0";
+const abPill = (x, y, w, h, c) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${w/2}" fill="${c}"/>`;
+const abSt = (d, c, w) => `<path d="${d}" fill="none" stroke="${c}" stroke-width="${w || 3}" stroke-linecap="round" stroke-linejoin="round"/>`;
+const AB = {
+  normal:{e:abPill(-14,-5,8,14,AB_B) + abPill(6,-5,8,14,AB_B), m:abSt("M-10 21 Q0 27 10 21", AB_B)},
+  thinking:{e:abPill(-10,-10,8,12,AB_B) + abPill(9,-10,8,12,AB_B), m:abSt("M-3 22 Q3 20 9 20.5", AB_B), b:"tilt"},
+  touchdown:{e:abSt("M-17 5 L-11 -4 L-5 5", AB_B, 3.5) + abSt("M5 5 L11 -4 L17 5", AB_B, 3.5), m:abSt("M-13 17 Q0 31 13 17", AB_B, 3.5), b:"hop", led:1},
+  alert:{e:abPill(-14,-6,8,15,AB_O) + abPill(6,-6,8,15,AB_O), m:`<circle cx="0" cy="22" r="3.5" fill="none" stroke="${AB_O}" stroke-width="3"/>`, b:"shake"},
+  bummed:{e:abPill(-14,0,8,9,AB_B) + abPill(6,0,8,9,AB_B), m:abSt("M-7 24 Q0 20.5 7 24", AB_B), b:"sink"},
+  sleeping:{e:abSt("M-15 1 Q-10 6 -5 1", AB_D, 3.5) + abSt("M5 1 Q10 6 15 1", AB_D, 3.5), m:abSt("M-4 22 L4 22", AB_D), b:"breathe", dim:1}
+};
+let abN = 0, abMood = "normal", abTemp = null, abHold = null;
+function abot(cls){
+  const id = "abc" + (++abN), M = AB[abMood];
+  return `<svg class="abot ${cls || ""} ${abMood === "sleeping" ? "sleep" : ""}" viewBox="-75 -75 150 150" aria-hidden="true"><defs><clipPath id="${id}"><circle r="75"/></clipPath></defs><circle r="75" fill="#3d6af2"/>
+<g clip-path="url(#${id})"><g transform="scale(1.2) translate(0 -2)"><g class="bd b ${M.b && M.b !== "hop" && M.b !== "shake" ? M.b : ""}">
+<circle cx="0" cy="7" r="40" fill="#f4f5f9"/><path d="M-41 -5 Q-41 -39 0 -39 Q41 -39 41 -5" fill="none" stroke="#16161a" stroke-width="8" stroke-linecap="round"/>
+<rect x="-48" y="-9" width="14" height="32" rx="7" fill="#16161a"/><rect x="34" y="-9" width="14" height="32" rx="7" fill="#16161a"/>
+<circle cx="0" cy="7" r="30" fill="#0e1220"/><g class="fc b"><g class="ey b">${M.e}</g><g class="mo">${M.m}</g></g>
+<path d="M44 20 Q46 41 17 41" fill="none" stroke="#16161a" stroke-width="4.5" stroke-linecap="round"/><rect x="5" y="36.5" width="13" height="9" rx="4.5" fill="#16161a"/>
+<circle class="led" cx="41" cy="-3" r="2.2" fill="#30d158" opacity="${M.dim ? .35 : 1}"/>
+<path class="zz b" d="M20 -48 L28 -48 L20 -40 L28 -40" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path class="zz zz2 b" d="M31 -52 L37 -52 L31 -46 L37 -46" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</g></g></g></svg>`;
+}
+function abApply(m, animate){
+  if(!AB[m]) m = "normal";
+  const changed = m !== abMood; abMood = m;
+  document.querySelectorAll(".abot").forEach(svg => {
+    const fc = svg.querySelector(".fc"), bd = svg.querySelector(".bd"), led = svg.querySelector(".led");
+    const swap = () => { svg.querySelector(".ey").innerHTML = AB[m].e; svg.querySelector(".mo").innerHTML = AB[m].m; };
+    if(changed && animate && S.set.celebrate){ fc.style.transform = "scaleY(.06)"; setTimeout(() => { swap(); fc.style.transform = ""; }, 120); }
+    else swap();
+    bd.setAttribute("class", "bd b"); void bd.getBBox();
+    if(AB[m].b && (changed || animate) && S.set.celebrate) setTimeout(() => bd.setAttribute("class", "bd b " + AB[m].b), 30);
+    else if(AB[m].b && AB[m].b !== "hop" && AB[m].b !== "shake") bd.setAttribute("class", "bd b " + AB[m].b);
+    led.setAttribute("opacity", AB[m].dim ? ".35" : "1");
+    led.setAttribute("class", "led"); if(AB[m].led && S.set.celebrate){ void led.getBBox(); led.setAttribute("class", "led flash"); }
+    svg.classList.toggle("sleep", m === "sleeping");
+  });
+}
+function abBase(){
+  if(abHold) return abHold;
+  if(!S.league || !S.state) return "normal";
+  if(isCur() && lineupIssues().some(x => x.level === "bad")) return "alert";
+  const me = mOf(S.myRid), op = oppOf(me), live = S.games && S.games.some(g => g.state === "in");
+  if(me && op && live && (op.points || 0) - (me.points || 0) > 15){
+    const a = teamOutlook(me), b = teamOutlook(op);
+    if(!hasProj() || a.proj < b.proj - 5) return "bummed";
+  }
+  const h = new Date().getHours();
+  if(!live && (h >= 23 || h < 7)) return "sleeping";
+  return "normal";
+}
+function abRefresh(){ if(!abTemp) { const b = abBase(); if(b !== abMood) abApply(b, true); } }
+function abFlash(m, ms){ clearTimeout(abTemp); abApply(m, true); abTemp = setTimeout(() => { abTemp = null; abApply(abBase(), true); }, ms || 3200); }
+function abPop(){ if(!S.set.celebrate) return; document.querySelectorAll(".abot .bd").forEach(bd => { bd.setAttribute("class", "bd b"); void bd.getBBox(); bd.setAttribute("class", "bd b popin"); }); }
+(function blink(){
+  if(abMood !== "sleeping" && abMood !== "touchdown"){
+    const E = document.querySelectorAll(".abot .ey");
+    E.forEach(e => e.style.transform = "scaleY(.08)");
+    setTimeout(() => { E.forEach(e => e.style.transform = ""); if(Math.random() < .25) setTimeout(() => { E.forEach(e => e.style.transform = "scaleY(.08)"); setTimeout(() => E.forEach(e => e.style.transform = ""), 90); }, 160); }, 90);
+  }
+  setTimeout(blink, 2500 + Math.random() * 3000);
+})();
+
+/* =============== notifications + backup (Cloudflare watcher) =============== */
+const WORKER_URL = "";
+const worker = () => (S.set.worker || WORKER_URL || "").replace(/\/+$/, "");
+const NDEF = {lineup:true, night:true, lead:true, close:true, final:true, waivers:true, trades:true, brief:true, badge:false, qs:22, qe:8};
+const nprefs = () => ({...NDEF, ...(S.set.nprefs || {})});
+const standalone = () => !!(navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches));
+const uname = () => (S.user && (S.user.username || S.user.display_name)) || "";
+function ub64(s){ s = s.replace(/-/g, "+").replace(/_/g, "/"); while(s.length % 4) s += "="; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
+async function wpost(path, body){
+  const r = await fetch(worker() + path, {method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify(body)});
+  const d = await r.json().catch(() => ({}));
+  if(!r.ok) throw new Error(d.error || ("Error " + r.status));
+  return d;
+}
+function regPayload(extra){
+  const own = ownerMap(), players = {}, teams = {};
+  Object.keys(own).forEach(id => { const p = P(id); players[id] = [p.name, p.pos, p.team, p.espn || "", Math.round((val(id) || 0) * 10) / 10, p.inj || ""]; });
+  S.rosters.forEach(r => teams[r.roster_id] = team(r.roster_id).name);
+  const T = team(S.myRid), np = nprefs();
+  return {user_id:S.user.user_id, username:uname(), league_id:S.league.league_id, roster_id:S.myRid, tz:Intl.DateTimeFormat().resolvedOptions().timeZone,
+    prefs:np, players, teams, slots:slots(), rec:{w:T.w, l:T.l, t:T.t}, apiKey:np.brief ? (S.set.apiKey || "") : "", model:S.set.model, ...(extra || {})};
+}
+async function syncWatcher(force){
+  if(!worker() || !S.set.notifOn || !S.league || !S.myRid) return;
+  const sig = [S.league.league_id, S.rosters.map(r => (r.players || []).join(",")).join(";"), JSON.stringify(nprefs()), S.set.apiKey ? 1 : 0].join("|");
+  const last = store.get("gd_wsync") || {};
+  if(!force && last.sig === sig && Date.now() - last.t < 3 * 3600e3) return;
+  try{ await wpost("/register", regPayload()); store.set("gd_wsync", {sig, t:Date.now()}); }catch(e){}
+}
+async function enableNotifs(){
+  if(!worker()) throw new Error("The notification service isn't connected yet.");
+  if(!standalone()) throw new Error("Open Audible from its Home Screen icon first, then turn notifications on here.");
+  if(!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) throw new Error("This phone doesn't support web app notifications. iOS 16.4 or newer is needed.");
+  const perm = await Notification.requestPermission();
+  if(perm !== "granted") throw new Error("Notifications are blocked. Turn them on in iPhone Settings, then Notifications, then Audible.");
+  const reg = await navigator.serviceWorker.ready;
+  const {key} = await (await fetch(worker() + "/vapid")).json();
+  let sub = await reg.pushManager.getSubscription();
+  if(!sub) sub = await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:ub64(key)});
+  await wpost("/register", regPayload({sub:sub.toJSON()}));
+  S.set.notifOn = true; saveSettings(); store.set("gd_wsync", {sig:"", t:0});
+}
+async function disableNotifs(){
+  try{ const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if(sub) await sub.unsubscribe(); }catch(e){}
+  try{ await wpost("/unregister", {user_id:S.user.user_id}); }catch(e){}
+  S.set.notifOn = false; saveSettings();
+  try{ navigator.clearAppBadge && navigator.clearAppBadge(); }catch(e){}
+}
+function openNotifs(){
+  const np = nprefs(), on = !!S.set.notifOn && worker();
+  const tg = (k, label, sub) => `<div class="cell noimg"><div class="main"><div class="t1" style="font-weight:400">${label}</div>${sub ? `<div class="t2" style="white-space:normal">${sub}</div>` : ""}</div><label class="tgl"><input type="checkbox" data-np="${k}" ${np[k] ? "checked" : ""}><i></i></label></div>`;
+  const qv = np.qs === np.qe ? "off" : `${np.qs}-${np.qe}`;
+  let h = `<div class="grp" style="margin-top:8px"><div class="cell noimg"><div class="main"><div class="t1" style="color:var(--${on ? "green" : "label2"})">${on ? "● Notifications are on" : "Notifications are off"}</div><div class="t2" style="white-space:normal">${on ? `This iPhone · ${esc(S.league.name)}` : !worker() ? "The notification service isn't connected yet." : standalone() ? "Get lineup, matchup, and league alerts from Audible." : "Open Audible from its Home Screen icon to turn these on."}</div></div></div></div>
+    <div class="err" id="nErr" style="margin:8px 14px 0"></div>`;
+  if(!on) h += `<div class="btns"><button class="btn" id="nOn" ${worker() ? "" : "disabled style='opacity:.5'"}>Turn on notifications</button></div>`;
+  h += `<div class="lbl">Lineup</div><div class="grp">${tg("lineup", "Lineup alerts", "Out, doubtful, bye, or empty starters, with the swap to make")}${tg("night", "Night-before check", "Saturday 8pm summary")}</div>
+    <div class="lbl">Matchup</div><div class="grp">${tg("lead", "Lead changes")}${tg("close", "Close games", "Within 10 pts in the 4th with your players still playing")}${tg("final", "Final result")}</div>
+    <div class="lbl">League</div><div class="grp">${tg("waivers", "Waiver results")}${tg("trades", "Trades in your league")}${tg("brief", "Tuesday briefing", "9am weekly take from Audible")}</div>
+    <div class="lbl">Timing</div><div class="grp"><div class="cell noimg"><div class="main"><div class="t1" style="font-weight:400">Quiet hours</div></div><select class="sel" id="nQuiet">${[["22-8","10pm to 8am"],["23-7","11pm to 7am"],["21-8","9pm to 8am"],["off","Off"]].map(([v,l]) => `<option value="${v}" ${qv === v ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+    ${tg("badge", "App icon badge", "Red number when your lineup has a problem")}</div>
+    <div class="note">Live game alerts still come through during quiet hours. Everything else waits until morning.</div>`;
+  if(on) h += `<div class="grp" style="margin-top:16px"><button class="cell noimg" id="nTest"><div class="main"><div class="t1" style="font-weight:400;color:var(--blue);text-align:center">Send a test notification</div></div></button></div>
+    <div class="btns"><button class="btn red" id="nOff">Turn off notifications</button></div>`;
+  openSheet("Notifications", h);
+  const err = m => { $("#nErr").textContent = m || ""; };
+  const b1 = $("#nOn"); if(b1) b1.onclick = async () => { b1.textContent = "Turning on…"; try{ await enableNotifs(); openNotifs(); toast("Notifications are on"); }catch(e){ err(e.message); b1.textContent = "Turn on notifications"; } };
+  const b2 = $("#nOff"); if(b2) b2.onclick = async () => { await disableNotifs(); openNotifs(); };
+  const b3 = $("#nTest"); if(b3) b3.onclick = async () => { try{ await wpost("/test", {user_id:S.user.user_id}); toast("Sent. It should pop up in a few seconds."); }catch(e){ err(e.message); } };
+  $$("#shBody [data-np]").forEach(el => el.onchange = () => {
+    S.set.nprefs = {...nprefs(), [el.dataset.np]:el.checked}; saveSettings();
+    if(el.dataset.np === "badge" && !el.checked){ try{ navigator.clearAppBadge && navigator.clearAppBadge(); }catch(e){} }
+    syncWatcher(true);
+  });
+  $("#nQuiet").onchange = e => { const v = e.target.value, [qs, qe] = v === "off" ? [0, 0] : v.split("-").map(Number); S.set.nprefs = {...nprefs(), qs, qe}; saveSettings(); syncWatcher(true); };
+}
+
+/* ---- backup ---- */
+let bkTimer = null;
+function backupData(){
+  const chats = {};
+  Object.keys(localStorage).filter(k => /^gd_chat_/.test(k)).forEach(k => chats[k] = store.get(k));
+  const set = {...S.set}; delete set.pin;
+  return {v:1, set, league:store.get("gd_league"), chats};
+}
+function scheduleBackup(){
+  if(!worker() || !S.set.pin || !S.user) return;
+  clearTimeout(bkTimer);
+  bkTimer = setTimeout(async () => { try{ await wpost("/backup", {username:uname(), pin:S.set.pin, data:backupData()}); store.set("gd_bk_t", Date.now()); }catch(e){} }, 2500);
+}
+function openBackup(){
+  const t = store.get("gd_bk_t");
+  let h = `<div class="note" style="margin-top:10px">Audible saves your settings, API key, league, and chats to your private Cloudflare service. If this phone ever loses them, sign in with your Sleeper username and this PIN to get everything back.</div><div class="err" id="bErr" style="margin:8px 14px 0"></div>`;
+  if(!worker()) h += `<div class="grp" style="margin-top:12px"><div class="empty">The backup service isn't connected yet.</div></div>`;
+  else if(S.set.pin) h += `<div class="grp" style="margin-top:12px"><div class="cell noimg"><div class="main"><div class="t1" style="color:var(--green)">● Backup is on</div><div class="t2">${t ? "Last saved " + ago(t) : "Saving now…"} · PIN set</div></div></div></div>
+    <div class="btns"><button class="btn gray" id="bNow">Back up now</button><button class="btn red" id="bOff">Turn off backup on this phone</button></div>`;
+  else h += `<div class="lbl">Choose a 4-digit PIN</div><div class="grp"><div class="cell noimg"><input class="tin" id="p1" type="password" inputmode="numeric" maxlength="4" placeholder="PIN" style="text-align:left"></div><div class="cell noimg"><input class="tin" id="p2" type="password" inputmode="numeric" maxlength="4" placeholder="Type it again" style="text-align:left"></div></div>
+    <div class="btns"><button class="btn" id="bSet">Turn on backup</button></div>`;
+  openSheet("Backup", h);
+  const err = m => { $("#bErr").textContent = m || ""; };
+  const bs = $("#bSet"); if(bs) bs.onclick = async () => {
+    const a = $("#p1").value.trim(), b = $("#p2").value.trim();
+    if(!/^\d{4}$/.test(a)) return err("Use exactly 4 numbers.");
+    if(a !== b) return err("Those PINs don't match.");
+    bs.textContent = "Saving…";
+    try{ await wpost("/backup", {username:uname(), pin:a, data:backupData()}); S.set.pin = a; saveSettings(); store.set("gd_bk_t", Date.now()); openBackup(); toast("Backup is on"); }
+    catch(e){ bs.textContent = "Turn on backup"; err(/match/.test(e.message) ? "A backup already exists for this username with a different PIN. Use that PIN instead." : e.message); }
+  };
+  const bn = $("#bNow"); if(bn) bn.onclick = async () => { try{ await wpost("/backup", {username:uname(), pin:S.set.pin, data:backupData()}); store.set("gd_bk_t", Date.now()); openBackup(); toast("Backed up"); }catch(e){ err(e.message); } };
+  const bo = $("#bOff"); if(bo) bo.onclick = () => { delete S.set.pin; saveSettings(); openBackup(); };
+}
+async function tryRestore(name){
+  if(!worker()) return false;
+  try{ const r = await fetch(worker() + "/hasbackup?u=" + encodeURIComponent(name)); const d = await r.json(); return !!d.exists; }catch(e){ return false; }
+}
+function restoreScreen(name, done){
+  $("#app").innerHTML = `<form class="setup" id="rf"><div style="width:72px;height:72px">${abot("")}</div><h1>Welcome back</h1>
+    <div class="c2" style="font-size:17px">There's a saved backup for ${esc(name)}. Enter your 4-digit PIN to bring back your settings, API key, and chats.</div>
+    <input class="field" id="rp" type="password" inputmode="numeric" maxlength="4" placeholder="PIN" autocomplete="off">
+    <div class="err" id="rerr"></div><button class="btn" type="submit">Restore</button><button class="btn gray" type="button" id="rskip">Start fresh instead</button></form>`;
+  $("#rskip").onclick = done;
+  $("#rf").onsubmit = async e => {
+    e.preventDefault(); const pin = $("#rp").value.trim(); if(!/^\d{4}$/.test(pin)) return $("#rerr").textContent = "Enter your 4-digit PIN.";
+    $("#rerr").textContent = "Restoring…";
+    try{
+      const d = (await wpost("/restore", {username:name, pin})).data || {};
+      store.set("gd_settings", {...(d.set || {}), pin});
+      if(d.league) store.set("gd_league", d.league);
+      Object.keys(d.chats || {}).forEach(k => store.set(k, d.chats[k]));
+      store.set("gd_bk_t", Date.now());
+      done();
+    }catch(err){ $("#rerr").textContent = err.message; }
+  };
+}
+
+/* ---- deep links from notifications ---- */
+function route(h){
+  h = String(h || "").replace(/^#/, "");
+  if(!h || !S.league) return false;
+  if(h === "chat-brief"){ openChat("Give me my weekly briefing"); return true; }
+  if(h === "league-activity"){ closeSheet(); go("league", "activity"); return true; }
+  if(TITLES[h]){ closeSheet(); go(h); return true; }
+  return false;
+}
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+  navigator.serviceWorker.addEventListener("message", e => { if(e.data && e.data.type === "open"){ try{ route(new URL(e.data.url).hash); }catch(err){} } });
+}
+addEventListener("hashchange", () => { if(route(location.hash)) history.replaceState(null, "", location.pathname + location.search); });
+
 /* =============== render =============== */
 const TITLES = {home:"Today", matchup:"Matchup", team:"My Team", players:"Players", league:"League"};
 function render(anim){
@@ -1127,6 +1407,8 @@ function render(anim){
   if(anim){ app.classList.remove("enter"); void app.offsetWidth; app.classList.add("enter"); window.scrollTo(0, 0); }
   else window.scrollTo(0, y);
   bind();
+  const fb = $("#fab"); if(fb && !fb.firstChild) fb.innerHTML = abot("");
+  abRefresh();
 }
 function head(title, sub){ return `<h1 class="lt">${title}</h1><div class="sub">${sub || ""}</div>`; }
 function liveSub(){
@@ -1145,9 +1427,9 @@ function vHome(){
   const d = new Date().toLocaleDateString([], {weekday:"long", month:"long", day:"numeric"});
   let h = head("Today", esc(d));
   const ins = insights();
-  h += `<div class="bot"><button class="hd" id="botHd" style="width:100%;text-align:left"><div class="boticon">${BOT_SVG}</div><div style="flex:1;min-width:0"><b>${esc(S.set.botName)}</b><span>Week ${S.state.week} briefing · ${esc(S.league.name)}</span></div>${CHEV}</button>
+  h += `<div class="bot"><button class="hd" id="botHd" style="width:100%;text-align:left">${abot("a40")}<div style="flex:1;min-width:0"><b>${esc(S.set.botName)}</b><span>Week ${S.state.week} briefing · ${esc(S.league.name)}</span></div>${CHEV}</button>
     ${ins.map(i => `<button class="ins" data-go="${i.go}"><i class="dot ${i.tone}"></i><span class="tx">${i.html}</span></button>`).join("") || `<div class="empty">Nothing to flag right now.</div>`}
-    <button class="aibtn" id="askBtn">${BOT_SVG}Ask ${esc(S.set.botName)} anything</button></div>`;
+    <button class="aibtn" id="askBtn">Ask ${esc(S.set.botName)} anything</button></div>`;
   const me = mOf(S.myRid), op = oppOf(me);
   if(me && isCur()){
     const live = (me.starters || []).map((id, i) => ({p:P(id), pts:(me.starters_points || [])[i], slot:slots()[i]})).filter(x => !x.p.empty && gState(x.p) === "in");
@@ -1445,6 +1727,8 @@ function openSettings(){
   const tg = k => `<label class="tgl"><input type="checkbox" data-set="${k}" ${s[k]?"checked":""}><i></i></label>`;
   let h = `<div class="lbl">League</div><div class="grp">${row("League", `<select class="sel" id="lgSel">${S.leagues.map(l => `<option value="${l.league_id}" ${l.league_id===S.league.league_id?"selected":""}>${esc(l.name)}</option>`).join("")}</select>`)}
     ${row("Signed in as", `<span class="c2">${esc(S.user.display_name)}</span>`)}</div>`;
+  h += `<div class="lbl">Audible services</div><div class="grp"><button class="cell noimg" id="notBtn"><div class="main"><div class="t1" style="font-weight:400">Notifications</div></div><span class="c2">${S.set.notifOn && worker() ? "On" : "Off"}</span>${CHEV}</button>
+    <button class="cell noimg" id="bkBtn"><div class="main"><div class="t1" style="font-weight:400">Backup</div></div><span class="c2">${S.set.pin && worker() ? "On" : "Off"}</span>${CHEV}</button></div>`;
   h += `<div class="lbl">Display</div><div class="grp">${row("Appearance", sel("theme", [["system","System"],["dark","Dark"],["light","Light"]]))}
     ${row("Open to", sel("startTab", [["home","Today"],["matchup","Matchup"],["team","My Team"],["players","Players"],["league","League"]]))}
     ${row("Show bench in matchup", tg("showBench"))}</div>`;
@@ -1456,19 +1740,22 @@ function openSettings(){
     <div class="note">The weekly briefing works without a key. Add one (from console.anthropic.com) to chat with ${esc(s.botName)}. Haiku costs well under a cent per question; Sonnet is a few cents and the key stays on this phone.</div>`;
   h += `<div class="lbl">Data</div><div class="grp"><button class="cell noimg" id="rlPl"><div class="main"><div class="t1" style="font-weight:400;color:var(--blue)">Reload player list</div></div></button>
     <button class="cell noimg" id="clrC"><div class="main"><div class="t1" style="font-weight:400;color:var(--blue)">Clear cached stats</div></div></button></div>`;
+  h += `<div class="lbl">About</div><div class="grp"><button class="cell noimg" id="relBtn"><div class="main"><div class="t1" style="font-weight:400">What's New</div></div><span class="c2">Version ${VERSION}</span>${CHEV}</button></div>`;
   h += `<div class="btns"><button class="btn red" id="logout">Use a different Sleeper account</button></div>
-    <div class="foot">Gameday reads public Sleeper data and ESPN scores/news. Lineup changes, claims, and trades happen in Sleeper.</div>`;
+    <div class="foot">Audible reads public Sleeper data and ESPN scores/news. Lineup changes, claims, and trades happen in Sleeper.</div>`;
   openSheet("Settings", h);
   $("#lgSel").onchange = async e => {
     S.league = S.leagues.find(l => l.league_id === e.target.value); store.set("gd_league", S.league.league_id);
     closeSheet(); S.week = S.state.week; loading("Loading " + S.league.name + "…");
-    try{ await loadLeague(); render(true); }catch(err){ fail(err); }
+    try{ await loadLeague(); render(true); syncWatcher(true); scheduleBackup(); }catch(err){ fail(err); }
   };
   $$("#shBody [data-set]").forEach(el => {
     const k = el.dataset.set;
     const save = () => { S.set[k] = el.type === "checkbox" ? el.checked : (k === "apiKey" ? el.value.trim() : el.value); if(k === "botName" && !S.set[k].trim()) S.set[k] = DEF_SET.botName; saveSettings(); if(k === "refresh") startLive(); render(); };
     el.addEventListener(el.tagName === "INPUT" && el.type !== "checkbox" ? "change" : "change", save);
   });
+  $("#relBtn").onclick = () => openWhatsNew(true);
+  $("#notBtn").onclick = openNotifs; $("#bkBtn").onclick = openBackup;
   $("#rlPl").onclick = async () => { closeSheet(); try{ await loadPlayers(true); render(); toast("Player list updated"); }catch(e){ fail(e); } };
   $("#clrC").onclick = () => { Object.keys(localStorage).filter(k => /^gd_(proj|season|hist|ai)_/.test(k)).forEach(k => store.del(k)); closeSheet(); toast("Cache cleared. Refreshing…"); loadLeague().then(render); };
   $("#logout").onclick = () => { store.del("gd_user"); store.del("gd_league"); closeSheet(); clearInterval(S.timer); setup(); };
@@ -1527,8 +1814,8 @@ function fail(e){
 }
 function setup(){
   $("#bar").style.display = "none"; $("#nav").style.display = "none"; $("#fab").style.display = "none";
-  $("#app").innerHTML = `<form class="setup" id="sf"><div class="logo">${BOT_SVG}</div><h1>Gameday</h1>
-    <div class="c2" style="font-size:17px">Your Sleeper leagues with live scores, lineup alerts, waivers, and news, all in one place. Enter your Sleeper username to start. No password needed.</div>
+  $("#app").innerHTML = `<form class="setup" id="sf"><div style="width:76px;height:76px">${abot("")}</div><h1>Audible</h1>
+    <div class="c2" style="font-size:17px">Your Sleeper leagues with live scores, lineup alerts, waivers, news, and your own AI coach, all in one place. Enter your Sleeper username to start. No password needed.</div>
     <input class="field" id="un" placeholder="Sleeper username" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username">
     <div class="err" id="err"></div><button class="btn" type="submit">Continue</button></form>`;
   $("#sf").onsubmit = async e => {
@@ -1537,7 +1824,8 @@ function setup(){
     try{
       const u = await api(`/user/${encodeURIComponent(n)}`);
       if(!u || !u.user_id){ $("#err").textContent = "Couldn't find that username on Sleeper."; return; }
-      store.set("gd_user", {user_id:u.user_id, display_name:u.display_name, avatar:u.avatar}); boot();
+      store.set("gd_user", {user_id:u.user_id, username:n, display_name:u.display_name, avatar:u.avatar});
+      if(await tryRestore(n)) restoreScreen(n, boot); else boot();
     }catch(err){ $("#err").textContent = "Couldn't reach Sleeper. Check your connection."; }
   };
 }
@@ -1562,6 +1850,10 @@ async function boot(){
     await loadLeague();
     $("#bar").style.display = ""; $("#nav").style.display = ""; $("#fab").style.display = "";
     render(true); startLive();
+    if(location.hash && route(location.hash)) history.replaceState(null, "", location.pathname + location.search);
+    syncWatcher(false);
+    const seen = store.get("gd_seen_ver");
+    if(seen !== VERSION){ if(seen || store.get("gd_settings")) setTimeout(() => openWhatsNew(false), 700); else store.set("gd_seen_ver", VERSION); }
   }catch(e){ fail(e); }
 }
 boot();
