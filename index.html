@@ -1246,7 +1246,7 @@ function abPop(){ if(!S.set.celebrate) return; document.querySelectorAll(".abot 
 })();
 
 /* =============== notifications + backup (Cloudflare watcher) =============== */
-const WORKER_URL = "";
+const WORKER_URL = "https://audible.evan-aulick.workers.dev";
 const worker = () => (S.set.worker || WORKER_URL || "").replace(/\/+$/, "");
 const NDEF = {lineup:true, night:true, lead:true, close:true, final:true, waivers:true, trades:true, brief:true, badge:false, qs:22, qe:8};
 const nprefs = () => ({...NDEF, ...(S.set.nprefs || {})});
