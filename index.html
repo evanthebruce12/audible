@@ -383,6 +383,45 @@ nav button:active{transform:scale(.9)}
 .relv{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 6px}
 .relt{font-size:22px;letter-spacing:-.02em;margin:4px 2px 12px}
 .bigpts{font-size:46px;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+/* ===== 1.3.2 native feel ===== */
+:root{--ios:cubic-bezier(.32,.72,0,1);--spring:cubic-bezier(.34,1.4,.64,1)}
+@supports (transition-timing-function:linear(0,1)){:root{--spring:linear(0,.009,.035 2.1%,.141 4.4%,.723 12.9%,.938 16.7%,1.017 19.4%,1.067,1.099 24.3%,1.108 26%,1.1,1.084 30.6%,1.019 39.4%,.996 44.9%,.988 50%,1 63.2%,1.001 79.2%,1)}}
+/* top bar: frosts in gradually as you scroll */
+.bar,.bar.solid{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important}
+.bar::before{content:"";position:absolute;inset:0;background:var(--bar);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);box-shadow:0 .5px 0 var(--sep);opacity:var(--bo,0);pointer-events:none}
+.bar .wrap{position:relative;z-index:1}
+.bar .mini{transition:none}
+nav{backdrop-filter:saturate(190%) blur(28px);-webkit-backdrop-filter:saturate(190%) blur(28px)}
+.toast{background:var(--bar);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);box-shadow:0 12px 34px rgba(0,0,0,.28),0 0 0 .5px var(--sep);animation:tin .55s var(--spring),tout .4s ease 3.7s forwards}
+/* large title collapses into the bar */
+.lt{transform-origin:left bottom;will-change:transform,opacity}
+/* springy presses */
+button,.cell,.game,.bug,a.news,.chip{transition:transform .5s var(--spring),background-color .2s,opacity .15s}
+button:active,.chip:active,.game:active,.bug:active{transform:scale(.96);transition-duration:.1s}
+.circ:active{transform:scale(.88)}
+.btn:active{transform:scale(.97);opacity:.85}
+nav button:active{transform:scale(.88)}
+nav button.on svg{animation:tabpop .55s var(--spring)}
+@keyframes tabpop{0%{transform:scale(.72)}100%{transform:none}}
+.enter{animation:enter .45s var(--ios)}
+@keyframes enter{from{opacity:0;transform:translateY(12px) scale(.992)}}
+/* sliding segmented control */
+.seg{position:relative}
+.seg .pill{position:absolute;top:2px;bottom:2px;left:0;border-radius:7px;background:var(--bg4);box-shadow:0 3px 8px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.04);transition:transform .5s var(--spring),width .3s var(--ios)}
+html[data-theme=light] .seg .pill{background:#fff}
+.seg button{position:relative;z-index:1}
+.seg button.on,html[data-theme=light] .seg button.on{background:none;box-shadow:none}
+.seg button:active{transform:scale(.94)}
+/* sheets & chat: iOS curve */
+.sheet{transition:transform .5s var(--ios);will-change:transform}
+.sheet .sh{transition:box-shadow .2s}
+.sheet.scrolled .sh{box-shadow:0 .5px 0 var(--sep)}
+.scrim{transition:opacity .4s var(--ios)}
+.scrim.dragging{transition:none}
+.chat{transition:transform .5s var(--ios)}
+.chat:not(.on){transition:transform .5s var(--ios),visibility 0s .5s}
+.fab{transition:transform .5s var(--spring),opacity .25s ease}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
@@ -431,8 +470,16 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.3.1";
+const VERSION = "1.3.2";
 const RELEASES = [
+  {v:"1.3.2", date:"Nov 13, 2026", title:"Feels more like iPhone", items:[
+    ["Titles that tuck away","Big page titles shrink into the top bar as you scroll, and stretch a little when you pull down."],
+    ["Swipeable cards","Player and game cards follow your finger. Pull down to half height, flick to close, or push back up to full."],
+    ["Frosted glass","The top bar frosts in as you scroll, with glassier tabs and score pop-ups."],
+    ["Springy motion","Buttons press and bounce back, tab icons pop, and toggles like Standings / Scores / Activity slide between options."],
+    ["Haptic taps","A light tap when you switch tabs, toggle options, refresh, or swipe a card closed."],
+    ["No more blank replies","Audible has more room to think, so bigger questions get a full answer instead of \"No answer came back.\""],
+    ["Backup plan","If a reply still comes back empty, Audible quietly asks again, and tells you why if it can't answer."]]},
   {v:"1.3.1", date:"Nov 13, 2026", title:"Cleaner buttons", items:[
     ["Refresh and Settings buttons","Bigger, with a solid background and crisp white icons so they're easier to see and tap."],
     ["Audible button tucks away","It slides out of the way while you scroll down so it never covers scores, and comes back when you scroll up."]]},
@@ -918,10 +965,13 @@ async function sendChat(text){
   $("#chText").value = ""; autosize(); renderChat();
   const msgs = S.chat.filter(m => !m.err).slice(-12).map(m => ({role:m.role, content:m.content}));
   const out = {role:"assistant", content:"", streaming:true};
+  const req = {model:S.set.model || DEF_SET.model, max_tokens:4096, system:sysPrompt(), messages:msgs};
+  const hdrs = {"content-type":"application/json", "x-api-key":S.set.apiKey.trim(), "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true"};
+  let stopReason = "";
   try{
     const r = await fetch("https://api.anthropic.com/v1/messages", {method:"POST",
-      headers:{"content-type":"application/json", "x-api-key":S.set.apiKey.trim(), "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true"},
-      body:JSON.stringify({model:S.set.model || DEF_SET.model, max_tokens:1024, stream:true, system:sysPrompt(), messages:msgs})});
+      headers:hdrs,
+      body:JSON.stringify(Object.assign({}, req, {stream:true}))});
     if(!r.ok){ let m = "Error " + r.status; try{ const d = await r.json(); m = (d.error && d.error.message) || m; }catch(e){} throw new Error(friendlyErr(r.status, m)); }
     S.chat.push(out); renderChat();
     const bubble = [...$("#chLog").querySelectorAll(".msg.a")].pop();
@@ -934,7 +984,8 @@ async function sendChat(text){
           const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
           if(!line.startsWith("data:")) continue;
           let ev; try{ ev = JSON.parse(line.slice(5)); }catch(e){ continue; }
-          if(ev.type === "content_block_delta" && ev.delta && ev.delta.text){ if(abHold){ abHold = null; abApply(abBase(), true); } out.content += ev.delta.text; bubble.innerHTML = md(out.content); const lg = $("#chLog"); lg.scrollTop = lg.scrollHeight; }
+          if(ev.type === "message_delta" && ev.delta && ev.delta.stop_reason) stopReason = ev.delta.stop_reason;
+          else if(ev.type === "content_block_delta" && ev.delta && ev.delta.type === "text_delta" && ev.delta.text){ if(abHold){ abHold = null; abApply(abBase(), true); } out.content += ev.delta.text; bubble.innerHTML = md(out.content); const lg = $("#chLog"); lg.scrollTop = lg.scrollHeight; }
           else if(ev.type === "error") throw new Error(friendlyErr(0, (ev.error && ev.error.message) || "Something went wrong."));
         }
       }
@@ -942,7 +993,16 @@ async function sendChat(text){
       const t = await r.text();
       t.split("\n").forEach(line => { if(line.startsWith("data:")){ try{ const ev = JSON.parse(line.slice(5)); if(ev.delta && ev.delta.text) out.content += ev.delta.text; }catch(e){} } });
     }
-    if(!out.content) out.content = "No answer came back. Try asking again.";
+    if(!out.content.trim()){
+      // Backup plan: ask again without streaming and pull out the text
+      const r2 = await fetch("https://api.anthropic.com/v1/messages", {method:"POST", headers:hdrs, body:JSON.stringify(req)});
+      if(r2.ok){ const d = await r2.json(); stopReason = d.stop_reason || stopReason;
+        out.content = (d.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim(); }
+    }
+    if(!out.content.trim()){
+      const i = S.chat.indexOf(out); if(i >= 0) S.chat.splice(i, 1);
+      throw new Error(stopReason === "max_tokens" ? "Audible ran out of room thinking before he could answer. Try a shorter question." : stopReason === "refusal" ? "Audible couldn't answer that one. Try rewording it." : "Audible didn't send an answer (" + (stopReason || "no reason given") + "). Try again, or switch the model in Settings.");
+    }
   }catch(e){
     const i = S.chat.indexOf(out); if(i >= 0 && !out.content) S.chat.splice(i, 1);
     S.chat.push({role:"assistant", err:true, content: e instanceof TypeError ? "Couldn't connect to Claude. Check your internet and try again." : (e.message || "Something went wrong.")});
@@ -1414,7 +1474,7 @@ function render(anim){
   else window.scrollTo(0, y);
   bind();
   const fb = $("#fab"); if(fb && !fb.firstChild) fb.innerHTML = abot("");
-  abRefresh();
+  abRefresh(); segPills(); titleFx(scrollY);
 }
 function head(title, sub){ return `<h1 class="lt">${title}</h1><div class="sub">${sub || ""}</div>`; }
 function liveSub(){
@@ -1637,9 +1697,10 @@ function txCell(t){
 /* =============== sheets =============== */
 function openSheet(title, body){
   $("#shTitle").textContent = title; $("#shBody").innerHTML = body; $("#shBody").scrollTop = 0;
+  sheetReset(); $("#sheet").classList.remove("scrolled");
   $("#scrim").classList.add("on"); $("#sheet").classList.add("on"); bindSheet();
 }
-function closeSheet(){ $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on"); S.sheetPid = null; S.sheetGid = null; }
+function closeSheet(){ sheetReset(); $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on"); S.sheetPid = null; S.sheetGid = null; }
 $("#scrim").onclick = closeSheet; $("#shDone").onclick = closeSheet;
 
 const SG = {
@@ -1784,7 +1845,7 @@ function bind(){
 }
 function bindPlayers(root){ root.querySelectorAll("[data-p]").forEach(el => el.onclick = e => { e.stopPropagation(); openPlayer(el.dataset.p); }); }
 function bindSheet(){
-  bindPlayers($("#shBody"));
+  bindPlayers($("#shBody")); segPills($("#shBody"));
   $$("#shBody [data-ask]").forEach(b => b.onclick = () => { const p = P(b.dataset.ask); closeSheet(); openChat(`Tell me about ${p.name} (${p.pos}, ${p.team || "FA"}). How's he doing, and should I start, sit, add, or trade for him?`); });
 }
 function go(tab, seg){
@@ -1806,18 +1867,87 @@ $("#setBtn").onclick = openSettings;
 let lastY = 0;
 addEventListener("scroll", () => {
   const y = scrollY, fab = $("#fab");
-  $("#bar").classList.toggle("solid", y > 40);
+  $("#bar").classList.toggle("solid", y > 40); titleFx(y);
   if(y < 60 || y < lastY - 6) fab.classList.remove("hide");
   else if(y > lastY + 6) fab.classList.add("hide");
   if(Math.abs(y - lastY) > 6) lastY = y;
 }, {passive:true});
 document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && S.league) refresh(false); });
-/* drag sheet down to dismiss */
+/* ===== 1.3.2 native feel ===== */
+/* haptic tap: vibrate where supported, iOS switch-click trick on iPhone */
+const haptic = (() => { let l = null; return () => { try{
+  if(navigator.vibrate){ navigator.vibrate(8); return; }
+  if(!l){ l = document.createElement("label"); l.setAttribute("aria-hidden", "true"); l.style.cssText = "position:fixed;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none";
+    const i = document.createElement("input"); i.type = "checkbox"; i.setAttribute("switch", ""); i.tabIndex = -1; l.appendChild(i); document.body.appendChild(l); }
+  l.click();
+}catch(e){} }; })();
+document.addEventListener("click", e => { if(e.target.closest("nav button, .seg button, .chip, #refreshBtn, #chSend, #fab")) haptic(); }, true);
+document.addEventListener("touchstart", () => {}, {passive:true}); // lets :active press states fire on iOS
+
+/* large title shrinks and fades into the bar; stretches on overscroll */
+function titleFx(y){
+  const bar = $("#bar"); if(bar) bar.style.setProperty("--bo", Math.min(1, Math.max(0, (y - 8) / 36)).toFixed(3));
+  const mini = $("#miniTitle"); if(mini) mini.style.opacity = Math.min(1, Math.max(0, (y - 28) / 22)).toFixed(3);
+  const lt = $("#app .lt"); if(!lt) return;
+  if(y < 0){ lt.style.transform = `scale(${Math.min(1.1, 1 + (-y) / 650).toFixed(3)})`; lt.style.opacity = 1; }
+  else { const p = Math.min(1, y / 46); lt.style.transform = `translateY(${(p * 8).toFixed(1)}px) scale(${(1 - p * .08).toFixed(3)})`; lt.style.opacity = (1 - p).toFixed(3); }
+}
+
+/* segmented controls: a pill that slides between options */
+const segMem = {};
+function segPills(root){
+  const scope = root || $("#app"), pre = root ? "sh" : S.tab;
+  scope.querySelectorAll(".seg").forEach((sg, i) => {
+    const on = sg.querySelector("button.on"); if(!on) return;
+    let pl = sg.querySelector(".pill"); if(!pl){ pl = document.createElement("i"); pl.className = "pill"; sg.prepend(pl); }
+    const k = pre + i, x = on.offsetLeft, w = on.offsetWidth, prev = segMem[k];
+    pl.style.transition = "none"; pl.style.width = w + "px"; pl.style.transform = `translateX(${prev != null ? prev : x}px)`;
+    void pl.offsetWidth; pl.style.transition = ""; pl.style.transform = `translateX(${x}px)`; segMem[k] = x;
+  });
+}
+document.addEventListener("click", e => { const b = e.target.closest("#shBody .seg button"); if(b) setTimeout(() => segPills($("#shBody")), 0); });
+
+/* sheets: drag with the finger, rubber-band, snap to full / half / closed by flick speed */
+let sheetBase = 0;
+function sheetReset(){ sheetBase = 0; const sh = $("#sheet"); sh.classList.remove("drag"); sh.style.transform = ""; const sc = $("#scrim"); sc.classList.remove("dragging"); sc.style.opacity = ""; }
 (function(){
-  const sh = $("#sheet"), body = $("#shBody"); let y0 = null, dy = 0;
-  sh.addEventListener("touchstart", e => { if(e.target.closest(".sh") || body.scrollTop <= 0){ y0 = e.touches[0].clientY; dy = 0; } }, {passive:true});
-  sh.addEventListener("touchmove", e => { if(y0 == null) return; dy = e.touches[0].clientY - y0; if(dy > 0){ sh.classList.add("drag"); sh.style.transform = `translateY(${dy}px)`; } else if(dy < -6){ y0 = null; sh.classList.remove("drag"); sh.style.transform = ""; } }, {passive:true});
-  sh.addEventListener("touchend", () => { if(y0 == null) return; sh.classList.remove("drag"); sh.style.transform = ""; if(dy > 110) closeSheet(); y0 = null; });
+  const sh = $("#sheet"), body = $("#shBody"), scrim = $("#scrim");
+  let y0 = null, off = 0, mode = null, onHdr = false, H = 0, trail = [];
+  const half = () => { const m = H - innerHeight * .55; return m > 90 ? m : null; };
+  const place = (y, live) => {
+    sh.classList.toggle("drag", live); scrim.classList.toggle("dragging", live);
+    sh.style.transform = y ? `translateY(${y}px)` : "";
+    scrim.style.opacity = Math.max(0, Math.min(1, 1 - y / H)).toFixed(3);
+  };
+  body.addEventListener("scroll", () => sh.classList.toggle("scrolled", body.scrollTop > 2), {passive:true});
+  sh.addEventListener("touchstart", e => {
+    const t = e.touches[0]; y0 = t.clientY; mode = null; H = sh.offsetHeight; off = sheetBase;
+    onHdr = !!e.target.closest(".sh") || e.target === sh; trail = [[t.clientY, e.timeStamp]];
+  }, {passive:true});
+  sh.addEventListener("touchmove", e => {
+    if(y0 == null) return; const t = e.touches[0], dy = t.clientY - y0;
+    if(!mode){
+      if(Math.abs(dy) < 5) return;
+      mode = (onHdr || (body.scrollTop <= 0 && dy > 0) || (sheetBase > 0 && dy < 0 && body.scrollTop <= 0)) ? "drag" : "scroll";
+    }
+    if(mode !== "drag") return;
+    e.preventDefault();
+    let y = sheetBase + dy; if(y < 0) y = -Math.sqrt(-y) * 2.4;
+    off = y; place(y, true);
+    trail.push([t.clientY, e.timeStamp]); if(trail.length > 5) trail.shift();
+  }, {passive:false});
+  const end = () => {
+    if(y0 == null) return; y0 = null; if(mode !== "drag") return;
+    const a = trail[0], b = trail[trail.length - 1], dt = b[1] - a[1];
+    const v = dt > 0 ? (b[0] - a[0]) / dt : 0, proj = off + v * 200;
+    const pts = [0], m = half(); if(m != null) pts.push(m); pts.push(H);
+    const tgt = pts.reduce((p, c) => Math.abs(c - proj) < Math.abs(p - proj) ? c : p);
+    sh.classList.remove("drag"); scrim.classList.remove("dragging");
+    if(tgt === H){ haptic(); closeSheet(); return; }
+    if(tgt !== sheetBase) haptic();
+    sheetBase = tgt; place(tgt, false);
+  };
+  sh.addEventListener("touchend", end); sh.addEventListener("touchcancel", end);
 })();
 
 /* =============== boot =============== */
