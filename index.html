@@ -161,7 +161,8 @@ html[data-theme=light] .seg button.on{background:#fff}
 
 /* audible */
 .bot{background:linear-gradient(160deg,rgba(10,132,255,.22),rgba(191,90,242,.14) 60%,transparent),var(--bg2);border-radius:18px;padding:14px 14px 6px;margin-top:14px}
-.bot .hd{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.bot .hd{display:flex;align-items:center;gap:10px;margin-bottom:6px;padding:0}
+.bot .hd .chev{margin-left:4px}
 .boticon{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--blue),var(--purple));display:grid;place-items:center;flex:none}
 .boticon svg{width:20px;height:20px;fill:#fff}
 .bot .hd b{display:block;font-size:16px}
@@ -173,6 +174,7 @@ html[data-theme=light] .seg button.on{background:#fff}
 .ins .tx{flex:1;font-size:15px;line-height:1.36}
 .ins .tx b{font-weight:600}
 .aibox{font-size:15px;line-height:1.45;white-space:pre-wrap;padding:6px 0 10px}
+.aibtn svg{width:17px;height:17px;fill:currentColor}
 .aibtn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px;margin:4px 0 8px;border-radius:12px;background:var(--fill);font-weight:600;font-size:15px;color:var(--blue)}
 
 /* buttons */
@@ -187,6 +189,7 @@ html[data-theme=light] .seg button.on{background:#fff}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:600px;margin:0 auto;background:var(--bg);border-radius:14px 14px 0 0;max-height:calc(100vh - var(--sat) - 30px);display:flex;flex-direction:column;transform:translateY(102%);transition:transform .32s cubic-bezier(.2,.9,.3,1)}
 html[data-theme=light] .sheet{background:var(--bg)}
 .sheet.on{transform:none}
+.sheet::before{content:"";display:block;width:36px;height:5px;border-radius:3px;background:var(--bg4);margin:7px auto 0;flex:none}
 .sheet .sh{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px;flex:none}
 .sheet .sh b{font-size:17px}
 .sheet .sh button{color:var(--blue);font-weight:600;font-size:17px}
@@ -244,7 +247,98 @@ html[data-theme=light] .sheet{background:var(--bg)}
 .loading{padding:90px 0;text-align:center;color:var(--label2)}
 .spin{width:24px;height:24px;border:2.5px solid var(--bg4);border-top-color:var(--label2);border-radius:50%;margin:0 auto 12px;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-.reduce *{animation:none!important;transition:none!important}
+.reduce .toast,.reduce .pop,.reduce .flash{animation:none!important}
+
+/* ===== app feel ===== */
+html{touch-action:manipulation}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+.aibox,.msg{-webkit-user-select:text;user-select:text}
+button,.cell,.game,.bug,a.news,.chip{transition:transform .18s cubic-bezier(.2,.9,.3,1),background-color .15s,opacity .15s}
+button:active,.chip:active,.game:active,.bug:active{transform:scale(.97)}
+.cell:active,a.news:active,.trow:active{background:var(--bg3)}
+nav button:active{transform:scale(.9)}
+.enter{animation:enter .32s cubic-bezier(.2,.9,.3,1)}
+@keyframes enter{from{opacity:0;transform:translateY(10px)}}
+.sheet.drag,.chat.drag{transition:none}
+.skel{background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:shim 1.2s infinite;border-radius:14px;height:64px;margin-top:10px}
+@keyframes shim{to{background-position:-200% 0}}
+
+/* fab */
+.fab{position:fixed;right:16px;bottom:calc(66px + var(--sab));z-index:29;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));box-shadow:0 8px 24px rgba(10,132,255,.4);display:grid;place-items:center}
+.fab svg{width:26px;height:26px;fill:#fff}
+@media(min-width:640px){.fab{right:calc(50% - 284px)}}
+
+/* chat */
+.chat{position:fixed;inset:0;z-index:55;background:var(--bg);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .38s cubic-bezier(.2,.9,.3,1);padding-top:var(--sat)}
+.chat:not(.on){visibility:hidden;transition:transform .38s cubic-bezier(.2,.9,.3,1),visibility 0s .38s}
+.chat.on{transform:none}
+.chd{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:.5px solid var(--sep);max-width:600px;width:100%;margin:0 auto}
+.chbtn{color:var(--blue);font-size:17px;min-width:56px}
+#chClear{text-align:right}
+.chtitle{display:flex;align-items:center;gap:8px;font-size:17px}
+.boticon.sm2{width:28px;height:28px;border-radius:8px}
+.boticon.sm2 svg{width:16px;height:16px}
+.chlog{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 10px;max-width:600px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:86%;padding:10px 14px;border-radius:20px;font-size:16px;line-height:1.4;word-wrap:break-word;animation:enter .25s ease}
+.msg.u{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:6px}
+.msg.a{align-self:flex-start;background:var(--bg2);border-bottom-left-radius:6px}
+.msg.e{align-self:flex-start;background:var(--red-t);color:var(--red);font-size:14px}
+.msg p{margin:0 0 8px}.msg p:last-child{margin:0}
+.msg ul{margin:4px 0 8px;padding-left:18px}.msg li{margin:2px 0}
+.typing{display:inline-flex;gap:4px;padding:4px 0}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--label3);animation:bob 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bob{50%{transform:translateY(-4px);opacity:.5}}
+.sugg{display:flex;flex-direction:column;gap:8px;margin-top:auto}
+.sugg button{background:var(--bg2);border-radius:14px;padding:12px 14px;text-align:left;font-size:15px}
+.chintro{text-align:center;padding:30px 10px 10px;color:var(--label2)}
+.chintro .boticon{width:60px;height:60px;border-radius:18px;margin:0 auto 12px}
+.chintro .boticon svg{width:32px;height:32px}
+.chintro b{display:block;color:var(--label);font-size:20px;margin-bottom:4px}
+.chin{display:flex;align-items:flex-end;gap:8px;padding:8px 12px calc(8px + var(--sab));border-top:.5px solid var(--sep);max-width:600px;width:100%;margin:0 auto;background:var(--bg)}
+.chin textarea{flex:1;resize:none;background:var(--bg2);border:0;border-radius:20px;padding:9px 14px;font:inherit;font-size:16px;color:var(--label);outline:none;max-height:120px;line-height:1.35}
+.chin button{width:36px;height:36px;border-radius:50%;background:var(--blue);display:grid;place-items:center;flex:none}
+.chin button:disabled{background:var(--bg4)}
+.chin button svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.keybox{background:var(--bg2);border-radius:14px;padding:14px;margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.keybox input{background:var(--bg3);border:0;border-radius:10px;padding:12px;font-size:16px;outline:none}
+
+/* team */
+.trow{display:flex;align-items:center;gap:10px;padding:10px 14px;position:relative;width:100%;text-align:left}
+.trow+.trow::before{content:"";position:absolute;top:0;right:0;left:56px;height:.5px;background:var(--sep)}
+.trow .slot{width:38px;flex:none}
+.trow .hs{width:40px;height:40px}
+.trow.bad{box-shadow:inset 3px 0 0 var(--red)}
+.trow.warn{box-shadow:inset 3px 0 0 var(--orange)}
+.trow .i{flex:1;min-width:0}
+.trow .r{text-align:right;flex:none;min-width:44px}
+.trow .r b{display:block;font-size:17px;font-variant-numeric:tabular-nums}
+.trow .r small{font-size:11px;color:var(--label3);font-variant-numeric:tabular-nums}
+.live-g{color:var(--green)!important;font-weight:600}
+.summ{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);border-radius:14px;margin-top:12px}
+.summ div{padding:11px 4px;text-align:center}
+.summ div+div{box-shadow:-.5px 0 0 var(--sep)}
+.summ b{display:block;font-size:19px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.summ span{font-size:11px;color:var(--label2)}
+
+/* player game box + stat lines */
+.gbox{background:var(--bg2);border-radius:14px;padding:14px;margin-top:14px}
+.gbox .gt{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;text-align:center}
+.gbox img{width:34px;height:34px;object-fit:contain}
+.gbox .ab{font-weight:700;font-size:15px}
+.gbox .gs2{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.gbox .gsd{font-size:13px;color:var(--label2);margin-top:2px}
+.gbox .gsd.live{color:var(--red);font-weight:600}
+.sgrp{background:var(--bg2);border-radius:14px;padding:12px 14px;margin-top:10px}
+.sgrp h5{margin:0 0 8px;font-size:13px;color:var(--label2);font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.sline{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;text-align:center}
+.sline b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.sline span{font-size:11px;color:var(--label2)}
+.brk{display:flex;justify-content:space-between;padding:7px 0;font-size:15px;border-top:.5px solid var(--sep)}
+.brk:first-of-type{border-top:0}
+.brk b{font-variant-numeric:tabular-nums}
+.bigpts{font-size:46px;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -261,10 +355,16 @@ html[data-theme=light] .sheet{background:var(--bg)}
 <nav id="nav" style="display:none"><div class="wrap">
   <button data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Today<span class="badge" id="b_home" style="display:none"></span></button>
   <button data-tab="matchup"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M12 5v14M3 12h3M18 12h3"/></svg>Matchup</button>
+  <button data-tab="team"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>My Team<span class="badge" id="b_team" style="display:none"></span></button>
   <button data-tab="players"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.8.8 2.8 2.6 3 5.2"/></svg>Players</button>
   <button data-tab="league"><svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5.5h3V7a3 3 0 0 1-3 3M7 5.5H4V7a3 3 0 0 0 3 3M12 14v4M8 21h8"/></svg>League</button>
-  <button data-tab="news"><svg viewBox="0 0 24 24"><path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v8a2 2 0 0 1-2 2"/><path d="M7.5 9h6M7.5 12.5h6M7.5 16h4"/></svg>News</button>
 </div></nav>
+<button class="fab" id="fab" style="display:none" aria-label="Ask Audible"><svg viewBox="0 0 24 24"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 15l.9 2.6 2.6.9-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9z"/></svg></button>
+<div class="chat" id="chat">
+  <div class="chd"><button id="chClose" class="chbtn">Done</button><div class="chtitle"><div class="boticon sm2"><svg viewBox="0 0 24 24"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 15l.9 2.6 2.6.9-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9z"/></svg></div><b id="chName">Audible</b></div><button id="chClear" class="chbtn">Clear</button></div>
+  <div class="chlog" id="chLog"></div>
+  <form class="chin" id="chForm"><textarea id="chText" rows="1" placeholder="Ask about your team…"></textarea><button type="submit" id="chSend" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>
+</div>
 
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet"><div class="sh"><span></span><b id="shTitle"></b><button id="shDone">Done</button></div><div class="sb" id="shBody"></div></div>
@@ -284,7 +384,7 @@ const S = {
   rosters:[], users:[], matchups:[], players:{}, hist:{}, proj:{}, season:{}, games:null, news:null,
   tx:null, trendAdd:null, trendDrop:null,
   myRid:null, tab:"home", seg:{players:"trending", league:"standings", news:"mine"}, pos:"ALL", q:"",
-  timer:null, updated:null, ai:null, aiBusy:false, set:{...DEF_SET}
+  timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, set:{...DEF_SET}
 };
 
 /* =============== utils =============== */
@@ -496,7 +596,7 @@ async function loadLeague(){
   S.rosters = rosters || []; S.users = users || []; S.matchups = matchups || [];
   const mine = S.rosters.find(r => r.owner_id === S.user.user_id || (r.co_owners||[]).includes(S.user.user_id));
   S.myRid = mine ? mine.roster_id : null;
-  S.tx = null; S.trendAdd = null; S.trendDrop = null; S.ai = store.get(`gd_ai_${id}_${S.week}`);
+  S.tx = null; S.trendAdd = null; S.trendDrop = null;
   S.updated = new Date();
   await Promise.all([loadGames(), loadProj()]);
   // background extras
@@ -632,31 +732,141 @@ function standings(){
   return S.rosters.map(r => team(r.roster_id)).sort((a,b) => (b.w - a.w) || (b.t - a.t) || (b.pf - a.pf));
 }
 function homeBadge(){
-  const n = lineupIssues().filter(x => x.level === "bad").length;
-  const b = $("#b_home"); b.textContent = n; b.style.display = n ? "grid" : "none";
+  const n = lineupIssues().filter(x => x.level === "bad" || x.level === "warn").length;
+  const b = $("#b_team"); b.textContent = n; b.style.display = n ? "grid" : "none";
 }
 
-/* =============== AI take (optional) =============== */
-async function aiTake(){
-  if(!S.set.apiKey || S.aiBusy) return;
-  S.aiBusy = true; render();
-  const me = mOf(S.myRid), op = oppOf(me);
-  const line = m => (m ? (m.starters||[]).map((id,i) => { const p = P(id); return `${slots()[i]}: ${p.name} (${p.pos} ${p.team||"FA"}${p.inj?", "+p.inj:""}${isBye(p)?", BYE":""}) proj ${f1(proj(id))}, ppg ${f1(ppg(id))}, now ${f1((m.starters_points||[])[i])}`; }).join("\n") : "none");
-  const bench = benchOf(S.myRid).map(p => `${p.name} (${p.pos} ${p.team||"FA"}${p.inj?", "+p.inj:""}) proj ${f1(proj(p.id))}, ppg ${f1(ppg(p.id))}`).join("\n");
-  const fa = bestAvailable().slice(0,12).map(x => `${x.p.name} (${x.p.pos} ${x.p.team}${x.p.inj?", "+x.p.inj:""}) adds ${x.adds}, proj ${f1(proj(x.p.id))}`).join("\n");
-  const prompt = `You are ${S.set.botName}, a sharp, friendly fantasy football assistant inside the user's app. Week ${S.week}. League scoring: rec=${(S.league.scoring_settings||{}).rec||0} per catch.
-MY STARTERS:\n${line(me)}\nMY BENCH:\n${bench}\nOPPONENT (${op?team(op.roster_id).name:"bye"}) STARTERS:\n${line(op)}\nTOP AVAILABLE FREE AGENTS:\n${fa}\nSTANDINGS: ${standings().map((t,i)=>`${i+1}. ${t.name} ${rec(t)}`).join("; ")}
-Write a short weekly briefing in plain text (no markdown headers, no bullet symbols other than "- "). Cover: 1) any lineup moves to make now and why, 2) the matchup outlook, 3) one or two waiver adds worth a claim and who to drop, 4) one trade idea if obvious. Under 180 words. Be direct, no hype, no emojis.`;
-  try{
-    const r = await fetch("https://api.anthropic.com/v1/messages", {method:"POST", headers:{"content-type":"application/json","x-api-key":S.set.apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-      body:JSON.stringify({model:S.set.model || DEF_SET.model, max_tokens:700, messages:[{role:"user", content:prompt}]})});
-    const d = await r.json();
-    if(!r.ok) throw new Error((d.error && d.error.message) || ("Error " + r.status));
-    S.ai = {t:Date.now(), text:(d.content||[]).map(c => c.text || "").join("").trim()};
-    store.set(`gd_ai_${S.league.league_id}_${S.week}`, S.ai);
-  }catch(e){ toast(`${S.set.botName} couldn't connect: ${e.message}`); }
-  S.aiBusy = false; render();
+/* =============== week stats (live box scores) =============== */
+async function loadWeekStats(force){
+  if(!force && S.wstats && S.wsW === S.week && Date.now() - S.wsT < 45000) return;
+  try{ S.wstats = normStats(await api(`/stats/nfl/regular/${S.state.season}/${S.week}`)); S.wsT = Date.now(); S.wsW = S.week; }
+  catch(e){ S.wstats = S.wstats || {}; }
 }
+
+/* =============== Audible chat =============== */
+const chatKey = () => "gd_chat_" + (S.league ? S.league.league_id : "");
+function loadChat(){ S.chat = store.get(chatKey()) || []; }
+function saveChat(){ store.set(chatKey(), S.chat.filter(m => !m.streaming).slice(-30)); }
+function md(t){
+  const lines = esc(t).split(/\n/); let h = "", list = false;
+  for(const ln of lines){
+    const l = ln.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/^#+\s*/, "");
+    if(/^\s*([-•*]|\d+\.)\s+/.test(l)){ if(!list){ h += "<ul>"; list = true; } h += "<li>" + l.replace(/^\s*([-•*]|\d+\.)\s+/, "") + "</li>"; }
+    else { if(list){ h += "</ul>"; list = false; } if(l.trim()) h += "<p>" + l + "</p>"; }
+  }
+  return h + (list ? "</ul>" : "");
+}
+const SUGG = ["Give me my weekly briefing", "Who should I start at flex this week?", "Any waiver adds worth making?", "Is there a trade I should look at?", "How do my playoff chances look?"];
+function openChat(prefill){
+  $("#chName").textContent = S.set.botName; loadChat(); renderChat();
+  $("#chat").classList.add("on"); document.body.style.overflow = "hidden";
+  if(prefill) sendChat(prefill);
+}
+function closeChat(){ $("#chat").classList.remove("on"); document.body.style.overflow = ""; $("#chText").blur(); }
+function renderChat(){
+  const log = $("#chLog");
+  if(!S.set.apiKey){
+    $("#chForm").style.display = "none";
+    log.innerHTML = `<div class="chintro"><div class="boticon">${BOT_SVG}</div><b>${esc(S.set.botName)}</b>Add your Claude API key to chat about your team.</div>
+      <div class="keybox"><input id="keyIn" type="password" placeholder="sk-ant-…" autocomplete="off" autocapitalize="none"><button class="btn" id="keySave">Save key</button><div class="xs c2">Get one at console.anthropic.com. It's saved only on this phone.</div></div>`;
+    $("#keySave").onclick = () => { const v = $("#keyIn").value.trim(); if(!v) return; S.set.apiKey = v; saveSettings(); renderChat(); };
+    return;
+  }
+  $("#chForm").style.display = "";
+  let h = "";
+  if(!S.chat.length) h += `<div class="chintro"><div class="boticon">${BOT_SVG}</div><b>${esc(S.set.botName)}</b>Ask me anything about your lineup, matchup, waivers, or trades. I can see your whole league.</div><div class="sugg">${SUGG.map(s => `<button data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>`;
+  h += S.chat.map(m => `<div class="msg ${m.role === "user" ? "u" : m.err ? "e" : "a"}">${m.role === "user" || m.err ? esc(m.content) : (m.content ? md(m.content) : '<span class="typing"><i></i><i></i><i></i></span>')}</div>`).join("");
+  if(S.chatBusy && !(S.chat.length && S.chat[S.chat.length-1].streaming)) h += `<div class="msg a"><span class="typing"><i></i><i></i><i></i></span></div>`;
+  log.innerHTML = h;
+  log.querySelectorAll("[data-s]").forEach(b => b.onclick = () => sendChat(b.dataset.s));
+  log.scrollTop = log.scrollHeight;
+  $("#chSend").disabled = S.chatBusy;
+}
+function leagueContext(){
+  const me = mOf(S.myRid), op = oppOf(me), ss = S.league.scoring_settings || {}, own = ownerMap();
+  const pl = id => { const p = P(id); return `${p.name} (${p.pos} ${p.team || "FA"}${p.inj ? ", " + p.inj : ""}${isBye(p) ? ", BYE" : ""}) ${gameLine(p)}; proj ${f1(proj(id))}, ppg ${f1(ppg(id))}`; };
+  const starters = m => m ? (m.starters || []).map((id, i) => `${slots()[i]}: ${id && id !== "0" ? pl(id) + `, scored so far ${f1((m.starters_points || [])[i])}` : "EMPTY"}`).join("\n") : "none";
+  const r = S.rosters.find(x => x.roster_id === S.myRid) || {};
+  const fa = bestAvailable().slice(0, 12).map(x => `${pl(x.p.id)}; added in ${x.adds} leagues today`).join("\n");
+  const avail = Object.keys(S.players).filter(id => !own[id]).map(P).filter(p => p.team && !BAD.has(p.inj)).map(p => ({p, v:val(p.id)})).sort((a,b) => b.v - a.v).slice(0, 15).map(x => pl(x.p.id)).join("\n");
+  const others = S.rosters.filter(x => x.roster_id !== S.myRid).map(x => { const T = team(x.roster_id); return `${T.name} (${rec(T)}): ${(x.players || []).map(id => { const p = P(id); return `${p.name} ${p.pos}`; }).join(", ")}`; }).join("\n");
+  const tx = (S.tx || []).slice(0, 8).map(t => `${t.type}: ${Object.keys(t.adds || {}).map(id => P(id).name + " to " + team(t.adds[id]).name).join("; ")}${Object.keys(t.drops || {}).length ? " | dropped " + Object.keys(t.drops).map(id => P(id).name).join(", ") : ""}`).join("\n");
+  const oa = me && teamOutlook(me), ob = op && teamOutlook(op);
+  return `League: ${S.league.name}. Week ${S.week}, ${S.state.season} NFL season. Today is ${new Date().toDateString()}.
+Scoring: ${ss.rec || 0} pts per reception, ${ss.pass_td != null ? ss.pass_td : 4} per passing TD. Lineup slots: ${slots().join(", ")}.
+User's team: ${team(S.myRid).name} (${rec(team(S.myRid))}).
+MY STARTERS:\n${starters(me)}
+MY BENCH:\n${benchOf(S.myRid).map(p => pl(p.id)).join("\n") || "none"}${(r.reserve || []).length ? "\nMY IR:\n" + r.reserve.map(pl).join("\n") : ""}
+OPPONENT ${op ? team(op.roster_id).name : "(bye)"} STARTERS:\n${starters(op)}
+${hasProj() && oa && ob ? `Projected final: me ${f1(oa.proj)} vs them ${f1(ob.proj)}; my win probability ${pct(winProb(oa, ob))}.` : ""}
+TRENDING FREE AGENTS:\n${fa || "none"}
+BEST AVAILABLE BY VALUE:\n${avail || "none"}
+STANDINGS: ${standings().map((t, i) => `${i+1}. ${t.name} ${rec(t)} PF ${f1(t.pf)}`).join("; ")}
+OTHER ROSTERS:\n${others}
+RECENT LEAGUE TRANSACTIONS:\n${tx || "none"}`;
+}
+function sysPrompt(){
+  return `You are ${S.set.botName}, the fantasy football assistant inside the user's personal app "Gameday". You can see their Sleeper league data below, current as of right now.
+How to answer:
+- Lead with a clear recommendation, then a short reason. Talk like a sharp friend who knows football, not a robot.
+- Keep it short enough for a phone: usually under 120 words. Use "- " bullets when listing. Bold player names with **.
+- Use the data below plus general football knowledge. If something depends on news you don't have (like a late injury update), say so.
+- You can't make moves for the user. Tell them what to do in Sleeper.
+- No emojis, no hype.
+
+${leagueContext()}`;
+}
+function friendlyErr(st, m){
+  if(st === 401) return "That API key isn't working. Double-check it in Settings.";
+  if(/credit|balance/i.test(m)) return "Your Claude credit balance is out. Add credits at console.anthropic.com.";
+  if(st === 404 || /model/i.test(m)) return `That model isn't available on your key. Try the other model in Settings. (${m})`;
+  if(st === 429) return "Too many requests at once. Give it a few seconds.";
+  if(st >= 500) return "Claude is busy right now. Try again in a moment.";
+  return m;
+}
+async function sendChat(text){
+  text = (text || "").trim(); if(!text || S.chatBusy || !S.set.apiKey) return;
+  S.chat.push({role:"user", content:text}); S.chatBusy = true;
+  $("#chText").value = ""; autosize(); renderChat();
+  const msgs = S.chat.filter(m => !m.err).slice(-12).map(m => ({role:m.role, content:m.content}));
+  const out = {role:"assistant", content:"", streaming:true};
+  try{
+    const r = await fetch("https://api.anthropic.com/v1/messages", {method:"POST",
+      headers:{"content-type":"application/json", "x-api-key":S.set.apiKey.trim(), "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:S.set.model || DEF_SET.model, max_tokens:1024, stream:true, system:sysPrompt(), messages:msgs})});
+    if(!r.ok){ let m = "Error " + r.status; try{ const d = await r.json(); m = (d.error && d.error.message) || m; }catch(e){} throw new Error(friendlyErr(r.status, m)); }
+    S.chat.push(out); renderChat();
+    const bubble = [...$("#chLog").querySelectorAll(".msg.a")].pop();
+    if(r.body && r.body.getReader){
+      const reader = r.body.getReader(), dec = new TextDecoder(); let buf = "";
+      for(;;){
+        const {done, value} = await reader.read(); if(done) break;
+        buf += dec.decode(value, {stream:true}); let i;
+        while((i = buf.indexOf("\n")) >= 0){
+          const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+          if(!line.startsWith("data:")) continue;
+          let ev; try{ ev = JSON.parse(line.slice(5)); }catch(e){ continue; }
+          if(ev.type === "content_block_delta" && ev.delta && ev.delta.text){ out.content += ev.delta.text; bubble.innerHTML = md(out.content); const lg = $("#chLog"); lg.scrollTop = lg.scrollHeight; }
+          else if(ev.type === "error") throw new Error(friendlyErr(0, (ev.error && ev.error.message) || "Something went wrong."));
+        }
+      }
+    } else {
+      const t = await r.text();
+      t.split("\n").forEach(line => { if(line.startsWith("data:")){ try{ const ev = JSON.parse(line.slice(5)); if(ev.delta && ev.delta.text) out.content += ev.delta.text; }catch(e){} } });
+    }
+    if(!out.content) out.content = "No answer came back. Try asking again.";
+  }catch(e){
+    const i = S.chat.indexOf(out); if(i >= 0 && !out.content) S.chat.splice(i, 1);
+    S.chat.push({role:"assistant", err:true, content: e instanceof TypeError ? "Couldn't connect to Claude. Check your internet and try again." : (e.message || "Something went wrong.")});
+  }
+  delete out.streaming; S.chatBusy = false; saveChat(); renderChat();
+}
+function autosize(){ const t = $("#chText"); t.style.height = "auto"; t.style.height = Math.min(120, t.scrollHeight) + "px"; }
+$("#chText").addEventListener("input", autosize);
+$("#chForm").onsubmit = e => { e.preventDefault(); sendChat($("#chText").value); };
+$("#chClose").onclick = closeChat;
+$("#chClear").onclick = () => { if(S.chatBusy) return; S.chat = []; saveChat(); renderChat(); };
+$("#fab").onclick = () => openChat();
 
 /* =============== live =============== */
 function snap(){
@@ -675,6 +885,7 @@ async function refresh(manual){
     for(const id in b.pl){ const d = b.pl[id] - (a.pl[id] || 0); if(id in a.pl && d >= .1) g.push([id, d]); }
     g.sort((x,y) => y[1] - x[1]);
     render();
+    if(S.sheetPid && $("#sheet").classList.contains("on")){ await loadWeekStats(true); refreshSheet(); }
     if(S.set.celebrate) celebrate({list:g, me:[a.me, b.me], op:[a.op, b.op]});
   }catch(e){ if(manual) toast("Couldn't reach Sleeper. Try again in a sec."); }
 }
@@ -706,16 +917,17 @@ function toast(msg){
 }
 
 /* =============== render =============== */
-const TITLES = {home:"Today", matchup:"Matchup", players:"Players", league:"League", news:"News"};
-function render(){
+const TITLES = {home:"Today", matchup:"Matchup", team:"My Team", players:"Players", league:"League"};
+function render(anim){
   if(!S.league) return;
   $$("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab));
   homeBadge();
-  $("#miniTitle").textContent = TITLES[S.tab];
-  const v = {home:vHome, matchup:vMatchup, players:vPlayers, league:vLeague, news:vNews}[S.tab];
-  const y = window.scrollY;
-  $("#app").innerHTML = v();
-  window.scrollTo(0, y);
+  $("#miniTitle").textContent = TITLES[S.tab] || "";
+  const v = {home:vHome, matchup:vMatchup, team:vTeam, players:vPlayers, league:vLeague}[S.tab] || vHome;
+  const y = window.scrollY, app = $("#app");
+  app.innerHTML = v();
+  if(anim){ app.classList.remove("enter"); void app.offsetWidth; app.classList.add("enter"); window.scrollTo(0, 0); }
+  else window.scrollTo(0, y);
   bind();
 }
 function head(title, sub){ return `<h1 class="lt">${title}</h1><div class="sub">${sub || ""}</div>`; }
@@ -723,24 +935,33 @@ function liveSub(){
   const live = S.games && S.games.some(g => g.state === "in") && isCur();
   return `${live ? '<i class="livedot"></i>Live · ' : ""}${esc(S.league.name)} · Week ${S.week}`;
 }
+function tRow(p, slot, pts, lvl){
+  const s = p.empty ? "" : gState(p), pr = proj(p.id);
+  return `<button class="trow ${lvl || ""}" ${p.empty ? "" : `data-p="${esc(p.id)}"`}>${slot ? `<div class="slot">${SLBL[slot] || slot}</div>` : ""}${hs(p)}
+    <div class="i"><div class="t1 ${p.empty ? "red" : ""}">${esc(p.empty ? "Empty slot" : p.name)}${stBadge(p)}</div><div class="t2 ${s === "in" ? "live-g" : ""}">${p.empty ? "Tap Edit lineup to fill" : esc(p.pos) + " · " + esc(gameLine(p))}</div></div>
+    <div class="r">${p.empty ? "" : `<b>${s === "pre" && !pts ? "–" : f1(pts || 0)}</b>${pr != null ? `<small>proj ${f1(pr)}</small>` : ""}`}</div></button>`;
+}
 
 /* ---- Today ---- */
 function vHome(){
   const d = new Date().toLocaleDateString([], {weekday:"long", month:"long", day:"numeric"});
-  let h = head("Today", `${esc(d)}`);
+  let h = head("Today", esc(d));
   const ins = insights();
-  h += `<div class="bot"><div class="hd"><div class="boticon">${BOT_SVG}</div><div><b>${esc(S.set.botName)}</b><span>Week ${S.state.week} briefing · ${esc(S.league.name)}</span></div></div>
+  h += `<div class="bot"><button class="hd" id="botHd" style="width:100%;text-align:left"><div class="boticon">${BOT_SVG}</div><div style="flex:1;min-width:0"><b>${esc(S.set.botName)}</b><span>Week ${S.state.week} briefing · ${esc(S.league.name)}</span></div>${CHEV}</button>
     ${ins.map(i => `<button class="ins" data-go="${i.go}"><i class="dot ${i.tone}"></i><span class="tx">${i.html}</span></button>`).join("") || `<div class="empty">Nothing to flag right now.</div>`}
-    ${S.set.apiKey ? (S.ai && S.ai.text ? `<div class="aibox">${esc(S.ai.text)}</div><div class="xs c3" style="margin:-4px 0 6px">Written ${ago(S.ai.t)}</div>` : "") +
-      `<button class="aibtn" id="aiBtn">${S.aiBusy ? '<span class="spin" style="width:16px;height:16px;margin:0;border-width:2px"></span> Thinking…' : (S.ai ? "Refresh full take" : `Get ${esc(S.set.botName)}'s full take`)}</button>` : ""}
-  </div>`;
+    <button class="aibtn" id="askBtn">${BOT_SVG}Ask ${esc(S.set.botName)} anything</button></div>`;
   const me = mOf(S.myRid), op = oppOf(me);
-  if(me){ h += `<div class="sec"><h2>Your matchup</h2><button data-go="matchup">See all</button></div>` + scoreBug(me, op, true); }
+  if(me && isCur()){
+    const live = (me.starters || []).map((id, i) => ({p:P(id), pts:(me.starters_points || [])[i], slot:slots()[i]})).filter(x => !x.p.empty && gState(x.p) === "in");
+    if(live.length) h += `<div class="sec"><h2>On the field</h2><span class="sm" style="color:var(--red);font-weight:600">● Live</span></div><div class="grp">${live.map(x => tRow(x.p, x.slot, x.pts)).join("")}</div>`;
+  }
+  if(me) h += `<div class="sec"><h2>Your matchup</h2><button data-go="matchup">See all</button></div>` + scoreBug(me, op, true);
   if(S.games && S.games.length){
     const own = ownerMap(), mine = {};
-    Object.keys(own).forEach(id => { if(own[id] === S.myRid){ const t = P(id).team; if(t) mine[t] = (mine[t]||0) + 1; } });
-    const sorted = [...S.games].sort((a,b) => ({in:0,pre:1,post:2}[a.state] - {in:0,pre:1,post:2}[b.state]) || (a.date - b.date));
-    h += `<div class="sec"><h2>NFL · Week ${S.week}</h2></div><div class="rail">${sorted.map(g => gameCard(g, (mine[g.home.abbr]||0) + (mine[g.away.abbr]||0))).join("")}</div>`;
+    Object.keys(own).forEach(id => { if(own[id] === S.myRid){ const t = P(id).team; if(t) mine[t] = (mine[t] || 0) + 1; } });
+    const ord = {in:0, pre:1, post:2};
+    const sorted = [...S.games].sort((a,b) => (ord[a.state] - ord[b.state]) || (a.date - b.date));
+    h += `<div class="sec"><h2>NFL · Week ${S.week}</h2></div><div class="rail">${sorted.map(g => gameCard(g, (mine[g.home.abbr] || 0) + (mine[g.away.abbr] || 0))).join("")}</div>`;
   }
   const tx = (S.tx || []).slice(0, 4);
   if(tx.length) h += `<div class="sec"><h2>League activity</h2><button data-go="league" data-seg="activity">See all</button></div><div class="grp">${tx.map(txCell).join("")}</div>`;
@@ -764,7 +985,7 @@ function scoreBug(a, b, link){
 }
 
 /* ---- Matchup ---- */
-function mCell(id, pts, right, m){
+function mCell(id, pts, right){
   const p = P(id), pr = proj(id), s = p.empty ? "" : gState(p);
   return `<div class="mp ${right ? "r" : ""} ${s === "post" ? "done" : s === "in" ? "live" : ""}" ${p.empty ? "" : `data-p="${esc(id)}"`}>${hs(p)}<div class="i"><div class="n">${esc(shortName(p))}${stBadge(p)}</div><div class="g">${esc(p.empty ? "" : gameLine(p))}</div></div>
     <div class="pts">${p.empty ? "" : `<b>${s === "pre" && !pts ? "–" : f1(pts)}</b>${pr != null ? `<small>${f1(pr)}</small>` : ""}`}</div></div>`;
@@ -773,18 +994,17 @@ function matchupBody(a, b){
   let h = scoreBug(a, b, false);
   h += `<div class="sec"><h2>Starters</h2>${hasProj() ? '<span class="xs c3">Small number = projection</span>' : ""}</div><div class="grp">`;
   slots().forEach((slot, i) => {
-    const aid = (a.starters||[])[i], bid = b ? (b.starters||[])[i] : null;
-    h += `<div class="mrow" data-a="${esc(aid)}">${mCell(aid, (a.starters_points||[])[i], false)}<div class="slot">${SLBL[slot]||slot}</div>${b ? mCell(bid, (b.starters_points||[])[i], true) : "<div></div>"}</div>`;
+    const aid = (a.starters || [])[i], bid = b ? (b.starters || [])[i] : null;
+    h += `<div class="mrow" data-a="${esc(aid)}">${mCell(aid, (a.starters_points || [])[i], false)}<div class="slot">${SLBL[slot] || slot}</div>${b ? mCell(bid, (b.starters_points || [])[i], true) : "<div></div>"}</div>`;
   });
   h += `</div>`;
   if(S.set.showBench){
-    const ba = benchOf(a.roster_id), bb = b ? benchOf(b.roster_id) : [];
-    const n = Math.max(ba.length, bb.length);
+    const ba = benchOf(a.roster_id), bb = b ? benchOf(b.roster_id) : [], n = Math.max(ba.length, bb.length);
     if(n){
       h += `<div class="sec"><h2>Bench</h2></div><div class="grp">`;
       for(let i = 0; i < n; i++){
         const x = ba[i], y = bb[i];
-        h += `<div class="mrow">${x ? mCell(x.id, (a.players_points||{})[x.id], false) : "<div></div>"}<div class="slot">BN</div>${y ? mCell(y.id, (b.players_points||{})[y.id], true) : "<div></div>"}</div>`;
+        h += `<div class="mrow">${x ? mCell(x.id, (a.players_points || {})[x.id], false) : "<div></div>"}<div class="slot">BN</div>${y ? mCell(y.id, (b.players_points || {})[y.id], true) : "<div></div>"}</div>`;
       }
       h += `</div>`;
     }
@@ -800,11 +1020,34 @@ function vMatchup(){
   const iss = lineupIssues();
   if(iss.length){
     h += `<div class="sec"><h2>Lineup check</h2><a href="https://sleeper.com/leagues/${S.league.league_id}/team" target="_blank" rel="noopener">Edit in Sleeper</a></div><div class="grp">` +
-      iss.map(x => `<div class="cell" data-p="${esc(x.p.id)}">${hs(x.p)}<div class="main"><div class="t1">${esc(x.p.name)}${stBadge(x.p)}</div><div class="t2">${SLBL[x.slot]||x.slot} · ${esc(x.level === "tip" ? x.why : x.why)}</div>
-        ${x.subs.length ? `<div class="t2" style="color:var(--${x.level==="bad"?"red":x.level==="warn"?"orange":"blue"})">${x.level==="tip"?"Consider":"Swap in"} ${x.subs.map(s => `${esc(s.p.name)} (${f1(s.v)})`).join(", ")}</div>` : `<div class="t2 orange">No bench option. Check waivers.</div>`}</div></div>`).join("") + `</div>`;
+      iss.map(x => `<button class="cell" data-p="${esc(x.p.id)}">${hs(x.p)}<div class="main"><div class="t1">${esc(x.p.name)}${stBadge(x.p)}</div><div class="t2">${SLBL[x.slot] || x.slot} · ${esc(x.why)}</div>
+        ${x.subs.length ? `<div class="t2" style="color:var(--${x.level === "bad" ? "red" : x.level === "warn" ? "orange" : "blue"})">${x.level === "tip" ? "Consider" : "Swap in"} ${x.subs.map(s => `${esc(s.p.name)} (${f1(s.v)})`).join(", ")}</div>` : `<div class="t2 orange">No bench option. Check waivers.</div>`}</div></button>`).join("") + `</div>`;
   }
   h += matchupBody(me, oppOf(me));
-  h += `<div class="foot">${+S.set.refresh ? `Scores refresh every ${S.set.refresh} seconds while the app is open.` : "Auto-refresh is off. Tap ↻ to update."}</div>`;
+  h += `<div class="foot">${+S.set.refresh ? `Scores refresh every ${S.set.refresh} seconds while the app is open.` : "Auto-refresh is off. Tap ↻ to update."} Tap any player for live stats.</div>`;
+  return h;
+}
+
+/* ---- My Team ---- */
+const PORD = "QB RB WR TE K DEF DL LB DB";
+function vTeam(){
+  if(!S.myRid) return head("My Team", "") + `<div class="empty">Couldn't find your team in this league.</div>`;
+  const T = team(S.myRid), r = T.r || {}, m = mOf(S.myRid);
+  let h = head("My Team", `${esc(T.name)} · ${rec(T)}`);
+  const st = (m && m.starters) || r.starters || [];
+  const ptsOf = id => m ? (m.players_points || {})[id] : null;
+  const iss = {}; lineupIssues().forEach(x => { if(x.level !== "tip") iss[x.p.id] = x.level; });
+  const o = m ? teamOutlook(m) : null, ls = S.league.settings || {};
+  const faab = ls.waiver_type === 2 && ls.waiver_budget ? `<div><b>$${ls.waiver_budget - (T.faab || 0)}</b><span>FAAB left</span></div>` : `<div><b>${T.wpos != null ? "#" + T.wpos : "–"}</b><span>Waiver order</span></div>`;
+  h += `<div class="summ"><div><b>${m ? f1(m.points) : "–"}</b><span>Wk ${S.week} pts</span></div><div><b>${o && hasProj() ? f1(o.proj) : "–"}</b><span>Projected</span></div><div><b>${Math.round(T.pf)}</b><span>Season PF</span></div>${faab}</div>`;
+  const nIss = Object.keys(iss).length + st.filter(id => !id || id === "0").length;
+  h += `<div class="sec"><h2>Starters</h2>${nIss ? `<span class="sm red" style="font-weight:600">${nIss} need${nIss === 1 ? "s" : ""} attention</span>` : `<span class="sm green" style="font-weight:600">All set</span>`}</div>`;
+  h += `<div class="grp">${slots().map((slot, i) => { const id = st[i], p = P(id); return tRow(p, slot, ptsOf(id), p.empty ? "bad" : iss[id]); }).join("")}</div>`;
+  const bench = benchOf(S.myRid).sort((a,b) => PORD.indexOf(a.pos) - PORD.indexOf(b.pos) || val(b.id) - val(a.id));
+  if(bench.length) h += `<div class="sec"><h2>Bench</h2><span class="sm c2">${bench.length}</span></div><div class="grp">${bench.map(p => tRow(p, "BN", ptsOf(p.id))).join("")}</div>`;
+  if((r.reserve || []).length) h += `<div class="sec"><h2>Injured reserve</h2></div><div class="grp">${r.reserve.map(id => tRow(P(id), "IR", ptsOf(id))).join("")}</div>`;
+  if((r.taxi || []).length) h += `<div class="sec"><h2>Taxi squad</h2></div><div class="grp">${r.taxi.map(id => tRow(P(id), "TX", ptsOf(id))).join("")}</div>`;
+  h += `<div class="btns"><a class="btn" href="https://sleeper.com/leagues/${S.league.league_id}/team" target="_blank" rel="noopener">Edit lineup in Sleeper</a></div><div class="foot">Tap any player for live stats, game info, and news.</div>`;
   return h;
 }
 
@@ -812,9 +1055,13 @@ function vMatchup(){
 function vPlayers(){
   let h = head("Players", esc(S.league.name));
   const seg = S.seg.players;
-  h += `<div class="seg">${[["trending","Trending"],["available","Available"],["roster","My Team"]].map(([k,l]) => `<button data-seg="${k}" class="${seg===k?"on":""}">${l}</button>`).join("")}</div>`;
+  h += `<div class="seg">${[["trending","Trending"],["available","Available"],["news","News"]].map(([k,l]) => `<button data-seg="${k}" class="${seg === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
+  if(seg === "news"){
+    h += `<div class="chips">${[["mine","My Players"],["league","My League"],["all","All NFL"]].map(([k,l]) => `<button class="chip ${S.seg.news === k ? "on" : ""}" data-nf="${k}">${l}</button>`).join("")}</div>`;
+    return h + newsList();
+  }
   h += `<div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Search all players" value="${esc(S.q)}" autocomplete="off" autocorrect="off" spellcheck="false"></div>`;
-  h += `<div class="chips">${["ALL","QB","RB","WR","TE","K","DEF"].map(p => `<button class="chip ${S.pos===p?"on":""}" data-pos="${p}">${p}</button>`).join("")}</div>`;
+  h += `<div class="chips">${["ALL","QB","RB","WR","TE","K","DEF"].map(p => `<button class="chip ${S.pos === p ? "on" : ""}" data-pos="${p}">${p}</button>`).join("")}</div>`;
   h += `<div id="plist">${playerList()}</div>`;
   return h;
 }
@@ -824,29 +1071,36 @@ function playerList(){
   if(S.q.trim().length >= 2){
     const q = S.q.trim().toLowerCase();
     items = Object.keys(S.players).filter(id => S.players[id][0].toLowerCase().includes(q)).map(P).filter(posOk)
-      .sort((a,b) => (val(b.id)||0) - (val(a.id)||0)).slice(0,40).map(p => ({p}));
+      .sort((a,b) => (val(b.id) || 0) - (val(a.id) || 0)).slice(0, 40).map(p => ({p}));
   } else if(seg === "trending"){
-    if(!S.trendAdd) return `<div class="loading"><div class="spin"></div></div>`;
+    if(!S.trendAdd) return `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
     const need = needs();
-    items = (S.trendAdd||[]).map(t => ({p:P(t.player_id), adds:t.count})).filter(x => x.p.team && posOk(x.p));
+    items = (S.trendAdd || []).map(t => ({p:P(t.player_id), adds:t.count})).filter(x => x.p.team && posOk(x.p));
     items.forEach(x => x.fit = !own[x.p.id] && x.p.fp.some(f => need.has(f)));
     note = "Most-added across all Sleeper leagues in the last 24 hours.";
-  } else if(seg === "available"){
-    items = Object.keys(S.players).filter(id => !own[id]).map(P).filter(p => p.team && posOk(p) && !BAD.has(p.inj))
-      .map(p => ({p, v:val(p.id)})).filter(x => x.v > 0).sort((a,b) => b.v - a.v).slice(0,40);
-    note = hasProj() ? "Best free agents by this week's projection." : "Best free agents by points per game.";
   } else {
-    const r = S.rosters.find(x => x.roster_id === S.myRid);
-    items = (r ? r.players || [] : []).map(P).filter(posOk).sort((a,b) => "QB RB WR TE K DEF".indexOf(a.pos) - "QB RB WR TE K DEF".indexOf(b.pos) || val(b.id) - val(a.id)).map(p => ({p}));
+    items = Object.keys(S.players).filter(id => !own[id]).map(P).filter(p => p.team && posOk(p) && !BAD.has(p.inj))
+      .map(p => ({p, v:val(p.id)})).filter(x => x.v > 0).sort((a,b) => b.v - a.v).slice(0, 40);
+    note = hasProj() ? "Best free agents by this week's projection." : "Best free agents by points per game.";
   }
   if(!items.length) return `<div class="grp" style="margin-top:12px"><div class="empty">No players here.</div></div>`;
   return `<div class="grp" style="margin-top:12px">${items.map(x => {
     const o = own[x.p.id], ot = o ? team(o) : null, pr = proj(x.p.id), pg = ppg(x.p.id);
     const right = x.adds != null ? `<div class="t1 num" style="font-size:15px">+${x.adds.toLocaleString()}</div><div class="t2">adds</div>` :
       `<div class="t1 num" style="font-size:15px">${pr != null ? f1(pr) : f1(pg)}</div><div class="t2">${pr != null ? "proj" : "ppg"}</div>`;
-    const avail = o ? (o === S.myRid ? `<span class="tag b">Yours</span>` : `<span class="c3">${esc(owner(ot.name))}</span>`) : `<span class="tag g">Free agent</span>`;
+    const avail = o ? (o === S.myRid ? `<span class="tag b">Yours</span>` : `<span class="c3">${esc(ot.name)}</span>`) : `<span class="tag g">Free agent</span>`;
     return `<button class="cell" data-p="${esc(x.p.id)}">${hs(x.p)}<div class="main"><div class="t1">${esc(x.p.name)}${stBadge(x.p)}</div><div class="t2">${esc(x.p.pos)} · ${esc(x.p.team || "FA")} · ${avail}${x.fit ? ` <span class="tag o">Need</span>` : ""}</div></div><div class="end">${right}</div></button>`;
   }).join("")}</div>${note ? `<div class="foot">${note}</div>` : ""}`;
+}
+function newsList(){
+  if(!S.news) return `<div class="skel"></div><div class="skel"></div><div class="skel"></div>`;
+  const seg = S.seg.news, own = ownerMap();
+  const names = rids => { const n = new Set(); Object.keys(own).forEach(id => { if(!rids || rids.has(own[id])) n.add(P(id).name.toLowerCase()); }); return n; };
+  const set = seg === "mine" ? names(new Set([S.myRid])) : seg === "league" ? names(null) : null;
+  let items = S.news;
+  if(set) items = items.filter(a => a.ath.some(x => set.has(x)) || [...set].some(n => n.length > 6 && (a.h + " " + a.d).toLowerCase().includes(n)));
+  return items.length ? `<div class="grp" style="margin-top:12px">${items.slice(0, 40).map(a => `<a class="news" href="${esc(a.url)}" target="_blank" rel="noopener"><div style="flex:1;min-width:0"><h4 style="color:var(--label)">${esc(a.h)}</h4><p>${esc(a.d).slice(0, 140)}</p><p class="c3">${ago(a.t)}</p></div>${a.img ? `<div class="im"><img src="${esc(a.img)}" alt="" loading="lazy" onerror="this.parentNode.remove()"></div>` : ""}</a>`).join("")}</div>`
+    : `<div class="empty">No recent stories about ${seg === "mine" ? "your players" : "players in your league"}. Try All NFL.</div>`;
 }
 
 /* ---- League ---- */
@@ -894,49 +1148,88 @@ function txCell(t){
 }
 
 /* ---- News ---- */
-function vNews(){
-  let h = head("News", "From ESPN");
-  const seg = S.seg.news;
-  h += `<div class="seg">${[["mine","My Players"],["league","My League"],["all","All NFL"]].map(([k,l]) => `<button data-seg="${k}" class="${seg===k?"on":""}">${l}</button>`).join("")}</div>`;
-  if(!S.news) return h + `<div class="loading"><div class="spin"></div></div>`;
-  const own = ownerMap();
-  const names = rids => { const n = new Set(); Object.keys(own).forEach(id => { if(!rids || rids.has(own[id])) n.add(P(id).name.toLowerCase()); }); return n; };
-  const set = seg === "mine" ? names(new Set([S.myRid])) : seg === "league" ? names(null) : null;
-  let items = S.news;
-  if(set) items = items.filter(a => a.ath.some(x => set.has(x)) || [...set].some(n => n.length > 6 && (a.h + " " + a.d).toLowerCase().includes(n)));
-  h += items.length ? `<div class="grp" style="margin-top:12px">${items.slice(0,40).map(a => `<a class="news" href="${esc(a.url)}" target="_blank" rel="noopener"><div style="flex:1;min-width:0"><h4 style="color:var(--label)">${esc(a.h)}</h4><p>${esc(a.d).slice(0,140)}</p><p class="c3">${ago(a.t)}</p></div>${a.img ? `<div class="im"><img src="${esc(a.img)}" alt="" loading="lazy" onerror="this.parentNode.remove()"></div>` : ""}</a>`).join("")}</div>`
-    : `<div class="empty">No recent stories about ${seg === "mine" ? "your players" : "players in your league"}. Try All NFL.</div>`;
-  return h;
-}
-
 /* =============== sheets =============== */
 function openSheet(title, body){
   $("#shTitle").textContent = title; $("#shBody").innerHTML = body; $("#shBody").scrollTop = 0;
   $("#scrim").classList.add("on"); $("#sheet").classList.add("on"); bindSheet();
 }
-function closeSheet(){ $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on"); }
+function closeSheet(){ $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on"); S.sheetPid = null; }
 $("#scrim").onclick = closeSheet; $("#shDone").onclick = closeSheet;
 
-function openPlayer(id){
+const SG = {
+  pass:["Passing", [["pass_cmp","CMP"],["pass_att","ATT"],["pass_yd","YDS"],["pass_td","TD"],["pass_int","INT"]]],
+  rush:["Rushing", [["rush_att","CAR"],["rush_yd","YDS"],["rush_td","TD"],["fum_lost","FUM"]]],
+  rec:["Receiving", [["rec_tgt","TGT"],["rec","REC"],["rec_yd","YDS"],["rec_td","TD"]]],
+  kick:["Kicking", [["fgm","FG"],["fga","FGA"],["fgm_lng","LONG"],["xpm","XP"]]],
+  def:["Defense", [["sack","SACK"],["int","INT"],["fum_rec","FR"],["def_td","TD"],["pts_allow","PA"]]]
+};
+const POSG = {QB:["pass","rush"], RB:["rush","rec"], WR:["rec","rush"], TE:["rec","rush"], K:["kick"], DEF:["def"]};
+function statLines(p, ws){
+  const groups = POSG[p.pos] || ["pass","rush","rec"];
+  return groups.map((k, gi) => {
+    const [t, cols] = SG[k];
+    if(gi > 0 && !cols.some(([c]) => ws[c])) return "";
+    return `<div class="sgrp"><h5>${t}</h5><div class="sline">${cols.map(([c,l]) => `<div><b>${ws[c] != null ? Math.round(ws[c]*10)/10 : 0}</b><span>${l}</span></div>`).join("")}</div></div>`;
+  }).join("");
+}
+const SLAB = {pass_yd:"Passing yards",pass_td:"Passing TDs",pass_int:"Interceptions thrown",pass_2pt:"2-pt pass",rush_yd:"Rushing yards",rush_td:"Rushing TDs",rush_2pt:"2-pt run",rec:"Receptions",rec_yd:"Receiving yards",rec_td:"Receiving TDs",rec_2pt:"2-pt catch",fum_lost:"Fumbles lost",fum:"Fumbles",xpm:"Extra points",xpmiss:"Missed XPs",fgmiss:"Missed FGs",sack:"Sacks",int:"Interceptions",fum_rec:"Fumble recoveries",def_td:"Defensive TDs",safe:"Safeties",blk_kick:"Blocked kicks",def_st_td:"Return TDs",ff:"Forced fumbles",st_td:"Return TDs",pass_cmp:"Completions",pass_inc:"Incompletions",rush_att:"Carries",pass_att:"Pass attempts"};
+function scLabel(k){
+  if(SLAB[k]) return SLAB[k]; let m;
+  if((m = k.match(/^fgm_(\d+)_(\d+)$/))) return `FG ${m[1]}-${m[2]} yds`;
+  if((m = k.match(/^fgm_(\d+)p$/))) return `FG ${m[1]}+ yds`;
+  if((m = k.match(/^pts_allow_(\d+)_(\d+)$/))) return `Allowed ${m[1]}-${m[2]} pts`;
+  if((m = k.match(/^yds_allow_(\d+)_(\d+)$/))) return `Allowed ${m[1]}-${m[2]} yds`;
+  if(/^bonus/.test(k)) return "Bonus " + k.replace(/^bonus_/, "").replace(/_/g, " ");
+  return k.replace(/_/g, " ");
+}
+function breakdown(ws){
+  const ss = (S.league && S.league.scoring_settings) || {}, rows = [];
+  for(const k in ss){ const v = ws[k]; if(typeof v === "number" && v && ss[k]) rows.push([k, v, v * ss[k]]); }
+  rows.sort((a,b) => Math.abs(b[2]) - Math.abs(a[2]));
+  if(!rows.length) return "";
+  return `<div class="lbl">Scoring breakdown</div><div class="grp" style="padding:4px 14px">${rows.slice(0, 10).map(([k, v, c]) => `<div class="brk"><span>${esc(scLabel(k))}${/^(pts|yds)_allow_|^fgm_\d/.test(k) ? "" : ` <span class="c3 num">${/yd/.test(k) ? Math.round(v) : Math.round(v*10)/10}</span>`}</span><b class="${c < 0 ? "red" : ""}">${c > 0 ? "+" : ""}${f1(c)}</b></div>`).join("")}</div>`;
+}
+function weekPts(id){
+  for(const m of S.matchups){ const v = (m.players_points || {})[id]; if(typeof v === "number") return v; }
+  const ws = (S.wstats || {})[id]; return ws ? fpts(ws) : null;
+}
+function playerBody(id){
   const p = P(id), own = ownerMap()[id], ot = own ? team(own) : null, pr = proj(id), pg = ppg(id), s = S.season[id];
-  const g = gameFor(p.team);
+  const g = gameFor(p.team), st = gState(p), ws = S.wstats && S.wsW === S.week ? S.wstats[id] : null, wp = weekPts(id);
   let h = `<div class="phero">${hs(p, "lg")}<h3>${esc(p.name)}${stBadge(p)}</h3><div class="c2">${esc(p.pos)} · ${esc(p.team || "Free agent")}${p.num ? " · #" + esc(p.num) : ""}${p.age ? " · Age " + esc(p.age) : ""}</div>
     <div style="margin-top:8px">${own ? (own === S.myRid ? '<span class="tag b">On your team</span>' : `<span class="tag o">Rostered by ${esc(ot.name)}</span>`) : '<span class="tag g">Free agent</span>'}</div></div>`;
-  h += `<div class="stats"><div><b>${f1(pr)}</b><span>Proj wk ${S.week}</span></div><div><b>${f1(pg)}</b><span>Pts / game</span></div><div><b>${s ? f1(s[0]) : "–"}</b><span>Season pts</span></div></div>`;
-  if(p.inj) h += `<div class="lbl">Injury</div><div class="grp"><div class="cell noimg"><div class="main"><div class="t1">${esc(p.inj)}</div>${p.body ? `<div class="t2">${esc(p.body)}</div>` : ""}</div></div></div>`;
-  if(p.team){
-    h += `<div class="lbl">This week</div><div class="grp"><div class="cell noimg"><div class="main"><div class="t1">${esc(gameLine(p))}</div>${g && g.odds ? `<div class="t2">Line ${esc(g.odds)}${g.ou ? " · O/U " + esc(g.ou) : ""}</div>` : ""}</div></div></div>`;
+  if(g){
+    const side = t => `<div>${t.logo ? `<img src="${esc(t.logo)}" alt="" onerror="this.remove()">` : ""}<div class="ab">${esc(t.abbr)}</div><div class="xs c2">${esc(t.rec)}</div></div>`;
+    h += `<div class="gbox"><div class="gt">${side(g.away)}<div><div class="gs2">${g.state === "pre" ? "@" : `${g.away.score} – ${g.home.score}`}</div><div class="gsd ${g.state === "in" ? "live" : ""}">${g.state === "pre" ? `${day(g.date)} ${tm(g.date)}` : esc(g.detail)}</div></div>${side(g.home)}</div>
+      ${g.odds || g.net ? `<div class="xs c2" style="text-align:center;margin-top:10px">${[g.odds, g.ou ? "O/U " + g.ou : "", g.net].filter(Boolean).map(esc).join(" · ")}</div>` : ""}</div>`;
+  } else if(isBye(p)) h += `<div class="gbox" style="text-align:center"><b>Bye week</b><div class="sm c2">${esc(p.team)} doesn't play in week ${S.week}.</div></div>`;
+  h += `<div class="stats"><div><b class="${st === "in" ? "green" : ""}">${wp != null && (st !== "pre" || wp) ? f1(wp) : "–"}</b><span>${st === "in" ? "Live pts" : "Wk " + S.week + " pts"}</span></div><div><b>${f1(pr)}</b><span>Projected</span></div><div><b>${f1(pg)}</b><span>Pts / game</span></div></div>`;
+  if(st !== "pre" && p.team){
+    if(ws) h += `<div class="lbl">${st === "in" ? "Live stats" : "Week " + S.week + " stats"}</div>` + statLines(p, ws) + breakdown(ws);
+    else if(!S.wstats || S.wsW !== S.week) h += `<div class="skel"></div><div class="skel"></div>`;
   }
-  const wks = Object.keys(S.hist).map(Number).sort((a,b) => a-b).slice(-10);
-  const pts = wks.map(w => S.hist[w][id]);
+  if(p.inj) h += `<div class="lbl">Injury</div><div class="grp"><div class="cell noimg"><div class="main"><div class="t1">${esc(p.inj)}</div>${p.body ? `<div class="t2">${esc(p.body)}</div>` : ""}</div></div></div>`;
+  const wks = Object.keys(S.hist).map(Number).sort((a,b) => a - b).slice(-10), pts = wks.map(w => S.hist[w][id]);
   if(pts.some(v => typeof v === "number")){
     const mx = Math.max(1, ...pts.map(v => v || 0));
-    h += `<div class="lbl">Recent weeks</div><div class="grp"><div class="spark">${wks.map((w,i) => `<div><span class="num" style="color:var(--label2)">${pts[i] != null ? Math.round(pts[i]) : ""}</span><i style="height:${((pts[i]||0)/mx)*60}px;${pts[i]==null?"opacity:.15":""}"></i><span>W${w}</span></div>`).join("")}</div></div>`;
+    h += `<div class="lbl">Recent weeks${s ? ` · ${f1(s[0])} season pts` : ""}</div><div class="grp"><div class="spark">${wks.map((w, i) => `<div><span class="num" style="color:var(--label2)">${pts[i] != null ? Math.round(pts[i]) : ""}</span><i style="height:${((pts[i] || 0)/mx)*60}px;${pts[i] == null ? "opacity:.15" : ""}"></i><span>W${w}</span></div>`).join("")}</div></div>`;
   }
-  const nm = p.name.toLowerCase(), news = (S.news||[]).filter(a => a.ath.includes(nm) || (a.h + a.d).toLowerCase().includes(nm)).slice(0,5);
+  const nm = p.name.toLowerCase(), news = (S.news || []).filter(a => a.ath.includes(nm) || (a.h + a.d).toLowerCase().includes(nm)).slice(0, 5);
   if(news.length) h += `<div class="lbl">News</div><div class="grp">${news.map(a => `<a class="news" href="${esc(a.url)}" target="_blank" rel="noopener"><div style="flex:1"><h4 style="color:var(--label)">${esc(a.h)}</h4><p class="c3">${ago(a.t)}</p></div></a>`).join("")}</div>`;
-  h += `<div class="btns"><a class="btn gray" href="https://sleeper.com/leagues/${S.league.league_id}/${own === S.myRid ? "team" : "players"}" target="_blank" rel="noopener">${own === S.myRid ? "Manage in Sleeper" : own ? "Propose trade in Sleeper" : "Add in Sleeper"}</a></div>`;
-  openSheet(shortName(p), h);
+  h += `<div class="btns"><button class="btn gray" data-ask="${esc(id)}">Ask ${esc(S.set.botName)} about ${esc(p.name.split(" ").slice(-1)[0])}</button><a class="btn gray" href="https://sleeper.com/leagues/${S.league.league_id}/${own === S.myRid ? "team" : "players"}" target="_blank" rel="noopener">${own === S.myRid ? "Manage in Sleeper" : own ? "Propose trade in Sleeper" : "Add in Sleeper"}</a></div>`;
+  return h;
+}
+async function openPlayer(id){
+  S.sheetPid = id;
+  openSheet(shortName(P(id)), playerBody(id));
+  if(!S.wstats || S.wsW !== S.week || gState(P(id)) === "in"){
+    await loadWeekStats(gState(P(id)) === "in");
+    refreshSheet();
+  }
+}
+function refreshSheet(){
+  if(!S.sheetPid || !$("#sheet").classList.contains("on")) return;
+  const b = $("#shBody"), y = b.scrollTop; b.innerHTML = playerBody(S.sheetPid); b.scrollTop = y; bindSheet();
 }
 function openTeam(rid){
   const m = mOf(rid), o = oppOf(m), T = team(rid);
@@ -950,13 +1243,14 @@ function openSettings(){
   let h = `<div class="lbl">League</div><div class="grp">${row("League", `<select class="sel" id="lgSel">${S.leagues.map(l => `<option value="${l.league_id}" ${l.league_id===S.league.league_id?"selected":""}>${esc(l.name)}</option>`).join("")}</select>`)}
     ${row("Signed in as", `<span class="c2">${esc(S.user.display_name)}</span>`)}</div>`;
   h += `<div class="lbl">Display</div><div class="grp">${row("Appearance", sel("theme", [["system","System"],["dark","Dark"],["light","Light"]]))}
-    ${row("Open to", sel("startTab", [["home","Today"],["matchup","Matchup"],["players","Players"],["league","League"],["news","News"]]))}
+    ${row("Open to", sel("startTab", [["home","Today"],["matchup","Matchup"],["team","My Team"],["players","Players"],["league","League"]]))}
     ${row("Show bench in matchup", tg("showBench"))}</div>`;
   h += `<div class="lbl">Live scoring</div><div class="grp">${row("Auto-refresh", sel("refresh", [["15","Every 15 sec"],["30","Every 30 sec"],["60","Every minute"],["0","Off"]]))}
     ${row("Scoring animations", tg("celebrate"))}</div>`;
   h += `<div class="lbl">Assistant</div><div class="grp">${row("Name", `<input class="tin" data-set="botName" value="${esc(s.botName)}" maxlength="18">`)}
+    ${row("Model", sel("model", [["claude-haiku-5-5","Haiku (fast, cheapest)"],["claude-sonnet-5-5","Sonnet (smarter)"]]))}
     ${row("Claude API key", `<input class="tin" type="password" data-set="apiKey" value="${esc(s.apiKey)}" placeholder="Optional" autocomplete="off">`)}</div>
-    <div class="note">The weekly briefing works without a key. Add one (from console.anthropic.com) to unlock ${esc(s.botName)}'s full written take. It costs about a cent per briefing and the key stays on this phone.</div>`;
+    <div class="note">The weekly briefing works without a key. Add one (from console.anthropic.com) to chat with ${esc(s.botName)}. Haiku costs well under a cent per question; Sonnet is a few cents and the key stays on this phone.</div>`;
   h += `<div class="lbl">Data</div><div class="grp"><button class="cell noimg" id="rlPl"><div class="main"><div class="t1" style="font-weight:400;color:var(--blue)">Reload player list</div></div></button>
     <button class="cell noimg" id="clrC"><div class="main"><div class="t1" style="font-weight:400;color:var(--blue)">Clear cached stats</div></div></button></div>`;
   h += `<div class="btns"><button class="btn red" id="logout">Use a different Sleeper account</button></div>
@@ -965,11 +1259,11 @@ function openSettings(){
   $("#lgSel").onchange = async e => {
     S.league = S.leagues.find(l => l.league_id === e.target.value); store.set("gd_league", S.league.league_id);
     closeSheet(); S.week = S.state.week; loading("Loading " + S.league.name + "…");
-    try{ await loadLeague(); render(); }catch(err){ fail(err); }
+    try{ await loadLeague(); render(true); }catch(err){ fail(err); }
   };
   $$("#shBody [data-set]").forEach(el => {
     const k = el.dataset.set;
-    const save = () => { S.set[k] = el.type === "checkbox" ? el.checked : el.value; if(k === "botName" && !S.set[k].trim()) S.set[k] = DEF_SET.botName; saveSettings(); if(k === "refresh") startLive(); render(); };
+    const save = () => { S.set[k] = el.type === "checkbox" ? el.checked : (k === "apiKey" ? el.value.trim() : el.value); if(k === "botName" && !S.set[k].trim()) S.set[k] = DEF_SET.botName; saveSettings(); if(k === "refresh") startLive(); render(); };
     el.addEventListener(el.tagName === "INPUT" && el.type !== "checkbox" ? "change" : "change", save);
   });
   $("#rlPl").onclick = async () => { closeSheet(); try{ await loadPlayers(true); render(); toast("Player list updated"); }catch(e){ fail(e); } };
@@ -980,35 +1274,47 @@ function openSettings(){
 /* =============== events =============== */
 function bind(){
   $$("#app [data-go]").forEach(el => el.onclick = e => { e.stopPropagation(); go(el.dataset.go, el.dataset.seg); });
-  $$("#app [data-seg]:not([data-go])").forEach(b => b.onclick = () => { S.seg[S.tab] = b.dataset.seg; S.q = ""; render(); });
+  $$("#app [data-seg]:not([data-go])").forEach(b => b.onclick = () => { S.seg[S.tab] = b.dataset.seg; S.q = ""; render(true); });
   $$("#app [data-pos]").forEach(b => b.onclick = () => { S.pos = b.dataset.pos; render(); });
+  $$("#app [data-nf]").forEach(b => b.onclick = () => { S.seg.news = b.dataset.nf; render(); });
   $$("#app [data-wk]").forEach(b => b.onclick = () => changeWeek(+b.dataset.wk));
   bindPlayers($("#app"));
   $$("#app [data-team]").forEach(el => el.onclick = () => openTeam(+el.dataset.team));
   const q = $("#q");
   if(q) q.oninput = () => { S.q = q.value; $("#plist").innerHTML = playerList(); bindPlayers($("#plist")); };
-  const ai = $("#aiBtn"); if(ai) ai.onclick = aiTake;
+  const bh = $("#botHd"); if(bh) bh.onclick = () => openChat();
+  const ab = $("#askBtn"); if(ab) ab.onclick = () => openChat();
 }
 function bindPlayers(root){ root.querySelectorAll("[data-p]").forEach(el => el.onclick = e => { e.stopPropagation(); openPlayer(el.dataset.p); }); }
-function bindSheet(){ bindPlayers($("#shBody")); }
+function bindSheet(){
+  bindPlayers($("#shBody"));
+  $$("#shBody [data-ask]").forEach(b => b.onclick = () => { const p = P(b.dataset.ask); closeSheet(); openChat(`Tell me about ${p.name} (${p.pos}, ${p.team || "FA"}). How's he doing, and should I start, sit, add, or trade for him?`); });
+}
 function go(tab, seg){
   S.tab = tab; if(seg) S.seg[tab] = seg;
-  if(!isCur() && (tab === "home")){ S.week = S.state.week; return switchWeek(); }
-  render(); window.scrollTo(0, 0);
+  if(!isCur() && (tab === "home" || tab === "team")){ S.week = S.state.week; return switchWeek(true); }
+  render(true);
 }
 async function changeWeek(d){
   const w = S.week + d; if(w < 1 || w > 18) return;
-  S.week = w; await switchWeek();
+  S.week = w; await switchWeek(true);
 }
-async function switchWeek(){
+async function switchWeek(anim){
   try{ [S.matchups] = await Promise.all([api(`/league/${S.league.league_id}/matchups/${S.week}`), loadGames(), loadProj()]); }catch(e){ S.matchups = []; }
-  render();
+  render(anim);
 }
 $$("nav button").forEach(b => b.onclick = () => { if(S.tab === b.dataset.tab){ window.scrollTo({top:0, behavior:"smooth"}); return; } go(b.dataset.tab); });
 $("#refreshBtn").onclick = async () => { const b = $("#refreshBtn"); b.style.opacity = .4; await refresh(true); b.style.opacity = 1; };
 $("#setBtn").onclick = openSettings;
 addEventListener("scroll", () => $("#bar").classList.toggle("solid", scrollY > 40), {passive:true});
 document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && S.league) refresh(false); });
+/* drag sheet down to dismiss */
+(function(){
+  const sh = $("#sheet"), body = $("#shBody"); let y0 = null, dy = 0;
+  sh.addEventListener("touchstart", e => { if(e.target.closest(".sh") || body.scrollTop <= 0){ y0 = e.touches[0].clientY; dy = 0; } }, {passive:true});
+  sh.addEventListener("touchmove", e => { if(y0 == null) return; dy = e.touches[0].clientY - y0; if(dy > 0){ sh.classList.add("drag"); sh.style.transform = `translateY(${dy}px)`; } else if(dy < -6){ y0 = null; sh.classList.remove("drag"); sh.style.transform = ""; } }, {passive:true});
+  sh.addEventListener("touchend", () => { if(y0 == null) return; sh.classList.remove("drag"); sh.style.transform = ""; if(dy > 110) closeSheet(); y0 = null; });
+})();
 
 /* =============== boot =============== */
 function loading(msg){ $("#app").innerHTML = `<div class="loading"><div class="spin"></div>${esc(msg)}</div>`; }
@@ -1016,7 +1322,7 @@ function fail(e){
   $("#app").innerHTML = `<div class="setup"><h1>Couldn't load</h1><div class="c2">${esc((e && e.message) || e)}. Check your connection and try again.</div><button class="btn" onclick="location.reload()">Try again</button></div>`;
 }
 function setup(){
-  $("#bar").style.display = "none"; $("#nav").style.display = "none";
+  $("#bar").style.display = "none"; $("#nav").style.display = "none"; $("#fab").style.display = "none";
   $("#app").innerHTML = `<form class="setup" id="sf"><div class="logo">${BOT_SVG}</div><h1>Gameday</h1>
     <div class="c2" style="font-size:17px">Your Sleeper leagues with live scores, lineup alerts, waivers, and news, all in one place. Enter your Sleeper username to start. No password needed.</div>
     <input class="field" id="un" placeholder="Sleeper username" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username">
@@ -1047,11 +1353,11 @@ async function boot(){
       $("#ag").onclick = () => { store.del("gd_user"); setup(); }; return;
     }
     S.league = S.leagues.find(l => l.league_id === store.get("gd_league")) || S.leagues[0];
-    S.week = S.state.week; S.tab = S.set.startTab || "home";
+    S.week = S.state.week; S.tab = TITLES[S.set.startTab] ? S.set.startTab : "home";
     loading("Loading " + S.league.name + "…");
     await loadLeague();
-    $("#bar").style.display = ""; $("#nav").style.display = "";
-    render(); startLive();
+    $("#bar").style.display = ""; $("#nav").style.display = ""; $("#fab").style.display = "";
+    render(true); startLive();
   }catch(e){ fail(e); }
 }
 boot();
