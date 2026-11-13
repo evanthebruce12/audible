@@ -289,6 +289,8 @@ nav button:active{transform:scale(.9)}
 /* fab */
 .fab{position:fixed;right:16px;bottom:calc(66px + var(--sab));z-index:29;width:58px;height:58px;border-radius:50%;padding:0;box-shadow:0 8px 24px rgba(10,132,255,.38)}
 .fab .abot{width:58px;height:58px}
+.fab{transition:transform .32s cubic-bezier(.2,.9,.3,1),opacity .25s ease}
+.fab.hide{transform:translateY(24px) scale(.6);opacity:0;pointer-events:none}
 @media(min-width:640px){.fab{right:calc(50% - 284px)}}
 
 /* chat */
@@ -431,8 +433,9 @@ const S = {
 
 const VERSION = "1.3.1";
 const RELEASES = [
-  {v:"1.3.1", date:"Nov 13, 2026", title:"Sharper top buttons", items:[
-    ["Refresh and Settings buttons","Bigger, with a solid background and crisp white icons so they're easier to see and tap."]]},
+  {v:"1.3.1", date:"Nov 13, 2026", title:"Cleaner buttons", items:[
+    ["Refresh and Settings buttons","Bigger, with a solid background and crisp white icons so they're easier to see and tap."],
+    ["Audible button tucks away","It slides out of the way while you scroll down so it never covers scores, and comes back when you scroll up."]]},
   {v:"1.3", date:"Nov 13, 2026", title:"Meet Audible", items:[
     ["New name, new face","Gameday is now Audible, with a new app icon and a coach-in-a-headset mascot with an LED face."],
     ["Audible has moods","He blinks, thinks with a head tilt while writing, hops on big plays, shakes his head when your lineup needs a fix, and sleeps late at night."],
@@ -1800,7 +1803,14 @@ async function switchWeek(anim){
 $$("nav button").forEach(b => b.onclick = () => { if(S.tab === b.dataset.tab){ window.scrollTo({top:0, behavior:"smooth"}); return; } go(b.dataset.tab); });
 $("#refreshBtn").onclick = async () => { const b = $("#refreshBtn"); b.style.opacity = .4; await refresh(true); b.style.opacity = 1; };
 $("#setBtn").onclick = openSettings;
-addEventListener("scroll", () => $("#bar").classList.toggle("solid", scrollY > 40), {passive:true});
+let lastY = 0;
+addEventListener("scroll", () => {
+  const y = scrollY, fab = $("#fab");
+  $("#bar").classList.toggle("solid", y > 40);
+  if(y < 60 || y < lastY - 6) fab.classList.remove("hide");
+  else if(y > lastY + 6) fab.classList.add("hide");
+  if(Math.abs(y - lastY) > 6) lastY = y;
+}, {passive:true});
 document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && S.league) refresh(false); });
 /* drag sheet down to dismiss */
 (function(){
