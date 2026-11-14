@@ -2,6 +2,16 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.4.1 — A new look, and a proper entrance
+*Nov 14, 2026*
+
+- **Audible got a redesign.** A graphite helmet with a lit visor, in place of the white dome. No smile: the eyes carry the expression now. He is sharper at every size, and the same face runs through the app, the icon, and your Home Screen.
+- **A real launch animation.** Open the app and the headset builds itself on the way down, the band unfurling and the ear cups telescoping out, then it slams on and he powers up with a stutter and a sweep of light across the visor. The static launch image is the animation's first frame, so there is no jump between them.
+- **Crisper top of screen.** The blur behind the header used to exist even while invisible, which smudged your profile picture. It now only exists once the header is actually showing.
+- **Swipe a message away.** Flick a banner upward or tap it to dismiss, instead of waiting out the timer.
+- **He reacts to good news, not just touchdowns.** Big plays, taking the lead, pulling away, and winning your week. A passing touchdown counts now too, which it did not before.
+- **Always opens to Today.** The start screen setting is gone.
+
 ## 1.4 — Made to share
 *Nov 14, 2026*
 
