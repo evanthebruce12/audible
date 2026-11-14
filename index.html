@@ -493,7 +493,7 @@ html[data-theme=light] .circ svg{stroke:#000}
 .ldr{display:flex;align-items:center;gap:8px;min-width:0}
 .ldr.r{flex-direction:row-reverse;text-align:right}
 .ldr .hs{width:34px;height:34px}
-.fld{display:flex;height:34px;margin-top:2px;border-radius:7px;overflow:hidden;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1)}
+.fld{display:flex;height:30px;margin-top:2px;border-radius:7px;overflow:hidden;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1)}
 .fld .ez{flex:0 0 30px;display:grid;place-items:center;font-size:9px;font-weight:800;letter-spacing:.04em;color:#fff;writing-mode:vertical-rl;transform:rotate(180deg)}
 .fld .ez.a{background:#2f9e48}.fld .ez.b{background:var(--blue);transform:none}
 .fld .turf{flex:1;position:relative;background:repeating-linear-gradient(90deg,#2b7a3d 0 10%,#2f8442 10% 20%)}
@@ -504,8 +504,10 @@ html[data-theme=light] .circ svg{stroke:#000}
 .fld .ez{writing-mode:horizontal-tb!important;transform:none!important}
 .fld .ez.a{background:var(--green)}
 .av.ez-av{width:22px;height:22px;font-size:10px;box-shadow:0 0 0 1.5px #fff}
-.av.ring-a{box-shadow:0 0 0 2.5px var(--bg2),0 0 0 5px var(--green)}
-.av.ring-b{box-shadow:0 0 0 2.5px var(--bg2),0 0 0 5px var(--blue)}
+.av.ring-a{box-shadow:0 0 0 2px var(--bg2),0 0 0 4.5px var(--green)}
+.av.ring-b{box-shadow:0 0 0 2px var(--bg2),0 0 0 4.5px var(--blue)}
+.brow:has(.ring-b){margin-top:8px}
+.brow:has(.ring-a){margin-bottom:0}
 .fld .los{background:#fff!important;box-shadow:0 0 4px rgba(0,0,0,.4)}
 .fld .yl{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.35)}
 .fld .hash{position:absolute;left:0;right:0;top:50%;height:6px;margin-top:-3px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.4) 0 1px,transparent 1px 2%)}
