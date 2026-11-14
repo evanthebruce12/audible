@@ -2,6 +2,11 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.4.4 — No more blink on open
+*Nov 14, 2026*
+
+- **The blink after launch is gone.** Today appeared, went dark, then faded back in. Two fades ran at the handoff: the boot screen's is a CSS transition on opacity, which runs on the compositor and finished on time, while the app's fade-in is a CSS animation over the whole rendered page and needed a main-thread style recalc first. So the boot screen revealed Today, and a few frames later the app's animation snapped it to invisible and faded it back. Today is already rendered underneath an opaque boot screen, so it never needed its own fade. The boot screen now dissolves on its own.
+
 ## 1.4.3 — One clean entrance
 *Nov 14, 2026*
 
