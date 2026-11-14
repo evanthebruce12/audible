@@ -2,7 +2,16 @@
 
 All notable changes to Audible. Newest first.
 
-## 1.4.6 — The chat header is sharp
+## 1.4.7 — Photos stop flashing
+*Nov 14, 2026*
+
+- **Images are cached on device.** Headshots and team logos from sleepercdn went to the network on every render, and iOS discards decoded image data when an app is backgrounded, so returning from the app switcher blanked every photo. The service worker now serves them cache-first from a dedicated store that survives shell updates.
+- **Initials stay until the photo lands.** `.hs:has(img)` turned the initials transparent the moment the element existed rather than when it loaded, leaving an empty circle during the fetch. Now driven by an `.ok` class set on `load`, and pre-applied when the image is already decoded so a re-render has no gap at all.
+- **A live `Image()` cache** keeps decoded bitmaps alive across the `innerHTML` replacements that every render performs.
+- **The player sheet rebuilds once, not three times.** The game log, news and week stats each arrived separately and each triggered a full rebuild. Coalesced into one frame.
+- **Fixed the shell matcher.** `ASSETS` contains `"./"`, which became `""`, and `endsWith("")` is always true, so the shell handler was intercepting every same-origin GET. It matches real filenames now.
+
+ The chat header is sharp
 *Nov 14, 2026*
 
 - **Measured, then fixed.** On a native PNG screenshot, text in the chat header had a 20-80% edge width of 5 device px while body text 300px below it measured 1px, on the same screen at the same moment. `.chat` slides in on a `transform`, which promotes the whole panel to a compositing layer; `#chLog` scrolls so it kept repainting at device resolution, but the static header kept whatever scale the layer was rasterised at. The header is now a sibling of the panel rather than a child, fixed to the top and fading in, so it is never inside a transformed layer.

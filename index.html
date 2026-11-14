@@ -673,7 +673,7 @@ nav,.bar::before,.toast{backdrop-filter:var(--frost);-webkit-backdrop-filter:var
 nav button{text-shadow:0 1px 6px rgba(0,0,0,.35)}
 html[data-theme=light] nav button{text-shadow:0 1px 6px rgba(255,255,255,.6)}
 /* hide initials behind player photos once the photo loads */
-.hs:has(img),.av:has(img){color:transparent}
+.hs.ok,.av.ok{color:transparent}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 /* ===== 1.4: profile menu, leagues, pull to refresh, tour, Audible AI ===== */
 .bar .wrap{gap:10px}
@@ -834,8 +834,12 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.4.6";
+const VERSION = "1.4.7";
 const RELEASES = [
+  {v:"1.4.7", date:"Nov 14, 2026", title:"Photos stop flashing", items:[
+    ["Player photos are kept on your phone","Headshots and team logos were refetched from Sleeper every time a screen redrew, and iPhone throws away image data when you leave the app. That is why everything went blank coming back from the Home Screen. They are stored on your phone now and never download twice."],
+    ["No more empty circles","A photo that had not loaded yet hid the player's initials, so you got an empty grey circle instead. Initials stay until the photo is actually ready."],
+    ["Player cards build once","Opening a player rebuilt the whole card three separate times as stats, news and the game log arrived, recreating every image each time. It builds once now."]]},
   {v:"1.4.6", date:"Nov 14, 2026", title:"The chat header is sharp", items:[
     ["Fixed for real this time","Measured on a screenshot: header text was five times blurrier than body text on the same screen. The chat panel slides up using the graphics chip, which bakes everything inside it at a fixed resolution. The log kept repainting as you scroll so it stayed sharp, but the header never moved. It now sits outside the sliding panel."]]},
   {v:"1.4.5", date:"Nov 14, 2026", title:"Nothing blurry at the top", items:[
@@ -1000,11 +1004,21 @@ function stBadge(p){
   const c = p.inj ? (INJ[p.inj] || p.inj.slice(0,2).toUpperCase()) : "";
   return c ? `<span class="st ${c}">${c}</span>` : "";
 }
+/* Every re-render replaces innerHTML, which destroys and recreates every
+   <img>. Holding a live Image() per URL keeps the decoded bitmap alive, so a
+   recreated element paints from memory instead of flashing empty first. */
+const IMGC = new Map();
+function warm(src){
+  if(!IMGC.has(src)){ const i = new Image(); i.decoding = "async"; i.src = src; IMGC.set(src, i); }
+  return src;
+}
+const imgTag = src => `<img src="${warm(src)}" alt="" decoding="sync" onload="this.parentNode.classList.add('ok')" onerror="this.remove()">`;
 function hs(p, cls){
   if(p.empty) return `<div class="hs ${cls||""}">–</div>`;
   const ini = esc(p.name.split(" ").map(w => w[0]).join("").slice(0,2));
   const src = p.pos === "DEF" ? `${CDN}/images/team_logos/nfl/${p.id.toLowerCase()}.png` : `${CDN}/content/nfl/players/thumb/${p.id}.jpg`;
-  return `<div class="hs ${p.pos==="DEF"?"def":""} ${cls||""}">${ini}<img src="${src}" alt="" loading="lazy" onerror="this.remove()"></div>`;
+  const done = IMGC.get(src) && IMGC.get(src).complete && IMGC.get(src).naturalWidth;
+  return `<div class="hs ${p.pos==="DEF"?"def":""} ${cls||""}${done ? " ok" : ""}">${ini}${imgTag(src)}</div>`;
 }
 
 /* =============== scoring, projections, history =============== */
@@ -1144,7 +1158,10 @@ const owner = n => n;
 const rec = t => `${t.w}-${t.l}${t.t ? "-" + t.t : ""}`;
 function av(t, cls){
   const ini = esc((t.name||"?").slice(0,1).toUpperCase());
-  return `<div class="av ${cls||""}">${ini}${t.avatar ? `<img src="${CDN}/avatars/thumbs/${esc(t.avatar)}" alt="" onerror="this.remove()">` : ""}</div>`;
+  if(!t.avatar) return `<div class="av ${cls||""}">${ini}</div>`;
+  const src = `${CDN}/avatars/thumbs/${esc(t.avatar)}`;
+  const done = IMGC.get(src) && IMGC.get(src).complete && IMGC.get(src).naturalWidth;
+  return `<div class="av ${cls||""}${done ? " ok" : ""}">${ini}${imgTag(src)}</div>`;
 }
 const mOf = rid => S.matchups.find(m => m.roster_id === rid);
 const oppOf = m => (m && m.matchup_id != null) ? S.matchups.find(x => x.matchup_id === m.matchup_id && x.roster_id !== m.roster_id) : null;
@@ -1842,7 +1859,7 @@ async function fillTracker(p){
 async function openGame(gid){
   const g = (S.games || []).find(x => x.id === gid); if(!g) return;
   S.sheetPid = null; S.sheetGid = gid;
-  const side = t => `<div>${t.logo ? `<img src="${esc(t.logo)}" alt="" onerror="this.remove()">` : ""}<div class="ab">${esc(t.abbr)}</div><div class="xs c2">${esc(t.rec)}</div></div>`;
+  const side = t => `<div>${t.logo ? `${imgTag(esc(t.logo))}` : ""}<div class="ab">${esc(t.abbr)}</div><div class="xs c2">${esc(t.rec)}</div></div>`;
   const head = `<div class="gbox" id="gBox"><div class="gt">${side(g.away)}<div><div class="gs2">${g.state === "pre" ? "@" : `${g.away.score} – ${g.home.score}`}</div><div class="gsd ${g.state === "in" ? "live" : ""}">${g.state === "pre" ? `${day(g.date)} ${tm(g.date)}` : esc(g.detail)}</div></div>${side(g.home)}</div>
     ${[g.odds, g.ou ? "O/U " + g.ou : "", g.net].filter(Boolean).length ? `<div class="xs c2" style="text-align:center;margin-top:10px">${[g.odds, g.ou ? "O/U " + g.ou : "", g.net].filter(Boolean).map(esc).join(" · ")}</div>` : ""}</div>`;
   const own = ownerMap(), mine = Object.keys(own).filter(id => own[id] === S.myRid).map(P).filter(p => p.team === g.home.abbr || p.team === g.away.abbr);
@@ -1902,7 +1919,7 @@ function gameExtras(g, sum, part){
   }
   const L = sum.leaders, cats = [["passingYards","Passing"],["rushingYards","Rushing"],["receivingYards","Receiving"]].filter(([k]) => (L[A] || {})[k] || (L[H] || {})[k]);
   if(cats.length){
-    const side = (x, r) => x ? `<div class="ldr ${r ? "r" : ""}"><div class="hs">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy" onerror="this.remove()">` : ""}</div><div style="min-width:0"><div class="ln">${esc(x.name)}</div><div class="lv">${esc(x.v)}</div></div></div>` : `<div></div>`;
+    const side = (x, r) => x ? `<div class="ldr ${r ? "r" : ""}"><div class="hs">${x.img ? `${imgTag(esc(x.img))}` : ""}</div><div style="min-width:0"><div class="ln">${esc(x.name)}</div><div class="lv">${esc(x.v)}</div></div></div>` : `<div></div>`;
     h += `<div class="lbl">${pre ? "Season leaders" : "Game leaders"}</div><div class="gcard ldrs">${cats.map(([k, l]) => `<div class="ldcat">${l}</div><div class="ldrow">${side((L[A] || {})[k])}${side((L[H] || {})[k], 1)}</div>`).join("")}</div>`;
   }
   if(!pre && sum.stats.length){
@@ -2228,7 +2245,7 @@ function vHome(){
 }
 function gameCard(g, mineN){
   const done = g.state === "post", aw = g.away.score > g.home.score, hw = g.home.score > g.away.score;
-  const row = (s, lose) => `<div class="gr ${done && lose ? "l" : ""}">${s.logo ? `<img src="${esc(s.logo)}" alt="" onerror="this.remove()">` : ""}<span class="ab">${esc(s.abbr)}</span>${g.state !== "pre" ? `<span class="s">${s.score}</span>` : `<span class="xs c2">${esc(s.rec)}</span>`}</div>`;
+  const row = (s, lose) => `<div class="gr ${done && lose ? "l" : ""}">${s.logo ? `${imgTag(esc(s.logo))}` : ""}<span class="ab">${esc(s.abbr)}</span>${g.state !== "pre" ? `<span class="s">${s.score}</span>` : `<span class="xs c2">${esc(s.rec)}</span>`}</div>`;
   const status = g.state === "in" ? `<span class="live">${esc(g.detail)}</span>` : g.state === "post" ? "Final" : `${day(g.date)} ${tm(g.date)}`;
   return `<button class="game" data-g="${esc(g.id)}" style="text-align:left">${row(g.away, hw)}${row(g.home, aw)}<div class="gs"><span>${status}</span><span>${g.state === "pre" ? esc(g.odds) : esc(g.net)}</span></div>${mineN ? `<div class="mine">${mineN} of your players</div>` : ""}</button>`;
 }
@@ -2468,7 +2485,7 @@ function playerBody(id){
   let h = `<div class="phero">${hs(p, "lg")}<h3>${esc(p.name)}${stBadge(p)}</h3><div class="c2">${esc(p.pos)} · ${esc(p.team || "Free agent")}${p.num ? " · #" + esc(p.num) : ""}${p.age ? " · Age " + esc(p.age) : ""}</div>
     <div style="margin-top:8px">${own ? (own === S.myRid ? '<span class="tag b">On your team</span>' : `<span class="tag o">Rostered by ${esc(ot.name)}</span>`) : '<span class="tag g">Free agent</span>'}</div></div>`;
   if(g){
-    const side = t => `<div>${t.logo ? `<img src="${esc(t.logo)}" alt="" onerror="this.remove()">` : ""}<div class="ab">${esc(t.abbr)}</div><div class="xs c2">${esc(t.rec)}</div></div>`;
+    const side = t => `<div>${t.logo ? `${imgTag(esc(t.logo))}` : ""}<div class="ab">${esc(t.abbr)}</div><div class="xs c2">${esc(t.rec)}</div></div>`;
     h += `<div class="gbox"><div class="gt">${side(g.away)}<div><div class="gs2">${g.state === "pre" ? "@" : `${g.away.score} – ${g.home.score}`}</div><div class="gsd ${g.state === "in" ? "live" : ""}">${g.state === "pre" ? `${day(g.date)} ${tm(g.date)}` : esc(g.detail)}</div></div>${side(g.home)}</div>
       ${g.odds || g.net ? `<div class="xs c2" style="text-align:center;margin-top:10px">${[g.odds, g.ou ? "O/U " + g.ou : "", g.net].filter(Boolean).map(esc).join(" · ")}</div>` : ""}</div>`;
   } else if(isBye(p)) h += `<div class="gbox" style="text-align:center"><b>Bye week</b><div class="sm c2">${esc(p.team)} doesn't play in week ${S.week}.</div></div>`;
@@ -2614,7 +2631,14 @@ function playerInsights(id){
   h += `<div class="lbl">Profile</div><div class="grp">${prof.map(([k, v]) => `<div class="cell noimg"><div class="main"><div class="t1" style="font-weight:400;color:var(--label2)">${k}</div></div><span>${esc(String(v))}</span></div>`).join("")}</div>`;
   return h;
 }
+let rsPend = 0;
+/* the log, the news and the week stats each arrive on their own and each used
+   to trigger a full rebuild of the sheet. Coalesce them into one. */
 function refreshSheet(){
+  if(rsPend) return;
+  rsPend = requestAnimationFrame(() => { rsPend = 0; doRefreshSheet(); });
+}
+function doRefreshSheet(){
   if(!S.sheetPid || !$("#sheet").classList.contains("on")) return;
   const b = $("#shBody"), y = b.scrollTop, old = $("#trk");
   b.innerHTML = playerBody(S.sheetPid);

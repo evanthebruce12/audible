@@ -8,7 +8,7 @@
    Storage, then refresh it in the background and tell the page when
    a newer build is ready.
    --------------------------------------------------------------- */
-const SHELL = "audible-shell-v5";
+const SHELL = "audible-shell-v6";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./icon.png", "./icon-192.png", "./icon-512.png", "./favicon.png"];
 
 self.addEventListener("install", e => {
@@ -16,15 +16,20 @@ self.addEventListener("install", e => {
   e.waitUntil(caches.open(SHELL).then(c => c.addAll(ASSETS)).catch(() => {}));
 });
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== SHELL).map(k => caches.delete(k)))));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== SHELL && k !== IMGS).map(k => caches.delete(k)))));
 });
 
 /* only the shell; Sleeper and ESPN calls always go straight to the network */
+/* "./" became "" after the replace and endsWith("") is always true, so this
+   used to claim every same-origin request. Match real filenames only. */
+const SHELL_FILES = ASSETS.map(a => a.replace(/^\.\//, "")).filter(Boolean);
 function isShell(req){
   if(req.method !== "GET") return false;
-  const u = new URL(req.url);
+  let u; try{ u = new URL(req.url); }catch(e){ return false; }
   if(u.origin !== self.location.origin) return false;
-  return req.mode === "navigate" || ASSETS.some(a => u.pathname.endsWith(a.replace("./", "")));
+  if(req.mode === "navigate") return true;
+  const name = u.pathname.split("/").pop();
+  return SHELL_FILES.includes(name);
 }
 self.addEventListener("fetch", e => {
   if(!isShell(e.request)) return;
@@ -47,6 +52,38 @@ self.addEventListener("fetch", e => {
     return hit || net || fetch(e.request);   /* cache first, network only on a miss */
   })());
 });
+
+/* ---------------------------------------------------------------
+   Player headshots and team logos.
+   These never change, but every one was refetched from the network
+   on each render, and iOS drops decoded image data when the app is
+   backgrounded. Coming back from the app switcher meant every photo
+   went blank and popped in again. Cache them permanently.
+   --------------------------------------------------------------- */
+const IMGS = "audible-img-v1";
+const IMG_HOSTS = ["sleepercdn.com", "a.espncdn.com"];
+function isImg(req){
+  if(req.method !== "GET") return false;
+  let u; try{ u = new URL(req.url); }catch(e){ return false; }
+  if(!IMG_HOSTS.some(h => u.hostname === h || u.hostname.endsWith("." + h))) return false;
+  return /\.(png|jpe?g|webp|gif)$/i.test(u.pathname) || u.pathname.includes("/thumb");
+}
+self.addEventListener("fetch", e => {
+  if(!isImg(e.request)) return;
+  e.respondWith((async () => {
+    const c = await caches.open(IMGS);
+    const hit = await c.match(e.request);
+    if(hit) return hit;                                  /* straight from disk, no network */
+    try{
+      const res = await fetch(e.request);
+      if(res && (res.ok || res.type === "opaque")) c.put(e.request, res.clone()).catch(() => {});
+      return res;
+    }catch(err){
+      return hit || Response.error();
+    }
+  })());
+});
+
 self.addEventListener("message", e => { if(e.data && e.data.type === "skip-waiting") self.skipWaiting(); });
 
 self.addEventListener("activate", e => e.waitUntil(self.clients.claim()));
