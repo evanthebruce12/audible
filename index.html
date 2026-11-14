@@ -134,6 +134,17 @@ html[data-theme=light] .seg button.on{background:#fff}
 .mp{display:flex;align-items:center;gap:7px;min-width:0}
 .mp.r{flex-direction:row-reverse;text-align:right}
 .mp .hs{width:32px;height:32px}
+/* name truncates, but the injury badge and news dot always stay visible */
+.mp .n{display:flex;align-items:center;gap:0;overflow:visible}
+.mp .n .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp .n .st,.mp .n .ndot{flex:none}
+.mp.r .n{justify-content:flex-end}
+/* slimmer position chip buys room for names and points */
+.mrow{grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr)!important;gap:4px!important;padding-left:8px!important;padding-right:8px!important}
+.mrow .slot{width:32px;padding:3px 0;border-radius:6px}
+.mp{gap:7px}
+.mp .pts{min-width:32px;margin-left:2px}
+.mp.r .pts{margin-left:0;margin-right:2px}
 .mp .i{flex:1;min-width:0}
 .mp .n{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mp .g{font-size:11px;color:var(--label2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1813,7 +1824,7 @@ function scoreBug(a, b, link){
 function mCell(id, pts, right){
   const p = P(id), pr = proj(id), s = p.empty ? "" : gState(p);
   const [g1, g2] = p.empty ? ["", ""] : gameParts(p);
-  return `<div class="mp ${right ? "r" : ""} ${s === "post" ? "done" : s === "in" ? "live" : ""}" ${p.empty ? "" : `data-p="${esc(id)}"`}>${hs(p)}<div class="i"><div class="n">${esc(shortName(p))}${stBadge(p)}${!p.empty && hasNews(p) ? '<i class="ndot" title="Recent news"></i>' : ""}</div><div class="g">${esc(g1)}</div>${g2 ? `<div class="g g2">${esc(g2)}</div>` : ""}</div>
+  return `<div class="mp ${right ? "r" : ""} ${s === "post" ? "done" : s === "in" ? "live" : ""}" ${p.empty ? "" : `data-p="${esc(id)}"`}>${hs(p)}<div class="i"><div class="n"><span class="nm">${esc(shortName(p))}</span>${stBadge(p)}${!p.empty && hasNews(p) ? '<i class="ndot" title="New news"></i>' : ""}</div><div class="g">${esc(g1)}</div>${g2 ? `<div class="g g2">${esc(g2)}</div>` : ""}</div>
     <div class="pts">${p.empty ? "" : `<b>${s === "pre" && !pts ? "–" : f1(pts)}</b>${pr != null ? `<small>${f1(pr)}</small>` : ""}`}</div></div>`;
 }
 function matchupBody(a, b){
