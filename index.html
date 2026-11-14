@@ -874,8 +874,11 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.5.1";
+const VERSION = "1.5.2";
 const RELEASES = [
+  {v:"1.5.2", date:"Nov 14, 2026", title:"Two fixes", items:[
+    ["No stale colour band","Switching between light and dark could leave a stripe of the old background frozen across a player card. Everything repaints properly now."],
+    ["The pass stays on screen","Deep passes arced so high the ball left the top of the field. The arc is capped."]]},
   {v:"1.5.1", date:"Nov 14, 2026", title:"The tour lets you touch things", items:[
     ["Tap the thing I'm pointing at","The tour used to block the whole screen while describing a feature. Now the highlighted control is live. Tap it, it really works, and that is what moves the tour along. Everything else stays locked so you can't get lost."],
     ["Open a player and have a look","Tap a player during the tour and his card opens for real. I get out of the way while you poke around, and pick up again when you close it."],
@@ -1021,6 +1024,15 @@ function applyTheme(){
   document.documentElement.dataset.theme = t;
   const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = t === "light" ? "#f2f2f7" : "#000000";
   document.body.classList.toggle("reduce", !S.set.celebrate);
+  /* Switching theme only changes CSS variables, so a layer the compositor has
+     already rasterised can keep the old palette: a band of the previous
+     theme's background stays behind. Force the sheet and chat to repaint. */
+  requestAnimationFrame(() => {
+    ["#sheet", "#chat", "#app", "#shBody"].forEach(q => {
+      const el = document.querySelector(q); if(!el) return;
+      const d = el.style.display; el.style.display = "none"; void el.offsetHeight; el.style.display = d;
+    });
+  });
 }
 try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", applyTheme); } catch(e){}
 
@@ -1906,7 +1918,9 @@ function animPlay(svg, pl){
   /* a score earns a longer run and a bigger arc than a checkdown */
   const base = Math.min(1500, 650 + Math.abs(x1 - x0) * 6);
   const dur = reduce ? 1 : Math.min(scored ? 1750 : 1500, Math.round(base * (scored ? 1.35 : tr && tr.rank >= 4 ? 1.12 : 1)));
-  const t0 = performance.now(), H = isPass ? Math.min(60, 18 + Math.abs(x1 - x0) * .35) * (scored ? 1.25 : 1) : 0;
+  /* the ball sits at y=75 in a 150-tall field, so an arc over ~60 put it off
+     the top edge entirely. Keep the peak inside the frame. */
+  const t0 = performance.now(), H = isPass ? Math.min(44, 13 + Math.abs(x1 - x0) * .25) * (scored ? 1.1 : 1) : 0;
   const flash = svg.querySelector(".ezflash"); if(flash) flash.setAttribute("opacity", "0");
   let d = `M${x0} 75`;
   const step = now => {
@@ -2177,7 +2191,7 @@ function abPop(){ if(!S.set.celebrate) return; document.querySelectorAll(".abot 
 
 /* the service worker serves the shell from cache, so a new build lands quietly.
    Say so rather than leaving them on an old version without knowing. */
-const SHELL_CACHE = "audible-shell-v9";   /* keep in step with sw.js */
+const SHELL_CACHE = "audible-shell-v10";   /* keep in step with sw.js */
 /* The shell is served from cache, so without this a new build would not show
    up until the launch after next. The launch animation gives us two seconds
    of cover: fetch the live copy, and if the version moved, write it into the

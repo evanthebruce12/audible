@@ -2,7 +2,13 @@
 
 All notable changes to Audible. Newest first.
 
-## 1.5.1 — The tour lets you touch things
+## 1.5.2 — Two fixes
+*Nov 14, 2026*
+
+- **Stale colour band on player cards.** A strip of `#f2f2f7`, the light theme's `--bg`, could sit frozen across a card in dark mode. Theme switching only swaps CSS variables, so a layer the compositor had already rasterised kept the old palette. `applyTheme` now forces a reflow on the sheet, chat and app after the switch. The permanent `will-change:transform` on `.sheet` that made the sheet a long-lived layer in the first place went in 1.4.9.
+- **Deep passes left the field.** The arc height was `min(60, 18 + dist*.35) * 1.25` for scores, up to 75, against a ball sitting at y=75 in a 150-unit viewBox, so the peak hit y=0 and the ball clipped out the top. Capped at 44 (×1.1 for scores); measured peak is now y=27.
+
+ The tour lets you touch things
 *Nov 14, 2026*
 
 - **The spotlight passes touches through.** `.tour` was a full-screen overlay with `touch-action:none`, so it described a feature while making it untouchable. It is now `pointer-events:none`, and four blocker panels positioned around the spotlight swallow taps instead. The highlighted control is the only live part of the screen. Verified: a tap on the highlighted element reaches it, a tap anywhere else does not.
