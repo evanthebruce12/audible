@@ -2,7 +2,15 @@
 
 All notable changes to Audible. Newest first.
 
-## 1.4.9 — Smooth all the way up
+## 1.5 — Big plays
+*Nov 14, 2026*
+
+- **Plays are tiered rather than flagged.** `big` was `scored || 20+ yards`, so a 60-yard touchdown and a 21-yard catch rendered identically. `playTier()` now ranks every play: TD, INT, Fumble, Safety, Explosive (40+), Big play (20+), long field goals, big sacks, 4th-down conversions. Each gets its own chip colour, a left rule and a background wash. Nullified plays and missed kicks are correctly excluded. Verified against 16 real ESPN play strings.
+- **Touchdowns replay with weight.** Longer duration (capped at 1.75s), a higher arc, a full-brightness ball glow, a white endzone flash, a green TOUCHDOWN plate sized to its text, and Audible switching to his `hyped` face. Turnovers get the same treatment in red.
+- **Big plays on NFL game cards.** The game sheet showed only the current drive and scoring plays. It now also lists the highest-rated non-scoring plays of the game, newest first, each replayable on the field.
+- **Row markers on My Team and Matchup.** `bigBadge()` reads the week stats already in memory and marks players who scored, hit a 50+ yard field goal, or forced a turnover, so you can tell at a glance who is worth opening. Costs no extra requests.
+
+ Smooth all the way up
 *Nov 14, 2026*
 
 - **Sheets no longer catch at the end of the slide.** Frame analysis of a 60fps recording: through the 25-frame slide the frame-to-frame delta decelerates smoothly, then climbs back up twice in the last ~100ms (3.8 → 5.3, and 1.7 → 4.2). A compositor-driven ease-out only ever decreases, so that was main-thread work landing mid-animation: the game log, the news and the week stats each resolving and rebuilding the sheet while it moved. Rebuilds are now held until the slide finishes, released on `transitionend` with a timeout as backstop.
