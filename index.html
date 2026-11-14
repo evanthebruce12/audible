@@ -529,6 +529,11 @@ html[data-theme=light] .circ svg{stroke:#000}
 .mp .g2{color:var(--label3)}.mp.live .g2{color:var(--green)}
 .ndot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--blue);margin-left:5px;vertical-align:middle}
 .news.pn h4{font-size:15px;color:var(--label);line-height:1.3}
+button.news{width:100%;border:0;background:none;font:inherit;color:inherit;cursor:pointer}
+.rimg{width:100%;border-radius:14px;display:block;margin-bottom:12px;aspect-ratio:16/9;object-fit:cover}
+.rh{font-size:24px;line-height:1.2;font-weight:800;letter-spacing:-.02em;margin:0 2px}
+.rbody p{font-size:17px;line-height:1.55;margin:0 2px 14px;color:var(--label)}
+.rback{border:0;background:none;color:var(--blue);font:inherit;font-size:16px;padding:4px 2px 12px;cursor:pointer}
 .news.pn .pd{font-size:13px;color:var(--label2);line-height:1.35;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .take p{font-size:15px;line-height:1.4;padding:7px 0}.take p+p{border-top:.5px solid var(--sep)}
 .spark.log{overflow-x:auto;justify-content:flex-start;height:110px;scrollbar-width:none}
@@ -608,6 +613,7 @@ const RELEASES = [
     ["Fixes","Game cards line up with the rest of the page, the Refresh and Settings buttons are crisper, and stray initials no longer peek out behind player photos."],
     ["Richer game cards","Tap any NFL game for team colors, the score by quarter, win odds, game leaders, and a side-by-side team stats comparison."],
     ["Matchup upgrades","The Matchup tab has a football field icon, and win probability now plays out on a little football field: your territory is green turf, theirs is blue, with matching rings on each team's picture. Every starter shows his team, opponent and kickoff time on their own lines, and a blue dot flags news you haven't seen yet, on Matchup and My Team."],
+    ["News you can read in the app","Tap any headline to read the full story right in Audible, with no jump to another app and no dead links. A Back button returns you to the player you were on."],
     ["Cleaner numbers","Trending adds read short, like 734.1K."],
     ["Deeper player cards","Tap any player for Audible's quick take, position rank, hot or cold streak, full season stats, a game log with best and typical weeks, recent news, and a profile with depth chart spot."],
     ["Steadier screens","The page behind a card or chat no longer scrolls when you touch an empty spot."],
@@ -907,7 +913,7 @@ async function loadTrending(){
 async function loadNews(){
   try{
     const d = await getJSON(`${ESPN}/news?limit=60`);
-    S.news = (d.articles || []).map(a => ({h:a.headline, d:a.description || "", t:new Date(a.published).getTime(), url:((a.links||{}).web||{}).href || "", img:((a.images||[])[0]||{}).url || "",
+    S.news = (d.articles || []).map(a => ({id:String(a.id || a.dataSourceIdentifier || ""), h:a.headline, d:a.description || "", story:a.story || "", t:new Date(a.published).getTime(), url:((a.links||{}).web||{}).href || "", img:((a.images||[])[0]||{}).url || "",
       ath:(a.categories||[]).filter(c => c.type === "athlete").map(c => (c.description || (c.athlete||{}).description || "").toLowerCase())}));
   }catch(e){ S.news = S.news || []; }
 }
@@ -1936,7 +1942,7 @@ function newsList(){
   const set = seg === "mine" ? names(new Set([S.myRid])) : seg === "league" ? names(null) : null;
   let items = S.news;
   if(set) items = items.filter(a => a.ath.some(x => set.has(x)) || [...set].some(n => n.length > 6 && (a.h + " " + a.d).toLowerCase().includes(n)));
-  return items.length ? `<div class="grp" style="margin-top:12px">${items.slice(0, 40).map(a => `<a class="news" href="${esc(a.url)}" target="_blank" rel="noopener"><div style="flex:1;min-width:0"><h4 style="color:var(--label)">${esc(a.h)}</h4><p>${esc(a.d).slice(0, 140)}</p><p class="c3">${ago(a.t)}</p></div>${a.img ? `<div class="im"><img src="${esc(a.img)}" alt="" loading="lazy" onerror="this.parentNode.remove()"></div>` : ""}</a>`).join("")}</div>`
+  return items.length ? `<div class="grp" style="margin-top:12px">${items.slice(0, 40).map(a => `<button class="news" data-art="${artKey(a)}"><div style="flex:1;min-width:0;text-align:left"><h4 style="color:var(--label)">${esc(a.h)}</h4><p>${esc(a.d).slice(0, 140)}</p><p class="c3">${ago(a.t)}</p></div>${a.img ? `<div class="im"><img src="${esc(a.img)}" alt="" loading="lazy" onerror="this.parentNode.remove()"></div>` : ""}</button>`).join("")}</div>`
     : `<div class="empty">No recent stories about ${seg === "mine" ? "your players" : "players in your league"}. Try All NFL.</div>`;
 }
 
@@ -1991,7 +1997,7 @@ function openSheet(title, body){
   sheetReset(); $("#sheet").classList.remove("scrolled");
   $("#scrim").classList.add("on"); $("#sheet").classList.add("on"); bindSheet();
 }
-function closeSheet(){ sheetReset(); $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on"); S.sheetPid = null; S.sheetGid = null; }
+function closeSheet(){ S.sheetArt = null; sheetReset(); $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on"); S.sheetPid = null; S.sheetGid = null; }
 $("#scrim").onclick = closeSheet; $("#shDone").onclick = closeSheet;
 
 const SG = {
@@ -2051,7 +2057,7 @@ function playerBody(id){
   h += playerInsights(id);
   const nm = p.name.toLowerCase(), pn = (S.pnews || {})[id];
   const news = (pn && pn.items && pn.items.length ? pn.items : (S.news || []).filter(a => a.ath.includes(nm) || (a.h + a.d).toLowerCase().includes(nm))).slice(0, 4);
-  if(news.length) h += `<div class="lbl">Recent news</div><div class="grp">${news.map(a => `<a class="news pn" href="${esc(a.url || "#")}" target="_blank" rel="noopener"><div style="flex:1;min-width:0"><h4>${esc(a.h)}</h4>${a.d ? `<p class="pd">${esc(a.d)}</p>` : ""}<p class="c3 xs">${ago(a.t)}</p></div></a>`).join("")}</div>`;
+  if(news.length) h += `<div class="lbl">Recent news</div><div class="grp">${news.map(a => `<button class="news pn" data-art="${artKey(a)}"><div style="flex:1;min-width:0;text-align:left"><h4>${esc(a.h)}</h4>${a.d ? `<p class="pd">${esc(a.d)}</p>` : ""}<p class="c3 xs">${ago(a.t)}</p></div></button>`).join("")}</div>`;
   else if(p.espn && !pn) h += `<div class="lbl">Recent news</div><div class="skel"></div>`;
   h += `<div class="btns"><button class="btn gray" data-ask="${esc(id)}">Ask ${esc(S.set.botName)} about ${esc(p.name.split(" ").slice(-1)[0])}</button><a class="btn gray" href="https://sleeper.com/leagues/${S.league.league_id}/${own === S.myRid ? "team" : "players"}" target="_blank" rel="noopener">${own === S.myRid ? "Manage in Sleeper" : own ? "Propose trade in Sleeper" : "Add in Sleeper"}</a></div>`;
   return h;
@@ -2069,14 +2075,49 @@ async function openPlayer(id){
 }
 /* ---------- player deep dive: take, season stats, ranks, game log, profile ---------- */
 S.plog = S.plog || {};
+/* ---------- in-app news reader: no app hand-offs, no dead links ---------- */
+S.arts = S.arts || {};
+function artKey(a){ const k = "a" + (a.id || (a.h + a.t).split("").reduce((x, c) => (x * 31 + c.charCodeAt(0)) | 0, 7)); S.arts[k] = Object.assign(S.arts[k] || {}, a); return esc(k); }
+function storyParas(html){
+  if(!html) return [];
+  const doc = new DOMParser().parseFromString(String(html), "text/html");
+  doc.querySelectorAll("script,style,iframe,figure,aside,photo,video").forEach(n => n.remove());
+  let ps = [...doc.querySelectorAll("p,h2,h3,li")].map(n => n.textContent.replace(/\s+/g, " ").trim()).filter(t => t.length > 1);
+  if(!ps.length) ps = (doc.body.textContent || "").split(/\n{2,}|\r?\n/).map(t => t.trim()).filter(Boolean);
+  return ps.slice(0, 60);
+}
+async function fullStory(a){
+  if(a.story || !a.id || a._tried) return; a._tried = true;
+  for(const u of [`https://site.api.espn.com/apis/site/v2/sports/football/nfl/news/${encodeURIComponent(a.id)}`, `https://content.core.api.espn.com/v1/sports/news/${encodeURIComponent(a.id)}`]){
+    try{ const d = await getJSON(u); const x = (d.headlines || d.articles || [d])[0] || {}; if(x.story){ a.story = x.story; return; } }catch(e){}
+  }
+}
+function readerBody(a){
+  const ps = storyParas(a.story), src = (() => { try{ return new URL(a.url).hostname.replace(/^www\./, ""); }catch(e){ return "ESPN"; } })();
+  return `${a.img ? `<img class="rimg" src="${esc(a.img)}" alt="" onerror="this.remove()">` : ""}<h2 class="rh">${esc(a.h)}</h2><p class="xs c2" style="margin:6px 2px 14px">${esc(src)} · ${ago(a.t)}</p>
+    <div class="rbody">${ps.length ? ps.map(t => `<p>${esc(t)}</p>`).join("") : `<p>${esc(a.d || "")}</p>${a._tried ? "" : '<div class="skel"></div>'}`}</div>
+    ${a.url ? `<div class="btns"><a class="btn" href="${esc(a.url)}" target="_blank" rel="noopener">Read on the web</a></div><p class="foot">If the ESPN app is installed, iPhone may open it there. Press and hold the button to choose Open in Safari.</p>` : ""}`;
+}
+async function openArticle(k){
+  const a = S.arts[k]; if(!a) return;
+  const back = S.sheetPid || null;
+  S.sheetPid = null; S.sheetGid = null; S.sheetArt = k;
+  openSheet("News", readerBody(a));
+  if(back) $("#shBody").insertAdjacentHTML("afterbegin", `<button class="rback" data-back="${esc(back)}">‹ Back to player</button>`);
+  if(!a.story && !a._tried){ await fullStory(a); if(S.sheetArt === k && $("#sheet").classList.contains("on")){ $("#shBody").innerHTML = (back ? `<button class="rback" data-back="${esc(back)}">‹ Back to player</button>` : "") + readerBody(a); } }
+}
+document.addEventListener("click", e => {
+  const n = e.target.closest("[data-art]"); if(n){ e.preventDefault(); e.stopPropagation(); openArticle(n.dataset.art); return; }
+  const b = e.target.closest("[data-back]"); if(b){ e.preventDefault(); S.sheetArt = null; openPlayer(b.dataset.back); }
+}, true);
 async function loadPlayerNews(id){
   S.pnews = S.pnews || {}; const p = P(id);
   if(!p.espn){ S.pnews[id] = {items:[]}; return; }
   try{
     const d = await getJSON(`https://site.api.espn.com/apis/fantasy/v2/games/ffl/news/players?limit=6&playerId=${encodeURIComponent(p.espn)}`);
     const strip = x => String(x || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-    S.pnews[id] = {items:(d.feed || []).map(a => ({h:strip(a.headline), d:strip(a.description || a.story).slice(0, 200), t:new Date(a.published || a.lastModified).getTime(),
-      url:((a.links || {}).web || {}).href || ""})).filter(a => a.h)};
+    S.pnews[id] = {items:(d.feed || []).map(a => ({id:String(a.id || ""), h:strip(a.headline), d:strip(a.description || a.story).slice(0, 200), story:a.story || "", t:new Date(a.published || a.lastModified).getTime(),
+      img:((a.images || [])[0] || {}).url || "", url:((a.links || {}).web || {}).href || ""})).filter(a => a.h)};
   }catch(e){ S.pnews[id] = {items:[]}; }
 }
 async function loadPlayerLog(id){
