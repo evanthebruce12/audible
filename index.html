@@ -20,19 +20,21 @@
 #boot .face{transform-origin:0px 6px}
 #boot .set{transform-origin:0px 0px}
 #boot .eye,#boot .dot,#boot .dotg,#boot .sweep,#boot .flare{opacity:0}
+#boot .bbot{opacity:0}
+#boot.go .bbot{animation:bfade .34s ease-out both}
 #boot .dotg{opacity:0}
-#boot .set{animation:bdrop .72s cubic-bezier(.4,.1,.5,.9) .04s both}
-#boot .band{animation:bunfurl .3s cubic-bezier(.3,1.3,.5,1) .16s both;transform-origin:0px 4px}
-#boot .cupL{animation:btele .3s cubic-bezier(.3,1.35,.5,1) .26s both;transform-origin:-42.5px -14px}
-#boot .cupR{animation:btele .3s cubic-bezier(.3,1.35,.5,1) .26s both;transform-origin:42.5px -14px}
-#boot .boom{animation:bswing .26s cubic-bezier(.3,1.4,.5,1) .4s both;transform-origin:46px 14px}
-#boot .hd0{animation:bslam .92s cubic-bezier(.3,1.44,.6,1) .74s both}
-#boot .face{animation:bface .92s cubic-bezier(.3,1.44,.6,1) .74s both}
-#boot .eye{animation:bpower .8s linear .78s both}
-#boot .sweep{animation:bsweep .46s ease-out 1.16s both}
-#boot .flare{animation:bflare .44s ease-out 1.22s both}
-#boot .dot{animation:bdot .5s ease 1.4s both}
-#boot .dotg{animation:bdotg .5s ease 1.4s both}
+#boot.go .set{animation:bdrop .72s cubic-bezier(.4,.1,.5,.9) .22s both}
+#boot.go .band{animation:bunfurl .3s cubic-bezier(.3,1.3,.5,1) .34s both;transform-origin:0px 4px}
+#boot.go .cupL{animation:btele .3s cubic-bezier(.3,1.35,.5,1) .44s both;transform-origin:-42.5px -14px}
+#boot.go .cupR{animation:btele .3s cubic-bezier(.3,1.35,.5,1) .44s both;transform-origin:42.5px -14px}
+#boot.go .boom{animation:bswing .26s cubic-bezier(.3,1.4,.5,1) .58s both;transform-origin:46px 14px}
+#boot.go .hd0{animation:bslam .92s cubic-bezier(.3,1.44,.6,1) .92s both}
+#boot.go .face{animation:bface .92s cubic-bezier(.3,1.44,.6,1) .92s both}
+#boot.go .eye{animation:bpower .8s linear .96s both}
+#boot.go .sweep{animation:bsweep .46s ease-out 1.34s both}
+#boot.go .flare{animation:bflare .44s ease-out 1.4s both}
+#boot.go .dot{animation:bdot .5s ease 1.58s both}
+#boot.go .dotg{animation:bdotg .5s ease 1.58s both}
 /* enters fast so you can see it, drifts while it assembles, then slams */
 @keyframes bdrop{
   0%{transform:translateY(calc(var(--trv,480px) * -1))}
@@ -42,6 +44,7 @@
   85%{transform:translateY(7px)}
   93%{transform:translateY(-2.5px)}
   100%{transform:translateY(0)}}
+@keyframes bfade{from{opacity:0}to{opacity:1}}
 @keyframes bunfurl{0%{transform:scale(.18,.3);opacity:0}24%{opacity:1}100%{transform:none;opacity:1}}
 @keyframes btele{0%{transform:translateY(-9px) scale(.2);opacity:0}26%{opacity:1}100%{transform:none;opacity:1}}
 @keyframes bswing{0%{transform:rotate(-104deg);opacity:0}26%{opacity:1}100%{transform:rotate(0);opacity:1}}
@@ -54,8 +57,8 @@
 @keyframes bdotg{0%{opacity:0}18%{opacity:.22}30%{opacity:.02}44%{opacity:.22}58%{opacity:.08}100%{opacity:.22}}
 /* no motion: show him finished, leave straight away */
 @media (prefers-reduced-motion:reduce){
-  #boot .set,#boot .band,#boot .cupL,#boot .cupR,#boot .boom,#boot .hd0,#boot .face,#boot .eye,#boot .sweep,#boot .flare,#boot .dot,#boot .dotg{animation:none!important}
-  #boot .eye,#boot .dot{opacity:1}#boot .dotg{opacity:.22}#boot .sweep,#boot .flare{opacity:0}
+  #boot .set,#boot .band,#boot .cupL,#boot .cupR,#boot .boom,#boot .hd0,#boot .face,#boot .eye,#boot .sweep,#boot .flare,#boot .dot,#boot.go .dotg{animation:none!important}
+  #boot .bbot{opacity:1}#boot .eye,#boot .dot{opacity:1}#boot .dotg{opacity:.22}#boot .sweep,#boot .flare{opacity:0}
 }
 #boot.gone .bbot{transform:scale(.92)}
 #boot .bbot svg{width:100%;height:100%;display:block}
@@ -810,8 +813,11 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.4.2";
+const VERSION = "1.4.3";
 const RELEASES = [
+  {v:"1.4.3", date:"Nov 14, 2026", title:"One clean entrance", items:[
+    ["No more double image on open","The launch screen was a picture of Audible and the app then drew its own. Any mismatch between the two showed as a second head flickering. The launch screen is now plain, and he fades in as the animation's first beat."],
+    ["Animation waits its turn","It used to start while the app was still loading, so it ran blind and then jumped. It now begins on a frame where the app is actually ready."]]},
   {v:"1.4.2", date:"Nov 14, 2026", title:"Opens in a blink", items:[
     ["Much faster launch","Audible now keeps itself on your phone instead of downloading on every open. The launch image used to sit frozen for nearly two seconds waiting on the network. It does not any more."],
     ["Works with no signal","The app opens offline. Scores still need a connection, but it will not sit on a blank screen."],
@@ -3233,14 +3239,24 @@ function sheetReset(){ sheetBase = 0; const sh = $("#sheet"); sh.classList.remov
 /* =============== boot =============== */
 let bootT = Date.now(), bootDone = false, bootSlow = 0;
 const NOMO = matchMedia("(prefers-reduced-motion:reduce)").matches;
-const BOOT_ANIM = NOMO ? 360 : 1950;   /* 4A runs 1.95s end to end */
+const BOOT_ANIM = NOMO ? 360 : 2120;   /* 4A runs 1.95s end to end */
 /* the headset starts just above the top of the screen, whatever the screen is.
    CSS transforms inside an SVG use user units, so convert px through the sprite's scale. */
+let animT = 0;
+/* The animation used to begin the instant the CSS parsed, which is before this
+   200KB script is done. SVG transforms are not composited in Safari, so it ticks
+   on the main thread: the clock kept running while the parse blocked painting,
+   then snapped forward, and --trv changed value in the same frame. That double
+   jump is what showed up as a flicker and a second head. Set the travel distance
+   first, then let one frame pass, then start it. */
 (function travel(){
   const bb = document.querySelector("#boot .bbot"), b = document.getElementById("boot");
   if(!bb || !b) return;
   const px = bb.getBoundingClientRect().width || 108, u = 150 / px;
   b.style.setProperty("--trv", Math.round((innerHeight / 2 + 64) * u) + "px");
+  const go = () => { if(b.isConnected && !b.classList.contains("go")){ b.classList.add("go"); animT = Date.now(); } };
+  requestAnimationFrame(() => requestAnimationFrame(go));
+  setTimeout(go, 300);                       /* belt and braces if a frame is dropped */
 })();
 function loading(msg){
   const b = $("#boot");
@@ -3259,7 +3275,7 @@ function bootOff(){
     const a = $("#app"); a.classList.add("boot-in"); b.classList.add("gone");
     setTimeout(() => a.classList.remove("boot-in"), 420);
     setTimeout(() => b.remove(), 340);
-  }, Math.max(0, BOOT_ANIM - (Date.now() - bootT)));
+  }, Math.max(0, BOOT_ANIM - (Date.now() - (animT || bootT))));
 }
 function setup(){
   bootOff();

@@ -2,6 +2,12 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.4.3 — One clean entrance
+*Nov 14, 2026*
+
+- **No more double image on open.** iOS shows a static launch image while the page loads, and the app then draws its own copy of Audible. Two separate renderings of the same thing meant any mismatch between them appeared as a second head flickering during the handoff. The launch images are now plain dark, and Audible fades in as the animation's first beat, so there is nothing to collide with.
+- **The animation waits until the app is ready.** It previously began the moment the stylesheet parsed, which is before the 200KB script runs. SVG transforms are not composited in Safari, so it ticked on the main thread while the parse blocked painting, then snapped forward. It now starts on a frame where the main thread is free.
+
 ## 1.4.2 — Opens in a blink
 *Nov 14, 2026*
 
