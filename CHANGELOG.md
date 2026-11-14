@@ -2,7 +2,15 @@
 
 All notable changes to Audible. Newest first.
 
-## 1.4.7 — Photos stop flashing
+## 1.4.8 — Updates in one open, and a ready first run
+*Nov 14, 2026*
+
+- **One open per update, not two.** Cache-first serving meant a new build only appeared on the launch after next. The boot animation runs for ~2s regardless, so the page now fetches the live document during it, compares the `VERSION` constant, writes the new copy into the cache and reloads before the splash ever lifts. If the app is already interactive it shows a tap-to-update banner instead.
+- **Prefetch during the launch animation.** The first run pulls headshots for both rosters, this week's team logos and league avatars while the animation plays, bounded at 2.6s so it can never hang. The rest of the league's photos warm on idle afterwards. A new user no longer meets a grid of empty circles.
+- **Fixed `addAll` precaching.** It rejects as a unit, so a single missing asset left the whole shell cache empty and silently fell back to the network. Each asset is cached independently now.
+- **The update check needs a network escape hatch.** `isShell` was intercepting the check itself and serving it from cache, so it compared the old version against itself and never detected anything. Requests carrying `?fresh=` now bypass the worker.
+
+ Photos stop flashing
 *Nov 14, 2026*
 
 - **Images are cached on device.** Headshots and team logos from sleepercdn went to the network on every render, and iOS discards decoded image data when an app is backgrounded, so returning from the app switcher blanked every photo. The service worker now serves them cache-first from a dedicated store that survives shell updates.

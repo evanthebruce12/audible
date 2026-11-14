@@ -13,7 +13,10 @@ const ASSETS = ["./", "./index.html", "./manifest.json", "./icon.png", "./icon-1
 
 self.addEventListener("install", e => {
   self.skipWaiting();
-  e.waitUntil(caches.open(SHELL).then(c => c.addAll(ASSETS)).catch(() => {}));
+  /* addAll rejects as a unit, so one missing file left the whole precache
+     empty. Cache each asset on its own. */
+  e.waitUntil(caches.open(SHELL).then(c =>
+    Promise.all(ASSETS.map(a => c.add(a).catch(() => {})))).catch(() => {}));
 });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== SHELL && k !== IMGS).map(k => caches.delete(k)))));
@@ -27,6 +30,7 @@ function isShell(req){
   if(req.method !== "GET") return false;
   let u; try{ u = new URL(req.url); }catch(e){ return false; }
   if(u.origin !== self.location.origin) return false;
+  if(u.searchParams.has("fresh")) return false;   /* the page's own update check must reach the network */
   if(req.mode === "navigate") return true;
   const name = u.pathname.split("/").pop();
   return SHELL_FILES.includes(name);
@@ -36,51 +40,12 @@ self.addEventListener("fetch", e => {
   e.respondWith((async () => {
     const cache = await caches.open(SHELL);
     const hit = await cache.match(e.request, {ignoreSearch: true});
-    const net = fetch(e.request).then(async res => {
-      if(res && res.ok){
-        const fresh = res.clone();
-        const old = hit ? await hit.clone().text() : "";
-        const txt = await res.clone().text();
-        await cache.put(e.request, fresh);
-        if(old && old !== txt){
-          const cs = await self.clients.matchAll({type: "window"});
-          cs.forEach(c => c.postMessage({type: "update-ready"}));
-        }
-      }
+    const net = fetch(e.request).then(res => {
+      if(res && res.ok) cache.put(e.request, res.clone()).catch(() => {});
       return res;
     }).catch(() => null);
-    return hit || net || fetch(e.request);   /* cache first, network only on a miss */
-  })());
-});
-
-/* ---------------------------------------------------------------
-   Player headshots and team logos.
-   These never change, but every one was refetched from the network
-   on each render, and iOS drops decoded image data when the app is
-   backgrounded. Coming back from the app switcher meant every photo
-   went blank and popped in again. Cache them permanently.
-   --------------------------------------------------------------- */
-const IMGS = "audible-img-v1";
-const IMG_HOSTS = ["sleepercdn.com", "a.espncdn.com"];
-function isImg(req){
-  if(req.method !== "GET") return false;
-  let u; try{ u = new URL(req.url); }catch(e){ return false; }
-  if(!IMG_HOSTS.some(h => u.hostname === h || u.hostname.endsWith("." + h))) return false;
-  return /\.(png|jpe?g|webp|gif)$/i.test(u.pathname) || u.pathname.includes("/thumb");
-}
-self.addEventListener("fetch", e => {
-  if(!isImg(e.request)) return;
-  e.respondWith((async () => {
-    const c = await caches.open(IMGS);
-    const hit = await c.match(e.request);
-    if(hit) return hit;                                  /* straight from disk, no network */
-    try{
-      const res = await fetch(e.request);
-      if(res && (res.ok || res.type === "opaque")) c.put(e.request, res.clone()).catch(() => {});
-      return res;
-    }catch(err){
-      return hit || Response.error();
-    }
+    if(hit){ e.waitUntil(net); return hit; }        /* cache first */
+    return (await net) || fetch(e.request);
   })());
 });
 
