@@ -2,7 +2,15 @@
 
 All notable changes to Audible. Newest first.
 
-## 1.5 — Big plays
+## 1.5.1 — The tour lets you touch things
+*Nov 14, 2026*
+
+- **The spotlight passes touches through.** `.tour` was a full-screen overlay with `touch-action:none`, so it described a feature while making it untouchable. It is now `pointer-events:none`, and four blocker panels positioned around the spotlight swallow taps instead. The highlighted control is the only live part of the screen. Verified: a tap on the highlighted element reaches it, a tap anywhere else does not.
+- **Steps finish by doing, not by pressing Next.** Steps marked `act` listen for a real click on the target and advance from that. Next becomes "Skip this", and relabels itself if you hesitate.
+- **Opening something pauses the tour.** Tapping a player during the tour opens his card for real; the overlay hides, a watcher waits for the sheet to close, then the tour resumes and advances. Verified end to end.
+- **A big-play demo step.** A canned touchdown with real yard lines, rendered on a field inside the tip and looping, so a new user watches a replay rather than reading about one. Works with no live games.
+
+ Big plays
 *Nov 14, 2026*
 
 - **Plays are tiered rather than flagged.** `big` was `scored || 20+ yards`, so a 60-yard touchdown and a 21-yard catch rendered identically. `playTier()` now ranks every play: TD, INT, Fumble, Safety, Explosive (40+), Big play (20+), long field goals, big sacks, 4th-down conversions. Each gets its own chip colour, a left rule and a background wash. Nullified plays and missed kicks are correctly excluded. Verified against 16 real ESPN play strings.

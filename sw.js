@@ -8,7 +8,7 @@
    Storage, then refresh it in the background and tell the page when
    a newer build is ready.
    --------------------------------------------------------------- */
-const SHELL = "audible-shell-v8";
+const SHELL = "audible-shell-v9";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./icon.png", "./icon-192.png", "./icon-512.png", "./favicon.png"];
 
 self.addEventListener("install", e => {
