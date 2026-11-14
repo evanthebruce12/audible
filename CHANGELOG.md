@@ -2,6 +2,11 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.4.6 — The chat header is sharp
+*Nov 14, 2026*
+
+- **Measured, then fixed.** On a native PNG screenshot, text in the chat header had a 20-80% edge width of 5 device px while body text 300px below it measured 1px, on the same screen at the same moment. `.chat` slides in on a `transform`, which promotes the whole panel to a compositing layer; `#chLog` scrolls so it kept repainting at device resolution, but the static header kept whatever scale the layer was rasterised at. The header is now a sibling of the panel rather than a child, fixed to the top and fading in, so it is never inside a transformed layer.
+
 ## 1.4.5 — Nothing blurry at the top
 *Nov 14, 2026*
 

@@ -102,6 +102,22 @@ html[data-theme=light] .bar::before{background:#fafafc!important}
 html[data-theme=light] .circ{background:#fff!important}
 .bar,.bar *,.chd,.chd *,.pfb,.pfb img{will-change:auto!important;transform:none}
 .pfb:active{transform:scale(.9)}
+/* ---- the chat header lives outside the sliding panel ----
+   .chat slides in on a transform, which promotes the whole panel to a GPU
+   layer. The log inside it scrolls and so keeps repainting at full
+   resolution, but the header never moves, so it kept whatever scale the
+   layer was rasterised at. Measured on a device: header text edges 5px,
+   body text 1px, on the same screen. The header is now a sibling that
+   never transforms. */
+.chd{position:fixed;left:0;right:0;top:0;z-index:56;padding-top:calc(10px + var(--sat));
+  background:#0b0b0d;opacity:0;pointer-events:none;transition:opacity .22s ease .1s;
+  max-width:none;margin:0;transform:none!important;will-change:auto!important}
+html[data-theme=light] .chd{background:#fafafc}
+.chd>*{max-width:600px}
+.chd.on{opacity:1;pointer-events:auto}
+.chat{padding-top:0}
+.chat .chlog{padding-top:calc(62px + var(--sat))}
+.chat.kb .chd{padding-top:6px;padding-bottom:6px}
 </style>
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="favicon.png">
@@ -788,8 +804,8 @@ html[data-theme=light] .pmenu{background:rgba(252,252,253,.82);box-shadow:inset 
   <button data-tab="league"><svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5.5h3V7a3 3 0 0 1-3 3M7 5.5H4V7a3 3 0 0 0 3 3M12 14v4M8 21h8"/></svg>League</button>
 </div></nav>
 <button class="fab" id="fab" style="display:none" aria-label="Ask Audible"></button>
+<div class="chd" id="chd"><button id="chClose" class="chbtn">Done</button><div class="chtitle"><span id="chBot"></span><b id="chName">Audible</b></div><button id="chClear" class="chbtn">Clear</button></div>
 <div class="chat" id="chat">
-  <div class="chd"><button id="chClose" class="chbtn">Done</button><div class="chtitle"><span id="chBot"></span><b id="chName">Audible</b></div><button id="chClear" class="chbtn">Clear</button></div>
   <div class="chlog" id="chLog"></div>
   <form class="chin" id="chForm"><button type="button" id="chEff" class="effchip" aria-label="Effort">Auto</button><textarea id="chText" rows="1" placeholder="Ask about your team…"></textarea><button type="submit" id="chSend" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>
 </div>
@@ -818,8 +834,10 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.4.5";
+const VERSION = "1.4.6";
 const RELEASES = [
+  {v:"1.4.6", date:"Nov 14, 2026", title:"The chat header is sharp", items:[
+    ["Fixed for real this time","Measured on a screenshot: header text was five times blurrier than body text on the same screen. The chat panel slides up using the graphics chip, which bakes everything inside it at a fixed resolution. The log kept repainting as you scroll so it stayed sharp, but the header never moved. It now sits outside the sliding panel."]]},
   {v:"1.4.5", date:"Nov 14, 2026", title:"Nothing blurry at the top", items:[
     ["Top of the screen is sharp","The header, your profile picture and the chat title were being drawn into a separate layer that iPhone renders at lower resolution. Every filter and layer trick at the top of the screen is gone. The bar is a solid colour now instead of frosted glass."]]},
   {v:"1.4.4", date:"Nov 14, 2026", title:"No more blink on open", items:[
@@ -1303,10 +1321,10 @@ function md(t){
 const SUGG = ["Give me my weekly briefing", "Who should I start at flex this week?", "Any waiver adds worth making?", "Is there a trade I should look at?", "How do my playoff chances look?"];
 function openChat(prefill){
   $("#chName").textContent = S.set.botName; $("#chBot").innerHTML = abot("a28"); loadChat(); renderChat(); setTimeout(abPop, 60);
-  document.documentElement.classList.add("ovl"); $("#chat").classList.add("on"); document.body.style.overflow = "hidden"; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = true; }); chatFit();
+  document.documentElement.classList.add("ovl"); $("#chd").classList.add("on"); $("#chat").classList.add("on"); document.body.style.overflow = "hidden"; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = true; }); chatFit();
   if(prefill) sendChat(prefill);
 }
-function closeChat(){ $("#chat").classList.remove("on"); if(!$("#sheet").classList.contains("on")) document.documentElement.classList.remove("ovl"); document.body.style.overflow = ""; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = false; }); $("#chText").blur(); chatFit(); }
+function closeChat(){ $("#chd").classList.remove("on"); $("#chat").classList.remove("on"); if(!$("#sheet").classList.contains("on")) document.documentElement.classList.remove("ovl"); document.body.style.overflow = ""; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = false; }); $("#chText").blur(); chatFit(); }
 function renderChat(){
   const log = $("#chLog");
   const free = !S.set.apiKey;
