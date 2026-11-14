@@ -2,6 +2,11 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.4.5 — Nothing blurry at the top
+*Nov 14, 2026*
+
+- **The top of the screen is sharp.** Measured on a device screenshot, text in the chat header had a 20-80% edge width of 6 device pixels where sharp text at 3x is 1-2, so it was genuinely being rasterised below device resolution. Anything at the top of the screen that forced a compositing layer is gone: `translateZ(0)` and `isolation` on the chat header (added in 1.4.2 trying to fix this and making it worse), and the `backdrop-filter` on the top bar. The bar is now an opaque colour rather than frosted glass. The floating tab bar at the bottom keeps its glass.
+
 ## 1.4.4 — No more blink on open
 *Nov 14, 2026*
 
