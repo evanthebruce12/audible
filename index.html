@@ -498,8 +498,9 @@ html[data-theme=light] .circ svg{stroke:#000}
 .fld .ez.a{background:#2f9e48}.fld .ez.b{background:var(--blue);transform:none}
 .fld .turf{flex:1;position:relative;background:repeating-linear-gradient(90deg,#2b7a3d 0 10%,#2f8442 10% 20%)}
 .fld .side{position:absolute;top:0;bottom:0;transition:width .6s,left .6s}
-.fld .side.a{left:0;background:rgba(48,209,88,.22)}
-.fld .side.b{right:0;background:rgba(61,106,242,.2)}
+.fld .side.a{left:0;background:transparent}
+.fld .side.b{right:0;background:repeating-linear-gradient(90deg,#2b55c2 0 18px,#3160d2 18px 36px)}
+.fld .turf .yl,.fld .turf .hash,.fld .turf .nums,.fld .turf .los,.fld .turf .ball{z-index:1}
 .fld .ez{writing-mode:horizontal-tb!important;transform:none!important}
 .fld .ez.a{background:var(--green)}
 .av.ez-av{width:22px;height:22px;font-size:10px;box-shadow:0 0 0 1.5px #fff}
@@ -550,7 +551,7 @@ html[data-theme=light] nav button{text-shadow:0 1px 6px rgba(255,255,255,.6)}
 
 <nav id="nav" style="display:none"><div class="wrap">
   <button data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Today<span class="badge" id="b_home" style="display:none"></span></button>
-  <button data-tab="matchup"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M5.5 5v14M18.5 5v14M12 5v14"/><path d="M8.75 9v1M8.75 14v1M15.25 9v1M15.25 14v1" stroke-width="1.3"/></svg>Matchup</button>
+  <button data-tab="matchup"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M6 5v14M18 5v14M12 5v14"/></svg>Matchup</button>
   <button data-tab="team"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>My Team<span class="badge" id="b_team" style="display:none"></span></button>
   <button data-tab="players"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.8.8 2.8 2.6 3 5.2"/></svg>Players</button>
   <button data-tab="league"><svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5.5h3V7a3 3 0 0 1-3 3M7 5.5H4V7a3 3 0 0 0 3 3M12 14v4M8 21h8"/></svg>League</button>
@@ -593,7 +594,7 @@ const RELEASES = [
     ["Cleaner chat","The message box is one compact bubble that sits right on top of the keyboard, with no gap or page peeking through underneath."],
     ["Fixes","Game cards line up with the rest of the page, the Refresh and Settings buttons are crisper, and stray initials no longer peek out behind player photos."],
     ["Richer game cards","Tap any NFL game for team colors, the score by quarter, win odds, game leaders, and a side-by-side team stats comparison."],
-    ["Matchup upgrades","The Matchup tab has a football field icon, and win probability now plays out on a little football field, color-matched to each team: green is you, blue is your opponent. Every starter shows his team, opponent and kickoff time on their own lines, and a blue dot flags fresh news."],
+    ["Matchup upgrades","The Matchup tab has a football field icon, and win probability now plays out on a little football field: your territory is green turf, theirs is blue, with matching rings on each team's picture. Every starter shows his team, opponent and kickoff time on their own lines, and a blue dot flags news you haven't seen yet, on Matchup and My Team."],
     ["Cleaner numbers","Trending adds read short, like 734.1K."],
     ["Deeper player cards","Tap any player for Audible's quick take, position rank, hot or cold streak, full season stats, a game log with best and typical weeks, recent news, and a profile with depth chart spot."],
     ["Steadier screens","The page behind a card or chat no longer scrolls when you touch an empty spot."],
@@ -816,7 +817,13 @@ function gameParts(p){
   if(g.state === "in") return [a, g.detail];
   return [a, `Final · ${me > them ? "W" : me < them ? "L" : "T"} ${me}-${them}`];
 }
-function hasNews(p){ const n = p.name.toLowerCase(), cut = Date.now() - 36 * 3600e3; return (S.news || []).some(a => a.t > cut && (a.ath.includes(n) || a.h.toLowerCase().includes(n))); }
+let seenNews = null;
+function hasNews(p){
+  if(!seenNews) seenNews = store.get("gd_newsSeen") || {};
+  const n = p.name.toLowerCase(), cut = Math.max(Date.now() - 36 * 3600e3, seenNews[p.id] || 0);
+  return (S.news || []).some(a => a.t > cut && (a.ath.includes(n) || a.h.toLowerCase().includes(n))) || !!((S.pnews || {})[p.id] && S.pnews[p.id].items.some(a => a.t > cut));
+}
+function markNewsSeen(id){ if(!seenNews) seenNews = store.get("gd_newsSeen") || {}; seenNews[id] = Date.now(); const cut = Date.now() - 30 * 864e5; for(const k in seenNews) if(seenNews[k] < cut) delete seenNews[k]; store.set("gd_newsSeen", seenNews); }
 function gameLine(p){
   if(p.empty || !p.team) return p.empty ? "" : "Free agent";
   if(isBye(p)) return "Bye week";
@@ -1747,7 +1754,7 @@ function liveSub(){
 function tRow(p, slot, pts, lvl){
   const s = p.empty ? "" : gState(p), pr = proj(p.id);
   return `<button class="trow ${lvl || ""}" ${p.empty ? "" : `data-p="${esc(p.id)}"`}>${slot ? `<div class="slot">${SLBL[slot] || slot}</div>` : ""}${hs(p)}
-    <div class="i"><div class="t1 ${p.empty ? "red" : ""}">${esc(p.empty ? "Empty slot" : p.name)}${stBadge(p)}</div><div class="t2 ${s === "in" ? "live-g" : ""}">${p.empty ? "Tap Edit lineup to fill" : esc(p.pos) + " · " + esc(gameLine(p))}</div></div>
+    <div class="i"><div class="t1 ${p.empty ? "red" : ""}">${esc(p.empty ? "Empty slot" : p.name)}${stBadge(p)}${!p.empty && hasNews(p) ? '<i class="ndot" title="New news"></i>' : ""}</div><div class="t2 ${s === "in" ? "live-g" : ""}">${p.empty ? "Tap Edit lineup to fill" : esc(p.pos) + " · " + esc(gameLine(p))}</div></div>
     <div class="r">${p.empty ? "" : `<b>${s === "pre" && !pts ? "–" : f1(pts || 0)}</b>${pr != null ? `<small>proj ${f1(pr)}</small>` : ""}`}</div></button>`;
 }
 
@@ -2037,7 +2044,7 @@ function playerBody(id){
   return h;
 }
 async function openPlayer(id){
-  S.sheetPid = id;
+  S.sheetPid = id; markNewsSeen(id); $$(`[data-p="${CSS.escape(id)}"] .ndot`).forEach(d => d.remove());
   openSheet(shortName(P(id)), playerBody(id));
   fillTracker(P(id));
   if(!S.plog[id]) loadPlayerLog(id).then(() => { if(S.sheetPid === id) refreshSheet(); });
