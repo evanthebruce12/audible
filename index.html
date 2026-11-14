@@ -497,7 +497,15 @@ html[data-theme=light] .circ svg{stroke:#000}
 .fld .ez{flex:0 0 30px;display:grid;place-items:center;font-size:9px;font-weight:800;letter-spacing:.04em;color:#fff;writing-mode:vertical-rl;transform:rotate(180deg)}
 .fld .ez.a{background:#2f9e48}.fld .ez.b{background:var(--blue);transform:none}
 .fld .turf{flex:1;position:relative;background:repeating-linear-gradient(90deg,#2b7a3d 0 10%,#2f8442 10% 20%)}
-.fld .gain{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.07);transition:width .6s}
+.fld .side{position:absolute;top:0;bottom:0;transition:width .6s,left .6s}
+.fld .side.a{left:0;background:rgba(48,209,88,.22)}
+.fld .side.b{right:0;background:rgba(61,106,242,.2)}
+.fld .ez{writing-mode:horizontal-tb!important;transform:none!important}
+.fld .ez.a{background:var(--green)}
+.av.ez-av{width:22px;height:22px;font-size:10px;box-shadow:0 0 0 1.5px #fff}
+.av.ring-a{box-shadow:0 0 0 2.5px var(--bg2),0 0 0 5px var(--green)}
+.av.ring-b{box-shadow:0 0 0 2.5px var(--bg2),0 0 0 5px var(--blue)}
+.fld .los{background:#fff!important;box-shadow:0 0 4px rgba(0,0,0,.4)}
 .fld .yl{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.35)}
 .fld .hash{position:absolute;left:0;right:0;top:50%;height:6px;margin-top:-3px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.4) 0 1px,transparent 1px 2%)}
 .fld .nums span{position:absolute;bottom:1px;transform:translateX(-50%);font-size:7px;font-weight:700;color:rgba(255,255,255,.55)}
@@ -585,7 +593,7 @@ const RELEASES = [
     ["Cleaner chat","The message box is one compact bubble that sits right on top of the keyboard, with no gap or page peeking through underneath."],
     ["Fixes","Game cards line up with the rest of the page, the Refresh and Settings buttons are crisper, and stray initials no longer peek out behind player photos."],
     ["Richer game cards","Tap any NFL game for team colors, the score by quarter, win odds, game leaders, and a side-by-side team stats comparison."],
-    ["Matchup upgrades","The Matchup tab has a football field icon, and win probability now plays out on a little football field. Every starter shows his team, opponent and kickoff time on their own lines, and a blue dot flags fresh news."],
+    ["Matchup upgrades","The Matchup tab has a football field icon, and win probability now plays out on a little football field, color-matched to each team: green is you, blue is your opponent. Every starter shows his team, opponent and kickoff time on their own lines, and a blue dot flags fresh news."],
     ["Cleaner numbers","Trending adds read short, like 734.1K."],
     ["Deeper player cards","Tap any player for Audible's quick take, position rank, hot or cold streak, full season stats, a game log with best and typical weeks, recent news, and a profile with depth chart spot."],
     ["Steadier screens","The page behind a card or chat no longer scrolls when you touch an empty spot."],
@@ -1782,13 +1790,13 @@ function wpField(wp, A, B){
   const x = Math.max(3, Math.min(97, wp * 100));
   const ticks = [10,20,30,40,50,60,70,80,90].map(v => `<i class="yl" style="left:${v}%"></i>`).join("");
   const nums = [10,20,30,40,50,40,30,20,10].map((n, i) => `<span style="left:${(i + 1) * 10}%">${n}</span>`).join("");
-  return `<div class="fld" role="img" aria-label="Win probability ${pct(wp)} for ${esc(A.name)}"><div class="ez a">${ini(A)}</div><div class="turf"><b class="gain" style="width:${x}%"></b>${ticks}<div class="hash"></div><div class="nums">${nums}</div><i class="los" style="left:${x}%"></i><i class="ball" style="left:${x}%"></i></div><div class="ez b">${ini(B)}</div></div>`;
+  return `<div class="fld" role="img" aria-label="Win probability: ${esc(A.name)} ${pct(wp)}, ${esc(B.name)} ${pct(1 - wp)}"><div class="ez a">${av(A, "ez-av")}</div><div class="turf"><b class="side a" style="width:${x}%"></b><b class="side b" style="left:${x}%"></b>${ticks}<div class="hash"></div><div class="nums">${nums}</div><i class="los" style="left:${x}%"></i><i class="ball" style="left:${x}%"></i></div><div class="ez b">${av(B, "ez-av")}</div></div>`;
 }
 function scoreBug(a, b, link){
   const A = team(a.roster_id), B = b ? team(b.roster_id) : null;
   const ap = a.points || 0, bp = b ? (b.points || 0) : 0;
   const oa = teamOutlook(a), ob = b ? teamOutlook(b) : null, wp = hasProj() && b ? winProb(oa, ob) : null;
-  const line = (T, p, o, lose, id) => `<div class="brow">${av(T, "l")}<div class="bi"><div class="nm">${esc(T.name)}</div><div class="rec">${rec(T)}${o && hasProj() ? ` · proj ${f1(o.proj)}` : ""}</div></div><span class="sc ${lose ? "lose" : ""}" ${link ? "" : `id="${id}"`}>${f2(p)}</span></div>`;
+  const line = (T, p, o, lose, id) => `<div class="brow">${av(T, "l" + (wp != null ? (id === "scA" ? " ring-a" : " ring-b") : ""))}<div class="bi"><div class="nm">${esc(T.name)}</div><div class="rec">${rec(T)}${o && hasProj() ? ` · proj ${f1(o.proj)}` : ""}</div></div><span class="sc ${lose ? "lose" : ""}" ${link ? "" : `id="${id}"`}>${f2(p)}</span></div>`;
   return `<div class="bug" ${link ? `data-go="matchup"` : ""}>${line(A, ap, oa, b && ap < bp, "scA")}${B ? line(B, bp, ob, bp < ap, "scB") : `<div class="brow"><div class="bi"><div class="nm c2">Bye week</div></div></div>`}${wp != null ? `<div class="wp"><div class="lbls"><span class="green">${pct(wp)}</span><span class="c2">Win probability</span><span style="color:var(--blue)">${pct(1-wp)}</span></div>${wpField(wp, A, B)}</div>` : ""}</div>`;
 }
 
