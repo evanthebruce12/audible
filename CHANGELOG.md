@@ -2,6 +2,14 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.4.2 — Opens in a blink
+*Nov 14, 2026*
+
+- **Much faster launch.** The service worker had no fetch handler, so every single open pulled the whole 263KB app over the network before anything could paint. On a phone that left the static launch image frozen for close to two seconds. The app shell is now cached, and first paint went from 216ms to 52ms in testing.
+- **Works offline.** The app opens with no connection. Live scores still need the network.
+- **Update notice.** Because the shell is served from cache, a new build would otherwise land silently. You now get a tap-to-reload banner when one is ready.
+- **Sharper chat header.** The top bar's frosted layer was still being composited behind the chat, softening Done, Audible and Clear. Blur is switched off beneath any full-screen overlay.
+
 ## 1.4.1 — A new look, and a proper entrance
 *Nov 14, 2026*
 

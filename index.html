@@ -83,6 +83,17 @@
 .toast.settle{transition:transform .5s var(--spring)}
 .toast.out{transition:transform .32s var(--ios),opacity .26s ease;transform:translateY(-52px);opacity:0}
 .reduce .toast.out{transition:opacity .2s}
+/* ---- full-screen overlays: nothing underneath should keep a blur layer ----
+   The bar sits behind the chat and the sheet. Its frosted pseudo-element was
+   still being composited there, which softened the header text above it.
+   It is not visible while an overlay is up, so drop the filter entirely. */
+html.ovl .bar::before{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.ovl nav{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+/* the chat slides in on a transform, which rasterises its header once and
+   leaves it soft. Give it its own context and re-raster when the slide ends. */
+.chd{isolation:isolate;will-change:auto}
+.chat.rest{will-change:auto}
+.chat.rest .chd{transform:translateZ(0)}
 </style>
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="favicon.png">
@@ -799,8 +810,13 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.4.1";
+const VERSION = "1.4.2";
 const RELEASES = [
+  {v:"1.4.2", date:"Nov 14, 2026", title:"Opens in a blink", items:[
+    ["Much faster launch","Audible now keeps itself on your phone instead of downloading on every open. The launch image used to sit frozen for nearly two seconds waiting on the network. It does not any more."],
+    ["Works with no signal","The app opens offline. Scores still need a connection, but it will not sit on a blank screen."],
+    ["Update notice","When a new version lands you get a tap-to-reload banner, rather than quietly staying on the old one."],
+    ["Sharper chat header","Done, Audible and Clear were being softened by a blur layer sitting behind them. It is switched off while the chat is open."]]},
   {v:"1.4.1", date:"Nov 14, 2026", title:"A new look, and a proper entrance", items:[
     ["Redesigned Audible","A graphite helmet and a lit visor instead of the old white dome. Sharper at every size, and the same face now runs through the app, the icon and your Home Screen."],
     ["Launch animation","Open the app and the headset builds itself on the way down, slams on, and he powers up. The launch image is the first frame, so there is no jump."],
@@ -1272,10 +1288,11 @@ function md(t){
 const SUGG = ["Give me my weekly briefing", "Who should I start at flex this week?", "Any waiver adds worth making?", "Is there a trade I should look at?", "How do my playoff chances look?"];
 function openChat(prefill){
   $("#chName").textContent = S.set.botName; $("#chBot").innerHTML = abot("a28"); loadChat(); renderChat(); setTimeout(abPop, 60);
-  $("#chat").classList.add("on"); document.body.style.overflow = "hidden"; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = true; }); chatFit();
+  document.documentElement.classList.add("ovl"); $("#chat").classList.add("on"); document.body.style.overflow = "hidden";
+  setTimeout(() => { const c = $("#chat"); c.classList.add("rest"); const h = $(".chd"); if(h){ h.style.transform = "translateZ(0)"; requestAnimationFrame(() => h.style.transform = ""); } }, 420); ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = true; }); chatFit();
   if(prefill) sendChat(prefill);
 }
-function closeChat(){ $("#chat").classList.remove("on"); document.body.style.overflow = ""; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = false; }); $("#chText").blur(); chatFit(); }
+function closeChat(){ $("#chat").classList.remove("on", "rest"); $("#chat").classList.remove("rest"); if(!$("#sheet").classList.contains("on")) document.documentElement.classList.remove("ovl"); document.body.style.overflow = ""; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = false; }); $("#chText").blur(); chatFit(); }
 function renderChat(){
   const log = $("#chLog");
   const free = !S.set.apiKey;
@@ -1962,6 +1979,17 @@ function abPop(){ if(!S.set.celebrate) return; document.querySelectorAll(".abot 
   setTimeout(blink, 2500 + Math.random() * 3000);
 })();
 
+/* the service worker serves the shell from cache, so a new build lands quietly.
+   Say so rather than leaving them on an old version without knowing. */
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.addEventListener("message", e => {
+    if(!e.data || e.data.type !== "update-ready" || S.updPrompted) return;
+    S.updPrompted = true;
+    const t = toast("A new version of Audible is ready");
+    if(t){ t.style.cursor = "pointer"; t.addEventListener("click", () => location.reload(), {once:true}); }
+  });
+}
+
 /* =============== notifications + backup (Cloudflare watcher) =============== */
 const WORKER_URL = "https://audible.evan-aulick.workers.dev";
 const worker = () => (S.set.worker || WORKER_URL || "").replace(/\/+$/, "");
@@ -2358,9 +2386,11 @@ function txCell(t){
 function openSheet(title, body){
   $("#shTitle").textContent = title; $("#shBody").innerHTML = body; $("#shBody").scrollTop = 0;
   sheetReset(); $("#sheet").classList.remove("scrolled");
+  document.documentElement.classList.add("ovl");
   $("#scrim").classList.add("on"); $("#sheet").classList.add("on"); bindSheet();
 }
-function closeSheet(){ S.sheetArt = null; sheetReset(); $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on"); S.sheetPid = null; S.sheetGid = null; }
+function closeSheet(){ S.sheetArt = null; sheetReset(); $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on");
+  if(!$("#chat").classList.contains("on")) document.documentElement.classList.remove("ovl"); S.sheetPid = null; S.sheetGid = null; }
 $("#scrim").onclick = closeSheet; $("#shDone").onclick = closeSheet;
 
 const SG = {
