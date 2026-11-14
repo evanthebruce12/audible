@@ -2,7 +2,13 @@
 
 All notable changes to Audible. Newest first.
 
-## 1.4.8 — Updates in one open, and a ready first run
+## 1.4.9 — Smooth all the way up
+*Nov 14, 2026*
+
+- **Sheets no longer catch at the end of the slide.** Frame analysis of a 60fps recording: through the 25-frame slide the frame-to-frame delta decelerates smoothly, then climbs back up twice in the last ~100ms (3.8 → 5.3, and 1.7 → 4.2). A compositor-driven ease-out only ever decreases, so that was main-thread work landing mid-animation: the game log, the news and the week stats each resolving and rebuilding the sheet while it moved. Rebuilds are now held until the slide finishes, released on `transitionend` with a timeout as backstop.
+- **`will-change: transform` on `.sheet` was permanent**, keeping every sheet promoted to its own compositing layer for its whole life. That is the same condition that was rasterising the chat header below device resolution in 1.4.6. It is applied only while the sheet is actually moving now.
+
+ Updates in one open, and a ready first run
 *Nov 14, 2026*
 
 - **One open per update, not two.** Cache-first serving meant a new build only appeared on the launch after next. The boot animation runs for ~2s regardless, so the page now fetches the live document during it, compares the `VERSION` constant, writes the new copy into the cache and reloads before the splash ever lifts. If the app is already interactive it shows a tap-to-update banner instead.

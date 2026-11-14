@@ -545,7 +545,8 @@ html[data-theme=light] .seg .pill{background:#fff}
 .seg button.on,html[data-theme=light] .seg button.on{background:none;box-shadow:none}
 .seg button:active{transform:scale(.94)}
 /* sheets & chat: iOS curve */
-.sheet{transition:transform .5s var(--ios);will-change:transform}
+.sheet{transition:transform .5s var(--ios);will-change:auto}
+.sheet.mv{will-change:transform}
 .sheet .sh{transition:box-shadow .2s}
 .sheet.scrolled .sh{box-shadow:0 .5px 0 var(--sep)}
 .scrim{transition:opacity .4s var(--ios)}
@@ -834,8 +835,10 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.4.8";
+const VERSION = "1.4.9";
 const RELEASES = [
+  {v:"1.4.9", date:"Nov 14, 2026", title:"Smooth all the way up", items:[
+    ["No more catch at the top","Player cards, team cards and game cards slide up and then caught for a split second right before they landed. Stats, news and the game log were arriving mid-slide and rebuilding the card while it moved. Nothing rebuilds until it has parked."]]},
   {v:"1.4.8", date:"Nov 14, 2026", title:"Updates in one open, and a ready first run", items:[
     ["Updates arrive on the next open","You no longer have to open Audible twice to get a new version. While the launch animation plays, he checks for a newer build and switches to it before you ever see the app."],
     ["Everything is loaded before you land","The first launch now spends the animation pulling down the photos your first few screens need, so you never meet a page of empty circles. It costs about a second, once."]]},
@@ -2076,7 +2079,7 @@ function abPop(){ if(!S.set.celebrate) return; document.querySelectorAll(".abot 
 
 /* the service worker serves the shell from cache, so a new build lands quietly.
    Say so rather than leaving them on an old version without knowing. */
-const SHELL_CACHE = "audible-shell-v6";   /* keep in step with sw.js */
+const SHELL_CACHE = "audible-shell-v7";   /* keep in step with sw.js */
 /* The shell is served from cache, so without this a new build would not show
    up until the launch after next. The launch animation gives us two seconds
    of cover: fetch the live copy, and if the version moved, write it into the
@@ -2499,11 +2502,19 @@ function openSheet(title, body){
   $("#shTitle").textContent = title; $("#shBody").innerHTML = body; $("#shBody").scrollTop = 0;
   sheetReset(); $("#sheet").classList.remove("scrolled");
   document.documentElement.classList.add("ovl");
+  sheetSettling();
+  $("#sheet").classList.add("mv");
   $("#scrim").classList.add("on"); $("#sheet").classList.add("on"); bindSheet();
 }
-function closeSheet(){ S.sheetArt = null; sheetReset(); $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on");
+function closeSheet(){ S.sheetArt = null; sheetReset(); $("#sheet").classList.add("mv"); $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on");
   if(!$("#chat").classList.contains("on")) document.documentElement.classList.remove("ovl"); S.sheetPid = null; S.sheetGid = null; }
 $("#scrim").onclick = closeSheet; $("#shDone").onclick = closeSheet;
+$("#sheet").addEventListener("transitionend", e => {
+  if(e.target !== $("#sheet") || e.propertyName !== "transform") return;
+  clearTimeout(sheetBusy); sheetBusy = 0;
+  $("#sheet").classList.remove("mv");          /* drop the layer once it is parked */
+  if(rsQueued){ rsQueued = false; refreshSheet(); }
+});
 
 const SG = {
   pass:["Passing", [["pass_cmp","CMP"],["pass_att","ATT"],["pass_yd","YDS"],["pass_td","TD"],["pass_int","INT"]]],
@@ -2695,9 +2706,22 @@ function playerInsights(id){
   return h;
 }
 let rsPend = 0;
-/* the log, the news and the week stats each arrive on their own and each used
-   to trigger a full rebuild of the sheet. Coalesce them into one. */
+/* The sheet slides up on a transform the compositor can run by itself, but a
+   rebuild lands on the main thread and stalls it. Measured on a recording,
+   the frame-to-frame delta climbed back up twice in the last 100ms of an
+   otherwise smooth deceleration. So: nothing rebuilds while it is moving.
+   The log, the news and the week stats also each used to trigger their own
+   full rebuild, so they are coalesced into one. */
+let sheetBusy = 0, rsQueued = false;
+function sheetSettling(ms){
+  clearTimeout(sheetBusy);
+  sheetBusy = setTimeout(() => {
+    sheetBusy = 0;
+    if(rsQueued){ rsQueued = false; refreshSheet(); }
+  }, ms || 540);                                   /* the .5s slide, plus a frame */
+}
 function refreshSheet(){
+  if(sheetBusy){ rsQueued = true; return; }
   if(rsPend) return;
   rsPend = requestAnimationFrame(() => { rsPend = 0; doRefreshSheet(); });
 }
