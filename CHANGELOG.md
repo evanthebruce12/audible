@@ -9,6 +9,7 @@ All notable changes to Audible. Newest first.
 - **League switcher.** In more than one league? See them all with your record in each, and switch with one tap.
 - **Pull to refresh.** Pull down on any screen to update scores.
 - **Guided tour.** New here? Audible walks you through the app. Replay it anytime from the menu.
+- **A free Audible.** Ask Audible about your lineup, matchup, waivers, playoff odds or any player with no key at all. He answers from your real league numbers.
 - **Audible AI your way.** Pick how hard Audible thinks (Auto, Quick, Balanced, Deep) and how long his answers run. Deep thinks a question all the way through and checks the latest news.
 - **No surprise bills.** See what you've spent on AI this month and set a monthly limit.
 - **Easier setup.** A friendlier welcome, a league picker, and a 4-step guide to getting your own Claude API key.

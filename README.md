@@ -55,9 +55,11 @@ That's it. No password, no account to make. Adding it to your Home Screen is wha
 
 **Your whole league.** Standings, scores, every roster, and the recent waiver and trade activity.
 
-## Free, with an optional AI coach
+## Two ways to talk to Audible
 
-Everything above is free and always will be. The one part that costs anything is **chatting with Audible**, because that runs on Claude.
+**Free, no key, no account.** Ask Audible about your lineup, matchup, waiver targets, playoff odds, who's hot on your roster, or any player. He answers from your real league numbers, instantly, and he's never wrong about the math because he's reading the same data the app shows you.
+
+**Audible AI** adds open-ended conversation: trade reads, strategy, anything you can think to ask. That part runs on Claude, so it needs your own Claude API key.
 
 To turn it on, add your own Claude API key in the app under **Audible AI**. The app walks you through it in four steps. You pay Anthropic directly for what you use, usually a few dollars a month or less, and there's a built-in spending tracker and monthly limit so you're never surprised. A Claude Pro or Max subscription does **not** include API access; it's a separate pay-as-you-go account at [console.anthropic.com](https://console.anthropic.com).
 

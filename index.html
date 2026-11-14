@@ -678,6 +678,7 @@ const RELEASES = [
     ["League switcher","In more than one league? See them all with your record in each, and switch with one tap."],
     ["Pull to refresh","Pull down on any screen to update scores."],
     ["Guided tour","New here? Audible walks you through the app. Replay it anytime from the menu."],
+    ["A free Audible","Ask Audible about your lineup, matchup, waivers, playoff odds or any player with no key at all. He answers from your real league numbers."],
     ["Audible AI your way","Pick how hard Audible thinks (Auto, Quick, Balanced, Deep) and how long his answers run. Deep thinks a question all the way through and checks the latest news."],
     ["No surprise bills","See what you've spent on AI this month and set a monthly limit."],
     ["Easier setup","A friendlier welcome, a league picker, and a 4-step guide to getting your own Claude API key."]]},
@@ -1140,22 +1141,24 @@ function openChat(prefill){
 function closeChat(){ $("#chat").classList.remove("on"); document.body.style.overflow = ""; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = false; }); $("#chText").blur(); chatFit(); }
 function renderChat(){
   const log = $("#chLog");
-  if(!S.set.apiKey){
-    $("#chForm").style.display = "none";
-    log.innerHTML = `<div class="chintro">${abot("a64")}<b>${esc(S.set.botName)}</b>Chatting with me is the one part of Audible that needs your own Claude API key. Everything else stays free.</div>
-      <div class="lbl">Get Audible AI in 4 steps</div>${aiGuide()}`;
-    bindKeySave(() => { renderChat(); toast(S.set.botName + " AI is on"); });
-    return;
-  }
+  const free = !S.set.apiKey;
   $("#chForm").style.display = "";
+  $("#chEff").style.display = free ? "none" : "";
   let h = "";
-  if(!S.chat.length) h += `<div class="chintro">${abot("a64")}<b>${esc(S.set.botName)}</b>Ask me anything about your lineup, matchup, waivers, or trades. I can see your whole league.</div><div class="sugg">${SUGG.map(s => `<button data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>`;
+  if(free && !S.chat.length) h += `<div class="chintro">${abot("a64")}<b>${esc(S.set.botName)}</b>Ask me about your lineup, matchup, waivers or any player. I read your league straight from Sleeper, so the numbers are always current.</div>
+    <div class="sugg">${LSUGG.map(x => `<button data-s="${esc(x)}">${esc(x)}</button>`).join("")}</div>
+    <button class="cell noimg" id="goAI" style="margin-top:14px;background:var(--bg2);border-radius:14px;width:100%"><div class="main" style="text-align:left"><div class="t1">Want the full ${esc(S.set.botName)}?</div><div class="t2" style="white-space:normal;line-height:1.4">Add your own Claude key for open-ended questions, trade reads and deeper analysis.</div></div>${CHEV}</button>`;
+  if(!free && !S.chat.length) h += `<div class="chintro">${abot("a64")}<b>${esc(S.set.botName)}</b>Ask me anything about your lineup, matchup, waivers, or trades. I can see your whole league.</div><div class="sugg">${SUGG.map(s => `<button data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>`;
   h += S.chat.map(m => `<div class="msg ${m.role === "user" ? "u" : m.err ? "e" : "a"}">${m.role === "user" || m.err ? esc(m.content) : (m.content ? md(m.content) : '<span class="typing"><i></i><i></i><i></i></span>' + (m.status ? `<span class="stat">${esc(m.status)}</span>` : ""))}</div>`).join("");
   if(S.chatBusy && !(S.chat.length && S.chat[S.chat.length-1].streaming)) h += `<div class="msg a"><span class="typing"><i></i><i></i><i></i></span></div>`;
   log.innerHTML = h;
   log.querySelectorAll("[data-s]").forEach(b => b.onclick = () => sendChat(b.dataset.s));
+  const ga = $("#goAI"); if(ga) ga.onclick = () => { closeChat(); setTimeout(openAI, 320); };
+  if(free && S.chat.length) log.insertAdjacentHTML("beforeend", `<button class="cell noimg" id="goAI2" style="margin-top:10px;background:var(--bg2);border-radius:14px;width:100%;opacity:.85"><div class="main" style="text-align:left"><div class="t2" style="white-space:normal;line-height:1.4">Open-ended questions and trade reads need your own Claude key. Tap to set it up.</div></div>${CHEV}</button>`);
+  const g2 = $("#goAI2"); if(g2) g2.onclick = () => { closeChat(); setTimeout(openAI, 320); };
   log.scrollTop = log.scrollHeight;
   $("#chSend").disabled = S.chatBusy; $("#chEff").textContent = effLabel();
+  $("#chText").placeholder = free ? "Ask about your team…" : "Ask " + S.set.botName + " anything…";
 }
 /* =============== Audible's brain: what he knows when you ask =============== */
 const AI = {sched:null, schedT:0};
@@ -1306,7 +1309,8 @@ async function deepAnswer(req, hdrs){
   throw last;
 }
 async function sendChat(text){
-  text = (text || "").trim(); if(!text || S.chatBusy || !S.set.apiKey) return;
+  text = (text || "").trim(); if(!text || S.chatBusy) return;
+  if(!S.set.apiKey) return localChat(text);
   S.chat.push({role:"user", content:text}); S.chatBusy = true; abHold = "thinking"; abApply("thinking", true);
   $("#chText").value = ""; autosize(); renderChat();
   const msgs = S.chat.filter(m => !m.err).slice(-12).map(m => ({role:m.role, content:m.content}));
@@ -2380,6 +2384,181 @@ function openSettings(){
   $("#logout").onclick = () => { store.del("gd_user"); store.del("gd_league"); closeSheet(); clearInterval(S.timer); setup(); };
 }
 
+/* =============== free Audible: real answers from your league data, no AI =============== */
+const LSUGG = ["What should I do this week?", "Who should I start?", "Any waiver adds worth making?", "How's my matchup looking?", "How do my playoff chances look?", "Who's hot on my team?"];
+const wpWord = w => w >= .75 ? "You're in good shape" : w >= .55 ? "You're a slight favorite" : w >= .45 ? "It's a coin flip" : w >= .25 ? "You're the underdog" : "You need a big week";
+function slotName(sl){ return ({QB:"QB", RB:"RB", WR:"WR", TE:"TE", K:"kicker", DEF:"defense", FLEX:"flex", SUPER_FLEX:"superflex", WRRB_FLEX:"W/R flex", REC_FLEX:"W/T flex"})[sl] || sl; }
+function pLine(p, extra){
+  const f = form3(p.id), bits = [];
+  if(proj(p.id) != null) bits.push(f1(proj(p.id)) + " proj");
+  if(ppg(p.id)) bits.push(f1(ppg(p.id)) + " ppg");
+  if(f != null) bits.push("L3 " + f1(f));
+  return `**${p.name}** (${p.pos}${p.team ? " " + p.team : ""})${bits.length ? " — " + bits.join(", ") : ""}${extra ? ". " + extra : ""}`;
+}
+function lcLineup(){
+  const iss = lineupIssues();
+  if(!isCur()) return "I can only check this week's lineup. Flip back to this week and ask again.";
+  const bad = iss.filter(x => x.level !== "tip"), tips = iss.filter(x => x.level === "tip");
+  let out = [];
+  if(!bad.length && !tips.length) return "Your lineup is clean. No byes, empty slots or injured starters, and nobody on your bench is clearly better than who you're starting.";
+  bad.forEach(x => {
+    const sub = x.subs[0];
+    out.push(`- ${x.p.empty ? `Your **${slotName(x.slot)}** slot is empty` : `**${x.p.name}** is ${x.why.toLowerCase()}`}. ${sub ? `Start **${sub.p.name}** (${f1(sub.v)} ${hasProj() ? "proj" : "ppg"}) instead.` : "Nobody on your bench fits, so check the waiver wire."}`);
+  });
+  tips.forEach(x => { const sub = x.subs[0]; out.push(`- At **${slotName(x.slot)}**, **${sub.p.name}** (${f1(sub.v)}) is projected higher than **${x.p.name}** (${x.why}). Worth a look.`); });
+  const head = bad.length ? `${bad.length} thing${bad.length === 1 ? "" : "s"} to fix in your lineup:` : "Your starters are all healthy. One upgrade to consider:";
+  return [head, ...out].join("\n");
+}
+function lcSlot(sl){
+  const me = mOf(S.myRid); if(!me) return null;
+  const i = slots().indexOf(sl); if(i < 0) return null;
+  const cur = P((me.starters || [])[i]);
+  const opts = benchOf(S.myRid).filter(b => canPlay(b, sl) && b.team && !isBye(b) && !BAD.has(b.inj) && gState(b) === "pre").map(b => ({p:b, v:val(b.id)})).sort((a, b) => b.v - a.v).slice(0, 3);
+  if(cur.empty && !opts.length) return `Your **${slotName(sl)}** slot is empty and nobody on your bench fits. Check the waiver wire.`;
+  if(!opts.length) return `Stick with **${cur.name}** at ${slotName(sl)}. ${gState(cur) !== "pre" ? "His game already started, so you're locked in anyway." : "Nobody on your bench can play that spot this week."}`;
+  const mine = cur.empty ? -1 : val(cur.id), best = opts[0], swap = best.v > mine + (hasProj() ? 1.5 : 2.5);
+  const lines = [swap || cur.empty ? `Start **${best.p.name}** at ${slotName(sl)}.` : `Stick with **${cur.name}** at ${slotName(sl)}.`];
+  if(!cur.empty) lines.push("- " + pLine(cur, gState(cur) !== "pre" ? "Already locked in" : ""));
+  opts.forEach(o => lines.push("- " + pLine(o.p)));
+  if(!swap && !cur.empty) lines.push(`\nIt's close, so I'd keep your starter unless you hear something before kickoff.`);
+  return lines.join("\n");
+}
+function lcStart(q){
+  for(const sl of slots()) if(new RegExp("\\b" + slotName(sl).replace(/[^a-z]/gi, ".?") + "\\b", "i").test(q) || (sl === "FLEX" && /\bflex\b/i.test(q))){ const a = lcSlot(sl); if(a) return a; }
+  const ids = mentioned(q).filter(id => (S.rosters.find(r => r.roster_id === S.myRid) || {players:[]}).players.includes(id));
+  if(ids.length >= 2){
+    const ps = ids.map(id => ({p:P(id), v:val(id)})).sort((a, b) => b.v - a.v), w = ps[0];
+    return [`Start **${w.p.name}**.`, ...ps.map(x => "- " + pLine(x.p)), `\nI'm going on projections and recent form. ${ps[1] && w.v - ps[1].v < 2 ? "It's close, so check the injury news before kickoff." : ""}`].join("\n");
+  }
+  return lcLineup();
+}
+function lcWaivers(){
+  const fa = bestAvailable(), need = needs();
+  if(!fa.length) return "I don't have the trending free agents loaded yet. Pull down to refresh and ask me again.";
+  const ls = S.league.settings || {}, faab = ls.waiver_type === 2 && ls.waiver_budget, left = faab ? ls.waiver_budget - ((team(S.myRid) || {}).faab || 0) : null;
+  const top = fa.slice(0, 12), fits = top.filter(x => need.has(x.p.pos)), picks = (fits.length ? fits : top).slice(0, 3);
+  const lines = [need.size ? `You're thin at ${[...need].join(", ")}, so these fit:` : "Nobody's hurting on your roster, but these are the names moving:"];
+  picks.forEach(x => lines.push("- " + pLine(x.p, `Added in ${kfmt(x.adds)} leagues today`)));
+  if(left != null) lines.push(`\nYou have **$${left}** of FAAB left. ${left > 60 ? "Plenty to be aggressive on the top name." : left > 20 ? "Enough for one real bid." : "Not much, so save it for someone you'd actually start."}`);
+  lines.push("Claims happen in Sleeper. Open the Players tab and tap a name to go there.");
+  return lines.join("\n");
+}
+function lcMatchup(){
+  const me = mOf(S.myRid); if(!me) return "You don't have a matchup this week.";
+  const op = oppOf(me); if(!op) return "You're on a bye this week, so there's no matchup.";
+  const T = team(op.roster_id), a = teamOutlook(me), b = teamOutlook(op), wp = hasProj() ? winProb(a, b) : null;
+  const lines = [`You're facing **${T.name}** (${rec(T)}).`];
+  lines.push(`- Score right now: **${f1(me.points)}** to ${f1(op.points)}`);
+  if(hasProj()) lines.push(`- Projected final: **${f1(a.proj)}** to ${f1(b.proj)}`);
+  if(wp != null) lines.push(`- Win probability: **${pct(wp)}**`);
+  const left = (me.starters || []).map(P).filter(p => !p.empty && gState(p) === "pre").length, oleft = (op.starters || []).map(P).filter(p => !p.empty && gState(p) === "pre").length;
+  if(left || oleft) lines.push(`- Still to play: **${left}** of yours, ${oleft} of theirs`);
+  const hurt = (op.starters || []).map(P).filter(p => !p.empty && (BAD.has(p.inj) || isBye(p)));
+  if(hurt.length) lines.push(`- They're starting **${hurt[0].name}**, who's ${isBye(hurt[0]) ? "on bye" : hurt[0].inj.toLowerCase()}. Free points for you.`);
+  if(wp != null) lines.push(`\n${wpWord(wp)}.${wp < .45 ? " You'll want a boom week from someone." : ""}`);
+  return lines.join("\n");
+}
+function lcPlayoffs(){
+  const ls = S.league.settings || {}, std = standings(), i = std.findIndex(t => t.rid === S.myRid);
+  if(i < 0) return "I can't find your team in the standings.";
+  const meT = std[i], spots = ls.playoff_teams || 6, start = ls.playoff_week_start, left = start ? Math.max(0, start - 1 - S.week) : null;
+  const lines = [`You're **${ordinal(i + 1)}** at ${rec(meT)} with ${Math.round(meT.pf)} points for.`];
+  if(i < spots) { const bub = std[spots]; lines.push(`- You're **in** the ${spots}-team playoff field right now${bub ? `, ${Math.max(0, meT.w - bub.w)} ${Math.abs(meT.w - bub.w) === 1 ? "game" : "games"} up on ${bub.name}` : ""}.`); }
+  else { const cut = std[spots - 1]; lines.push(`- You're **outside** the ${spots}-team field, ${Math.max(0, cut.w - meT.w)} ${Math.abs(cut.w - meT.w) === 1 ? "game" : "games"} behind ${cut.name}.`); }
+  if(left != null) lines.push(`- **${left}** regular season game${left === 1 ? "" : "s"} left${start ? `, playoffs start week ${start}` : ""}.`);
+  const sched = (AI.sched || []).filter(([w]) => w > S.week).slice(0, 3).map(([w, rid]) => rid ? `Wk ${w} vs ${team(rid).name} (${rec(team(rid))})` : `Wk ${w} bye`);
+  if(sched.length) lines.push(`- Up next: ${sched.join(", ")}`);
+  if(left === 0) lines.push(`\nRegular season's done. ${i < spots ? "You're in." : "Next year."}`);
+  else lines.push(`\n${i < spots ? "Hold serve and you're in. Don't punt a week." : `You need to win out and get help. Start with the waiver wire.`}`);
+  return lines.join("\n");
+}
+function lcHot(){
+  const r = S.rosters.find(x => x.roster_id === S.myRid); if(!r) return null;
+  const rows = (r.players || []).map(id => ({p:P(id), f:form3(id), g:ppg(id)})).filter(x => x.f != null && x.g);
+  if(rows.length < 3) return "I don't have enough weekly scoring yet to tell who's hot. Give it another week or two.";
+  const by = rows.map(x => ({...x, d:x.f - x.g})).sort((a, b) => b.d - a.d);
+  const up = by.filter(x => x.d > 1.5).slice(0, 3), down = by.filter(x => x.d < -1.5).slice(-3).reverse();
+  const lines = [];
+  if(up.length){ lines.push("**Heating up**"); up.forEach(x => lines.push(`- **${x.p.name}**: ${f1(x.f)} a game over his last 3, up from ${f1(x.g)} on the season`)); }
+  if(down.length){ lines.push(up.length ? "\n**Cooling off**" : "**Cooling off**"); down.forEach(x => lines.push(`- **${x.p.name}**: ${f1(x.f)} lately, down from ${f1(x.g)}`)); }
+  return lines.length ? lines.join("\n") : "Nobody on your roster has swung much lately. Everyone's scoring about what they usually do.";
+}
+function lcPlayer(id){
+  const p = P(id), rk = posRank(id), f = form3(id), own = ownerMap()[id], g = gameFor(p.team), nm = p.name.toLowerCase();
+  const news = ((S.pnews || {})[id] || {}).items || (S.news || []).filter(a => a.ath.includes(nm) || (a.h + " " + a.d).toLowerCase().includes(nm));
+  const lines = [`**${p.name}** — ${p.pos}${p.team ? ", " + p.team : ", free agent"}${p.inj ? `, listed **${p.inj}**` : ""}`];
+  if(rk) lines.push(`- **${p.pos}${rk[0]}** of ${rk[1]} in points per game`);
+  if(ppg(id)) lines.push(`- ${f1(ppg(id))} a game this season${f != null ? `, ${f1(f)} over his last 3` : ""}`);
+  if(proj(id) != null) lines.push(`- Projected **${f1(proj(id))}** this week`);
+  if(g) lines.push(`- ${g.state === "pre" ? `Plays ${g.home.abbr === p.team ? "vs " + g.away.abbr : "@ " + g.home.abbr} ${day(g.date)} ${tm(g.date)}` : g.state === "in" ? `Playing now: ${g.detail}` : "Game's final"}`);
+  else if(isBye(p)) lines.push(`- **On bye** this week`);
+  lines.push(`- ${own ? (own === S.myRid ? "On your roster" : `Owned by ${team(own).name}`) : "**Free agent**, you could add him"}`);
+  if(news.length) lines.push(`\nLatest: ${news[0].h}`);
+  if(f != null && ppg(id)){ const d = f - ppg(id); lines.push(`\n${d > 2 ? "He's trending up. Ride him." : d < -2 ? "He's cooled off. Fine to bench if you have a better option." : "He's been steady. No reason to change course."}`); }
+  return lines.join("\n");
+}
+function lcTrade(){
+  const need = [...needs()], r = S.rosters.find(x => x.roster_id === S.myRid);
+  const lines = ["I can point you at the right trade partners, but reading a full trade is where the paid Audible earns it."];
+  if(need.length && r){
+    const own = ownerMap();
+    const rich = S.rosters.filter(x => x.roster_id !== S.myRid).map(x => {
+      const bench = (x.players || []).filter(id => !(x.starters || []).includes(id)).map(P).filter(pp => need.includes(pp.pos) && ppg(pp.id) > 7);
+      return {t:team(x.roster_id), bench:bench.sort((a, b) => ppg(b.id) - ppg(a.id)).slice(0, 2)};
+    }).filter(x => x.bench.length).slice(0, 3);
+    if(rich.length){
+      lines.push(`\nYou're thin at **${need.join(", ")}**. These teams have one sitting on their bench:`);
+      rich.forEach(x => lines.push(`- **${x.t.name}** (${rec(x.t)}): ${x.bench.map(b => `${b.name} (${f1(ppg(b.id))} ppg)`).join(", ")}`));
+    }
+  } else lines.push("\nYour starting spots are all covered right now, so there's no hole you need to trade for.");
+  return lines.join("\n");
+}
+function lcHelp(){
+  return ["Here's what I can answer on the free plan, straight from your league data:",
+    "- **What should I do this week?** My full rundown",
+    "- **Who should I start at flex?** Or any spot, or two players by name",
+    "- **Any waiver adds?** The best available for your holes, with your FAAB",
+    "- **How's my matchup?** Score, projection, win odds, who's left to play",
+    "- **Playoff chances?** Where you sit and what's left",
+    "- **Who's hot?** Who on your roster is trending up or down",
+    "- **How's [any player] doing?** Rank, form, injury, news",
+    "\nFor anything open-ended, like reading a trade offer or talking through strategy, add your own Claude API key under Audible AI in the menu."].join("\n");
+}
+function localAnswer(q){
+  const t = " " + String(q || "").toLowerCase().replace(/[^a-z0-9' ]/g, " ").replace(/\s+/g, " ") + " ";
+  const has = (...w) => w.some(x => t.includes(" " + x) || t.includes(x + " "));
+  if(has("what can you", "help me with", "what do you do", "your options", "commands")) return lcHelp();
+  if(has("briefing", "rundown", "what should i do", "what do i do", "anything i should", "catch me up", "overview", "how am i doing")) {
+    const parts = [lcLineup(), lcMatchup(), lcWaivers()];
+    return ["Here's your week:", "", "**Lineup**", parts[0], "", "**Matchup**", parts[1], "", "**Waivers**", parts[2]].join("\n");
+  }
+  if(has("playoff", "chances", "standings", "where do i sit", "make the playoffs", "seed")) return lcPlayoffs();
+  if(has("hot", "cold", "trending", "slumping", "heating", "streak")) return lcHot();
+  if(has("waiver", "pickup", "pick up", "free agent", "add", "adds", "claim", "faab")) return lcWaivers();
+  if(has("trade", "deal", "sell", "buy low")) return lcTrade();
+  const ids = mentioned(q);
+  if(has("start", "sit", "bench", "lineup", "play") || ids.length >= 2) return lcStart(q);
+  if(ids.length === 1) return lcPlayer(ids[0]);
+  if(has("matchup", "opponent", "my game", "losing", "beating", "winning", "my score", "am i up", "am i down")) return lcMatchup();
+  if(has("news", "injur", "hurt", "questionable")) {
+    const r = S.rosters.find(x => x.roster_id === S.myRid), mine = new Set((r || {}).players || []);
+    const items = (S.news || []).filter(a => a.ath.some(n => [...mine].some(id => P(id).name.toLowerCase() === n))).slice(0, 4);
+    if(items.length) return ["Latest on your guys:", ...items.map(a => `- **${a.h}** (${ago(a.t)})`)].join("\n");
+    return "Nothing new on your players in the last day. The Players tab has the full NFL feed.";
+  }
+  return null;
+}
+async function localChat(text){
+  text = (text || "").trim(); if(!text || S.chatBusy) return;
+  S.chat.push({role:"user", content:text}); S.chatBusy = true; abHold = "thinking"; abApply("thinking", true);
+  $("#chText").value = ""; autosize(); renderChat();
+  await aiPrep().catch(() => {});
+  await new Promise(r => setTimeout(r, 420));
+  let a = null; try{ a = localAnswer(text); }catch(e){ console.error(e); }
+  if(a) S.chat.push({role:"assistant", content:a, local:true});
+  else S.chat.push({role:"assistant", local:true, content:["I can't take that one on the free plan. Here's what I can do:", "", lcHelp().split("\n").slice(1).join("\n")].join("\n")});
+  S.chatBusy = false; abHold = null; abApply(abBase(), true); saveChat(); renderChat();
+}
 /* =============== 1.4: profile menu, leagues, pull to refresh =============== */
 const CHECK = '<svg class="chk" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const MI = {
@@ -2516,8 +2695,8 @@ async function tourShow(){
 /* =============== 1.4: Audible AI: plans, key guide, effort, length, spend =============== */
 function plansHtml(){
   const on = !!S.set.apiKey;
-  return `<div class="plans"><div class="plan ${on ? "" : "cur"}"><b>Free</b><span>$0, forever</span><ul><li>Live matchups and win odds</li><li>Lineups, waivers, league activity</li><li>News and the game tracker</li><li>Alerts and the daily briefing</li></ul></div>
-    <div class="plan ${on ? "cur" : ""}"><b>${esc(S.set.botName)} AI</b><span>Your own Claude key. Pay only for what you ask.</span><ul><li>Everything in Free</li><li>Chat with ${esc(S.set.botName)} about your team</li><li>Start/sit, waiver and trade analysis</li><li>Usually a few dollars a month or less</li></ul></div></div>`;
+  return `<div class="plans"><div class="plan ${on ? "" : "cur"}"><b>Free</b><span>$0, forever</span><ul><li>Live matchups and win odds</li><li>Lineups, waivers, league activity</li><li>News and the game tracker</li><li>Alerts and the daily briefing</li><li>Ask ${esc(S.set.botName)} about your lineup, matchup, waivers and players</li></ul></div>
+    <div class="plan ${on ? "cur" : ""}"><b>${esc(S.set.botName)} AI</b><span>Your own Claude key. Pay only for what you ask.</span><ul><li>Everything in Free</li><li>Open-ended questions, any topic</li><li>Trade reads and deeper analysis</li><li>Usually a few dollars a month or less</li></ul></div></div>`;
 }
 function aiGuide(){
   return `<div class="gcard steps">
