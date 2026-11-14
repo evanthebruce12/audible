@@ -554,15 +554,81 @@ html[data-theme=light] nav button{text-shadow:0 1px 6px rgba(255,255,255,.6)}
 /* hide initials behind player photos once the photo loads */
 .hs:has(img),.av:has(img){color:transparent}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* ===== 1.4: profile menu, leagues, pull to refresh, tour, Audible AI ===== */
+.bar .wrap{gap:10px}
+.pfb{width:38px;height:38px;border-radius:50%;flex:none;position:relative;overflow:hidden;background:var(--bg3);display:grid;place-items:center;font-weight:700;font-size:15px;color:var(--label2);box-shadow:0 0 0 .5px var(--sep);transition:transform .3s var(--soft)}
+.pfb:active{transform:scale(.9)}
+.pfb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pfsp{width:38px;flex:none}
+.bar .mini{flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pscrim{position:fixed;inset:0;z-index:44;background:rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:opacity .25s}
+.pscrim.on{opacity:1;pointer-events:auto}
+.pmenu{position:fixed;z-index:45;top:calc(var(--sat) + 52px);left:max(12px, calc(50% - 288px));width:min(300px,82vw);padding:8px;border-radius:24px;background:rgba(38,38,42,.74);backdrop-filter:blur(30px) saturate(190%);-webkit-backdrop-filter:blur(30px) saturate(190%);box-shadow:inset 0 1px .5px rgba(255,255,255,.18),inset 0 0 0 .5px rgba(255,255,255,.08),0 24px 60px rgba(0,0,0,.5);transform-origin:20px 0;transform:scale(.55);opacity:0;pointer-events:none;transition:transform .42s var(--soft),opacity .18s}
+html[data-theme=light] .pmenu{background:rgba(252,252,253,.82);box-shadow:inset 0 1px .5px #fff,0 0 0 .5px rgba(0,0,0,.08),0 24px 60px rgba(0,0,0,.22)}
+.pmenu.on{transform:none;opacity:1;pointer-events:auto}
+.pmh{display:flex;align-items:center;gap:12px;padding:10px 10px 12px}
+.pmh b{display:block;font-size:17px}.pmh span{display:block;font-size:13px;color:var(--label2);line-height:1.3}
+.pmenu button{display:flex;align-items:center;gap:13px;width:100%;padding:12px 10px;border-radius:14px;font-size:17px;text-align:left;color:var(--label)}
+.pmenu button:active{background:var(--fill);transform:none}
+.pmenu button svg{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.pmenu button span{flex:1}.pmenu button em{font-style:normal;font-size:14px;color:var(--label2)}
+.pmenu hr{border:0;height:.5px;background:var(--sep);margin:4px 10px}
+.ptr{position:fixed;z-index:25;top:calc(var(--sat) + 6px);left:50%;width:34px;height:34px;margin-left:-17px;border-radius:50%;background:var(--bg3);box-shadow:0 4px 14px rgba(0,0,0,.3),0 0 0 .5px var(--sep);display:grid;place-items:center;opacity:0;pointer-events:none;transform:translateY(-20px)}
+.ptr svg{width:18px;height:18px;fill:none;stroke:var(--label2);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.ptr.armed svg{stroke:var(--blue)}
+.ptr.spin{transition:transform .25s var(--ios)}.ptr.spin svg{animation:ptrs .7s linear infinite;stroke:var(--blue)}
+@keyframes ptrs{to{transform:rotate(360deg)}}
+.chk{width:20px;height:20px;flex:none;fill:none;stroke:var(--blue);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+/* welcome + league picker */
+.wel .welbot{width:84px;height:84px}
+.welpts{display:flex;flex-direction:column;gap:12px;margin:6px 0 4px}
+.welpts div{display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:1.35;color:var(--label2)}
+.welpts b{color:var(--label)}
+.welpts svg{width:22px;height:22px;flex:none;fill:none;stroke:var(--blue);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
+.stepl{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--blue)}
+.lgpick{display:flex;flex-direction:column;gap:10px}
+.lgpick button{display:flex;align-items:center;gap:14px;padding:14px;border-radius:16px;background:var(--bg2);text-align:left;width:100%}
+.lgpick b{display:block;font-size:17px}.lgpick span{font-size:13px;color:var(--label2)}
+/* tour */
+.tour{position:fixed;inset:0;z-index:70;display:none;touch-action:none}
+.tour.on{display:block}
+.tour .hole{position:absolute;border-radius:22px;box-shadow:0 0 0 200vmax rgba(0,0,0,.7),0 0 0 2px rgba(255,255,255,.55);transition:all .45s var(--ios);pointer-events:none}
+.tour .tip{position:absolute;left:max(14px, calc(50% - 210px));right:max(14px, calc(50% - 210px));padding:16px;border-radius:22px;background:var(--bg2);box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 0 .5px var(--sep);transition:top .45s var(--ios),opacity .25s}
+.tour .th{display:flex;gap:12px;align-items:center}
+.tour .th .tb{width:44px;height:44px;flex:none}
+.tour .th b{font-size:19px;letter-spacing:-.01em}
+.tour .tip p{font-size:16px;line-height:1.42;color:var(--label2);margin:10px 0 14px}
+.tour .tf{display:flex;align-items:center;gap:10px}
+.tour .dots{flex:1;display:flex;gap:6px}.tour .dots i{width:7px;height:7px;border-radius:50%;background:var(--bg4)}.tour .dots i.on{background:var(--blue)}
+.tour .skip{color:var(--label2);font-size:16px;padding:10px 8px}
+.tour .next{background:var(--blue);color:#fff;font-weight:600;font-size:16px;padding:10px 20px;border-radius:999px}
+/* Audible AI */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.plan{background:var(--bg2);border-radius:16px;padding:14px;position:relative;box-shadow:inset 0 0 0 .5px var(--sep)}
+.plan.cur{box-shadow:inset 0 0 0 2px var(--blue)}
+.plan.cur::after{content:"Your plan";position:absolute;top:-9px;right:12px;background:var(--blue);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+.plan b{display:block;font-size:18px}.plan>span{display:block;font-size:12px;color:var(--label2);margin:2px 0 8px;line-height:1.3;min-height:31px}
+.plan ul{margin:0;padding:0;list-style:none}.plan li{font-size:13px;line-height:1.35;padding:3px 0 3px 16px;position:relative;color:var(--label)}
+.plan li::before{content:"";position:absolute;left:2px;top:9px;width:6px;height:6px;border-radius:50%;background:var(--green)}
+.steps{display:flex;flex-direction:column;gap:16px;padding:16px 14px}
+.stp{display:flex;gap:12px}
+.stp>i{flex:none;width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-style:normal;font-weight:700;font-size:14px;display:grid;place-items:center}
+.stp b{font-size:16px}.stp p{font-size:14px;line-height:1.4;color:var(--label2);margin:3px 0 0}
+.stp .btn{margin-top:10px;padding:10px;font-size:15px;background:var(--bg3);color:var(--blue)}
+.stp input{width:100%;margin-top:10px;background:var(--bg3);border:0;border-radius:10px;padding:12px;font-size:16px;outline:none}
+.sbar{height:6px;border-radius:3px;background:var(--bg4);overflow:hidden;margin:10px 0 8px}.sbar i{display:block;height:100%;border-radius:3px;background:var(--blue)}
+.sbar.hot i{background:var(--orange)}
+#shBody .seg{margin:4px 0 0}
+.chin .effchip{width:auto!important;height:32px;padding:0 11px;border-radius:999px;background:var(--bg3);color:var(--blue);font-size:13px;font-weight:600;flex:none;align-self:flex-end;margin-left:-8px}
+.chin{padding-left:12px}
+.msg .stat{display:block;font-size:13px;color:var(--label2);margin-top:6px}
 </style>
 </head>
 <body>
 <header class="bar" id="bar" style="display:none"><div class="wrap">
+  <button class="pfb" id="pfBtn" aria-label="Profile and menu"></button>
   <span class="mini" id="miniTitle"></span>
-  <div class="acts">
-    <button class="circ" id="refreshBtn" aria-label="Refresh"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
-    <button class="circ" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></button>
-  </div>
+  <span class="pfsp"></span>
 </div></header>
 
 <main class="wrap" id="app"><div class="loading"><div class="spin"></div>Loading…</div></main>
@@ -578,9 +644,12 @@ html[data-theme=light] nav button{text-shadow:0 1px 6px rgba(255,255,255,.6)}
 <div class="chat" id="chat">
   <div class="chd"><button id="chClose" class="chbtn">Done</button><div class="chtitle"><span id="chBot"></span><b id="chName">Audible</b></div><button id="chClear" class="chbtn">Clear</button></div>
   <div class="chlog" id="chLog"></div>
-  <form class="chin" id="chForm"><textarea id="chText" rows="1" placeholder="Ask about your team…"></textarea><button type="submit" id="chSend" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>
+  <form class="chin" id="chForm"><button type="button" id="chEff" class="effchip" aria-label="Effort">Auto</button><textarea id="chText" rows="1" placeholder="Ask about your team…"></textarea><button type="submit" id="chSend" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>
 </div>
 
+<div class="pscrim" id="pscrim"></div><div class="pmenu" id="pmenu" role="menu"></div>
+<div class="ptr" id="ptr"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></div>
+<div class="tour" id="tour"></div>
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet"><div class="sh"><span></span><b id="shTitle"></b><button id="shDone">Done</button></div><div class="sb" id="shBody"></div></div>
 <div class="toasts" id="toasts"></div>
@@ -593,7 +662,7 @@ const API = "https://api.sleeper.app/v1";
 const CDN = "https://sleepercdn.com";
 const ESPN = "https://site.api.espn.com/apis/site/v2/sports/football/nfl";
 const BOT_SVG = '<svg viewBox="0 0 24 24"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 15l.9 2.6 2.6.9-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9z"/></svg>';
-const DEF_SET = {theme:"system", refresh:30, celebrate:true, showBench:true, botName:"Audible", startTab:"home", apiKey:"", model:"claude-haiku-5-5"};
+const DEF_SET = {theme:"system", refresh:30, celebrate:true, showBench:true, botName:"Audible", startTab:"home", apiKey:"", model:"claude-haiku-5-5", effort:"auto", length:"standard", aiLimit:3, deepWeb:true};
 const S = {
   user:null, state:null, leagues:[], league:null, week:1,
   rosters:[], users:[], matchups:[], players:{}, hist:{}, proj:{}, season:{}, games:null, news:null,
@@ -602,8 +671,16 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.3.2";
+const VERSION = "1.4";
 const RELEASES = [
+  {v:"1.4", date:"Nov 14, 2026", title:"Made to share", items:[
+    ["Your menu","Tap your picture in the top left to switch leagues, refresh, open settings, or set up Audible AI."],
+    ["League switcher","In more than one league? See them all with your record in each, and switch with one tap."],
+    ["Pull to refresh","Pull down on any screen to update scores."],
+    ["Guided tour","New here? Audible walks you through the app. Replay it anytime from the menu."],
+    ["Audible AI your way","Pick how hard Audible thinks (Auto, Quick, Balanced, Deep) and how long his answers run. Deep thinks a question all the way through and checks the latest news."],
+    ["No surprise bills","See what you've spent on AI this month and set a monthly limit."],
+    ["Easier setup","A friendlier welcome, a league picker, and a 4-step guide to getting your own Claude API key."]]},
   {v:"1.3.2", date:"Nov 13, 2026", title:"Feels more like iPhone", items:[
     ["Titles that tuck away","Big page titles shrink into the top bar as you scroll, and stretch a little when you pull down."],
     ["Swipeable cards","Player and game cards follow your finger. Pull down to half height, flick to close, or push back up to full."],
@@ -655,11 +732,12 @@ function whatsNewBody(all){
   return (all ? RELEASES : RELEASES.slice(0,1)).map((r, i) => `<div class="${i ? "relold" : ""}" style="${i ? "margin-top:26px" : ""}">
     <div class="relv"><span class="tag b">Version ${r.v}</span><span class="xs c3">${r.date}</span></div><h3 class="relt">${esc(r.title)}</h3>
     <div class="grp">${r.items.map(([t, d]) => `<div class="cell noimg" style="align-items:flex-start"><div class="main"><div class="t1" style="white-space:normal">${esc(t)}</div><div class="t2" style="white-space:normal;line-height:1.4">${esc(d)}</div></div></div>`).join("")}</div></div>`).join("")
-    + (all ? "" : `<div class="btns"><button class="btn gray" id="allRel">See all release notes</button></div>`);
+    + (all ? "" : `<div class="btns"><button class="btn" id="relTour">Take the tour</button><button class="btn gray" id="allRel">See all release notes</button></div>`);
 }
 function openWhatsNew(all){
   openSheet(all ? "Release notes" : "What's New", whatsNewBody(all));
   const b = $("#allRel"); if(b) b.onclick = () => openWhatsNew(true);
+  const rt = $("#relTour"); if(rt) rt.onclick = () => { closeSheet(); setTimeout(startTour, 350); };
   store.set("gd_seen_ver", VERSION);
 }
 
@@ -691,7 +769,7 @@ function ago(ms){
 const CHEV = '<svg class="chev" viewBox="0 0 8 13"><path d="M1.5 1.5 6.5 6.5 1.5 11.5"/></svg>';
 
 /* =============== settings & theme =============== */
-function loadSettings(){ S.set = {...DEF_SET, ...(store.get("gd_settings") || {})}; applyTheme(); }
+function loadSettings(){ const sv = store.get("gd_settings") || {}; S.set = {...DEF_SET, ...sv}; if(!sv.effort) S.set.effort = sv.model === "claude-sonnet-5-5" ? "balanced" : "auto"; applyTheme(); }
 function saveSettings(){ store.set("gd_settings", S.set); applyTheme(); if(typeof scheduleBackup === "function") scheduleBackup(); }
 function applyTheme(){
   const t = S.set.theme === "system" ? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : S.set.theme;
@@ -1064,20 +1142,20 @@ function renderChat(){
   const log = $("#chLog");
   if(!S.set.apiKey){
     $("#chForm").style.display = "none";
-    log.innerHTML = `<div class="chintro">${abot("a64")}<b>${esc(S.set.botName)}</b>Add your Claude API key to chat about your team.</div>
-      <div class="keybox"><input id="keyIn" type="password" placeholder="sk-ant-…" autocomplete="off" autocapitalize="none"><button class="btn" id="keySave">Save key</button><div class="xs c2">Get one at console.anthropic.com. It's saved only on this phone.</div></div>`;
-    $("#keySave").onclick = () => { const v = $("#keyIn").value.trim(); if(!v) return; S.set.apiKey = v; saveSettings(); renderChat(); };
+    log.innerHTML = `<div class="chintro">${abot("a64")}<b>${esc(S.set.botName)}</b>Chatting with me is the one part of Audible that needs your own Claude API key. Everything else stays free.</div>
+      <div class="lbl">Get Audible AI in 4 steps</div>${aiGuide()}`;
+    bindKeySave(() => { renderChat(); toast(S.set.botName + " AI is on"); });
     return;
   }
   $("#chForm").style.display = "";
   let h = "";
   if(!S.chat.length) h += `<div class="chintro">${abot("a64")}<b>${esc(S.set.botName)}</b>Ask me anything about your lineup, matchup, waivers, or trades. I can see your whole league.</div><div class="sugg">${SUGG.map(s => `<button data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>`;
-  h += S.chat.map(m => `<div class="msg ${m.role === "user" ? "u" : m.err ? "e" : "a"}">${m.role === "user" || m.err ? esc(m.content) : (m.content ? md(m.content) : '<span class="typing"><i></i><i></i><i></i></span>')}</div>`).join("");
+  h += S.chat.map(m => `<div class="msg ${m.role === "user" ? "u" : m.err ? "e" : "a"}">${m.role === "user" || m.err ? esc(m.content) : (m.content ? md(m.content) : '<span class="typing"><i></i><i></i><i></i></span>' + (m.status ? `<span class="stat">${esc(m.status)}</span>` : ""))}</div>`).join("");
   if(S.chatBusy && !(S.chat.length && S.chat[S.chat.length-1].streaming)) h += `<div class="msg a"><span class="typing"><i></i><i></i><i></i></span></div>`;
   log.innerHTML = h;
   log.querySelectorAll("[data-s]").forEach(b => b.onclick = () => sendChat(b.dataset.s));
   log.scrollTop = log.scrollHeight;
-  $("#chSend").disabled = S.chatBusy;
+  $("#chSend").disabled = S.chatBusy; $("#chEff").textContent = effLabel();
 }
 /* =============== Audible's brain: what he knows when you ask =============== */
 const AI = {sched:null, schedT:0};
@@ -1155,12 +1233,19 @@ RECENT LEAGUE TRANSACTIONS:\n${tx || "none"}`;
 }
 const BIG_Q = /\btrade|playoff|rest of (the )?season|\bros\b|long[- ]term|keeper|dynasty|championship|should i (drop|trade|sell|buy)|sell high|buy low|who wins|compare|\bvs\.?\b|analy[sz]|breakdown|strategy|outlook|chances/i;
 const isBig = q => BIG_Q.test(q || "") || (q || "").length > 160;
-function sysPrompt(q){
-  const big = isBig(q);
+function sysPrompt(q, plan){
+  plan = plan || aiPlan(q);
+  const big = isBig(q), len = S.set.length || "standard", web = plan.deep && S.set.deepWeb !== false;
+  const how = plan.deep ? {brief:"Keep the whole answer under about 120 words.", standard:"Aim for about 250 to 300 words.", detailed:"Give the full breakdown, up to about 500 words."}[len]
+    : {brief:`Keep it to 2 to 4 short lines, under 60 words: the call, one reason, done. Bold player names with **.`,
+       standard: big ? `This is a loaded question. Go deeper: weigh both sides with real numbers from the data (ppg, last 3 weeks, projections, standings, schedule, FAAB), name specific players and teams, then give one clear call. Up to about 250 words, organized with short bullets.` : `Keep it short enough for a phone: usually under 120 words. Use "- " bullets when listing. Bold player names with **.`,
+       detailed:`Give a fuller breakdown, up to about 400 words: the call first, then the reasoning with real numbers in short "- " bullets, then the main risk. Bold player names with **.`}[len];
   return `You are ${S.set.botName}, the fantasy football assistant and the name of the user's personal fantasy app. You can see their Sleeper league data below, current as of right now.
 How to answer:
 - Lead with a clear recommendation, then a short reason. Talk like a sharp friend who knows football, not a robot.
-${big ? `- This is a loaded question. Go deeper: weigh both sides with real numbers from the data (ppg, last 3 weeks, projections, standings, schedule, FAAB), name specific players and teams, then give one clear call. Up to about 250 words, organized with short bullets.` : `- Keep it short enough for a phone: usually under 120 words. Use "- " bullets when listing. Bold player names with **.`}
+- ${how}
+${plan.deep ? `- This is Deep mode, so think it all the way through before you answer. Work through every one of these: this week's matchup and projections; who is hot or cold over the last 3 weeks and how risky each option is (floor and ceiling); rest-of-season and playoff impact from the schedule and standings; for trades, what each other team actually needs; and the strongest case against your own pick. Only then decide.
+${web ? `- Use web search (up to 3 searches) to check the latest injury, practice and depth chart news for the key players before deciding, because the data below can lag a day. Today is ${new Date().toDateString()}. Prefer what you find over older data, and mention anything important you learned.\n` : ""}- Format: start with "**Verdict:**" and one sentence. Then "**Why:**" with short "- " bullets that use real numbers. End with "**What would change this:**" and one or two concrete triggers.` : ""}
 - Ground every claim in the data below: the news headlines and depth charts for who is starting or hurt, last-3-weeks scoring for who is hot or cold, other rosters and FAAB for trades, the schedule and standings for playoff talk. Use general football knowledge to fill gaps, and say plainly when something depends on news you don't have.
 - For trades, suggest a specific deal with a specific team that helps both sides, based on their roster needs.
 - You can't make moves for the user. Tell them what to do in Sleeper.
@@ -1171,10 +1256,54 @@ ${leagueContext(q)}`;
 function friendlyErr(st, m){
   if(st === 401) return "That API key isn't working. Double-check it in Settings.";
   if(/credit|balance/i.test(m)) return "Your Claude credit balance is out. Add credits at console.anthropic.com.";
-  if(st === 404 || /model/i.test(m)) return `That model isn't available on your key. Try the other model in Settings. (${m})`;
+  if(st === 404 || /model/i.test(m)) return `That model isn't available on your key. Try a different Effort under Audible AI. (${m})`;
   if(st === 429) return "Too many requests at once. Give it a few seconds.";
   if(st >= 500) return "Claude is busy right now. Try again in a moment.";
   return m;
+}
+/* ---------- effort, spend tracking ---------- */
+const HAIKU = "claude-haiku-5-5", SONNET = "claude-sonnet-5-5", PRICE = {[HAIKU]:[.10, .50], [SONNET]:[2, 10]}, SEARCH_USD = .01, CLAUDE_URL = "https://api.anthropic.com/v1/messages";
+const EFFS = [["auto","Auto","Quick for simple questions, a smarter model for trades and playoff talk. Best for most people."],["quick","Quick","Fastest and cheapest. Well under a penny per question."],["balanced","Balanced","A smarter model on every question. A few cents each."],["deep","Deep","Thinks it all the way through and checks the latest news. Takes 15 to 30 seconds and costs around a dime."]];
+const LENS = [["brief","Brief","A few lines, straight to the call."],["standard","Standard","Short bullets plus the call."],["detailed","Detailed","A full breakdown with the reasoning."]];
+const effLabel = () => (EFFS.find(e => e[0] === (S.set.effort || "auto")) || EFFS[0])[1];
+const monthKey = () => { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1); };
+function spend(){ const x = store.get("gd_spend"); return x && x.m === monthKey() ? x : {m:monthKey(), usd:0, q:0}; }
+function addSpend(model, u, searches, count){
+  const p = PRICE[model] || PRICE[SONNET], x = spend(); u = u || {};
+  const inp = (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0) * 1.25 + (u.cache_read_input_tokens || 0) * .1;
+  x.usd += (inp * p[0] + (u.output_tokens || 0) * p[1]) / 1e6 + (searches || 0) * SEARCH_USD; if(count) x.q++;
+  store.set("gd_spend", x);
+}
+function aiPlan(text){
+  const want = S.set.effort || "auto", lim = +S.set.aiLimit || 0, capped = lim > 0 && spend().usd >= lim;
+  const mode = capped ? "quick" : want === "auto" ? (isBig(text) ? "balanced" : "quick") : want;
+  return {mode, capped, want, model: mode === "quick" ? HAIKU : SONNET, deep: mode === "deep"};
+}
+async function claudeOnce(body, hdrs){
+  const r = await fetch(CLAUDE_URL, {method:"POST", headers:hdrs, body:JSON.stringify(body)});
+  if(!r.ok){ let m = "Error " + r.status; try{ const d = await r.json(); m = (d.error && d.error.message) || m; }catch(e){} const err = new Error(friendlyErr(r.status, m)); err.status = r.status; err.raw = m; throw err; }
+  return r.json();
+}
+const answerText = blocks => { let i = -1; blocks.forEach((b, k) => { if(b.type === "web_search_tool_result") i = k; }); const t = bl => bl.filter(b => b.type === "text").map(b => b.text).join("").trim(); return t(blocks.slice(i + 1)) || t(blocks); };
+// Deep: extended thinking plus a live news check. If the API rejects an option, drop it and try again so there is always an answer.
+async function deepAnswer(req, hdrs){
+  const think = {thinking:{type:"adaptive"}, output_config:{effort:"high"}};
+  const tools = S.set.deepWeb !== false ? {tools:[{type:"web_search_20250305", name:"web_search", max_uses:3}]} : null;
+  const tries = tools ? [{...think, ...tools}, think, {}] : [think, {}];
+  let last;
+  for(const extra of tries){
+    try{
+      const acc = []; let d, first = true;
+      for(let turn = 0; turn < 4; turn++){
+        d = await claudeOnce({...req, ...extra, messages: acc.length ? req.messages.concat([{role:"assistant", content:acc}]) : req.messages}, hdrs);
+        addSpend(req.model, d.usage, ((d.usage || {}).server_tool_use || {}).web_search_requests || 0, first); first = false;
+        acc.push(...(d.content || []));
+        if(d.stop_reason !== "pause_turn") break;
+      }
+      return {text:answerText(acc), stop:d.stop_reason};
+    }catch(e){ last = e; if(e.status !== 400 || /credit|balance/i.test(e.raw || "")) throw e; }
+  }
+  throw last;
 }
 async function sendChat(text){
   text = (text || "").trim(); if(!text || S.chatBusy || !S.set.apiKey) return;
@@ -1183,50 +1312,63 @@ async function sendChat(text){
   const msgs = S.chat.filter(m => !m.err).slice(-12).map(m => ({role:m.role, content:m.content}));
   const out = {role:"assistant", content:"", streaming:true};
   await aiPrep();
-  const mdl = (!S.set.model || S.set.model === DEF_SET.model) && isBig(text) ? "claude-sonnet-5-5" : (S.set.model || DEF_SET.model);
-  const req = {model:mdl, max_tokens:4096, system:sysPrompt(text), messages:msgs};
+  const plan = aiPlan(text), before = spend().usd, lim = +S.set.aiLimit || 0;
+  const req = {model:plan.model, max_tokens:plan.deep ? 16000 : 4096, system:sysPrompt(text, plan), messages:msgs};
   const hdrs = {"content-type":"application/json", "x-api-key":S.set.apiKey.trim(), "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true"};
-  let stopReason = "";
+  let stopReason = "", ticker = 0;
   try{
-    const r = await fetch("https://api.anthropic.com/v1/messages", {method:"POST",
-      headers:hdrs,
-      body:JSON.stringify(Object.assign({}, req, {stream:true}))});
-    if(!r.ok){ let m = "Error " + r.status; try{ const d = await r.json(); m = (d.error && d.error.message) || m; }catch(e){} throw new Error(friendlyErr(r.status, m)); }
-    S.chat.push(out); renderChat();
-    const bubble = [...$("#chLog").querySelectorAll(".msg.a")].pop();
-    if(r.body && r.body.getReader){
-      const reader = r.body.getReader(), dec = new TextDecoder(); let buf = "";
-      for(;;){
-        const {done, value} = await reader.read(); if(done) break;
-        buf += dec.decode(value, {stream:true}); let i;
-        while((i = buf.indexOf("\n")) >= 0){
-          const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
-          if(!line.startsWith("data:")) continue;
-          let ev; try{ ev = JSON.parse(line.slice(5)); }catch(e){ continue; }
-          if(ev.type === "message_delta" && ev.delta && ev.delta.stop_reason) stopReason = ev.delta.stop_reason;
-          else if(ev.type === "content_block_delta" && ev.delta && ev.delta.type === "text_delta" && ev.delta.text){ if(abHold){ abHold = null; abApply(abBase(), true); } out.content += ev.delta.text; bubble.innerHTML = md(out.content); const lg = $("#chLog"); lg.scrollTop = lg.scrollHeight; }
-          else if(ev.type === "error") throw new Error(friendlyErr(0, (ev.error && ev.error.message) || "Something went wrong."));
-        }
-      }
+    if(plan.deep){
+      const lines = [S.set.botName + " is breaking this down…", "Looking at matchups and recent form…", "Weighing both sides…", "Almost there…"]; let li = 0;
+      out.status = lines[0]; S.chat.push(out); renderChat();
+      ticker = setInterval(() => { if(li < lines.length - 1){ out.status = lines[++li]; if(!out.content) renderChat(); } }, 7000);
+      const d = await deepAnswer(req, hdrs); out.content = d.text; stopReason = d.stop;
     } else {
-      const t = await r.text();
-      t.split("\n").forEach(line => { if(line.startsWith("data:")){ try{ const ev = JSON.parse(line.slice(5)); if(ev.delta && ev.delta.text) out.content += ev.delta.text; }catch(e){} } });
-    }
-    if(!out.content.trim()){
-      // Backup plan: ask again without streaming and pull out the text
-      const r2 = await fetch("https://api.anthropic.com/v1/messages", {method:"POST", headers:hdrs, body:JSON.stringify(req)});
-      if(r2.ok){ const d = await r2.json(); stopReason = d.stop_reason || stopReason;
-        out.content = (d.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim(); }
+      const r = await fetch(CLAUDE_URL, {method:"POST", headers:hdrs, body:JSON.stringify(Object.assign({}, req, {stream:true}))});
+      if(!r.ok){ let m = "Error " + r.status; try{ const d = await r.json(); m = (d.error && d.error.message) || m; }catch(e){} throw new Error(friendlyErr(r.status, m)); }
+      S.chat.push(out); renderChat();
+      const bubble = [...$("#chLog").querySelectorAll(".msg.a")].pop(), use = {};
+      if(r.body && r.body.getReader){
+        const reader = r.body.getReader(), dec = new TextDecoder(); let buf = "";
+        for(;;){
+          const {done, value} = await reader.read(); if(done) break;
+          buf += dec.decode(value, {stream:true}); let i;
+          while((i = buf.indexOf("\n")) >= 0){
+            const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+            if(!line.startsWith("data:")) continue;
+            let ev; try{ ev = JSON.parse(line.slice(5)); }catch(e){ continue; }
+            if(ev.type === "message_start" && ev.message && ev.message.usage) Object.assign(use, ev.message.usage);
+            else if(ev.type === "message_delta"){ if(ev.delta && ev.delta.stop_reason) stopReason = ev.delta.stop_reason; if(ev.usage) Object.assign(use, ev.usage); }
+            else if(ev.type === "content_block_delta" && ev.delta && ev.delta.type === "text_delta" && ev.delta.text){ if(abHold){ abHold = null; abApply(abBase(), true); } out.content += ev.delta.text; bubble.innerHTML = md(out.content); const lg = $("#chLog"); lg.scrollTop = lg.scrollHeight; }
+            else if(ev.type === "error") throw new Error(friendlyErr(0, (ev.error && ev.error.message) || "Something went wrong."));
+          }
+        }
+      } else {
+        const t = await r.text();
+        t.split("\n").forEach(line => { if(line.startsWith("data:")){ try{ const ev = JSON.parse(line.slice(5)); if(ev.delta && ev.delta.text) out.content += ev.delta.text; }catch(e){} } });
+      }
+      addSpend(req.model, use, 0, true);
+      if(!out.content.trim()){
+        // Backup plan: ask again without streaming and pull out the text
+        const d = await claudeOnce(req, hdrs); stopReason = d.stop_reason || stopReason; addSpend(req.model, d.usage, 0, false);
+        out.content = (d.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim();
+      }
     }
     if(!out.content.trim()){
       const i = S.chat.indexOf(out); if(i >= 0) S.chat.splice(i, 1);
-      throw new Error(stopReason === "max_tokens" ? "Audible ran out of room thinking before he could answer. Try a shorter question." : stopReason === "refusal" ? "Audible couldn't answer that one. Try rewording it." : "Audible didn't send an answer (" + (stopReason || "no reason given") + "). Try again, or switch the model in Settings.");
+      throw new Error(stopReason === "max_tokens" ? S.set.botName + " ran out of room thinking before he could answer. Try a shorter question." : stopReason === "refusal" ? S.set.botName + " couldn't answer that one. Try rewording it." : S.set.botName + " didn't send an answer (" + (stopReason || "no reason given") + "). Try again, or pick a different Effort.");
     }
   }catch(e){
     const i = S.chat.indexOf(out); if(i >= 0 && !out.content) S.chat.splice(i, 1);
     S.chat.push({role:"assistant", err:true, content: e instanceof TypeError ? "Couldn't connect to Claude. Check your internet and try again." : (e.message || "Something went wrong.")});
   }
+  clearInterval(ticker); delete out.status;
   delete out.streaming; S.chatBusy = false; if(abHold){ abHold = null; abApply(abBase(), true); } saveChat(); renderChat();
+  if(lim > 0){
+    const now = spend().usd;
+    if(plan.capped && plan.want !== "quick" && !S._capTold){ S._capTold = true; toast(`You've hit your $${lim} monthly AI limit, so ${S.set.botName} is on Quick until next month.`); }
+    else if(now >= lim && before < lim) toast(`That reached your $${lim} monthly AI limit. ${S.set.botName} is on Quick until next month.`);
+    else if(now >= lim * .8 && before < lim * .8) toast(`Heads up: about 80% of your $${lim} monthly AI limit is used.`);
+  }
 }
 /* keep the chat exactly the size of what's visible above the keyboard */
 let chatKb = false;
@@ -1244,6 +1386,7 @@ function autosize(){ const t = $("#chText"); t.style.height = "auto"; t.style.he
 $("#chText").addEventListener("input", autosize);
 $("#chForm").onsubmit = e => { e.preventDefault(); sendChat($("#chText").value); };
 $("#chClose").onclick = closeChat;
+$("#chEff").onclick = () => { const i = EFFS.findIndex(e => e[0] === (S.set.effort || "auto")), n = EFFS[(i + 1) % EFFS.length]; S.set.effort = n[0]; saveSettings(); $("#chEff").textContent = n[1]; $$("#toasts .toast.plain").forEach(t => t.remove()); toast(n[1] + ": " + n[2]); };
 $("#chClear").onclick = () => { if(S.chatBusy) return; S.chat = []; saveChat(); renderChat(); };
 $("#fab").onclick = () => openChat();
 
@@ -2205,7 +2348,7 @@ function openSettings(){
   const s = S.set, row = (label, ctl) => `<div class="cell noimg"><div class="main"><div class="t1" style="font-weight:400">${label}</div></div>${ctl}</div>`;
   const sel = (k, opts) => `<select class="sel" data-set="${k}">${opts.map(([v,l]) => `<option value="${v}" ${String(s[k])===String(v)?"selected":""}>${l}</option>`).join("")}</select>`;
   const tg = k => `<label class="tgl"><input type="checkbox" data-set="${k}" ${s[k]?"checked":""}><i></i></label>`;
-  let h = `<div class="lbl">League</div><div class="grp">${row("League", `<select class="sel" id="lgSel">${S.leagues.map(l => `<option value="${l.league_id}" ${l.league_id===S.league.league_id?"selected":""}>${esc(l.name)}</option>`).join("")}</select>`)}
+  let h = `<div class="lbl">League</div><div class="grp"><button class="cell noimg" id="lgBtn"><div class="main"><div class="t1" style="font-weight:400">League</div></div><span class="c2" style="max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(S.league.name)}</span>${CHEV}</button>
     ${row("Signed in as", `<span class="c2">${esc(S.user.display_name)}</span>`)}</div>`;
   h += `<div class="lbl">Audible services</div><div class="grp"><button class="cell noimg" id="notBtn"><div class="main"><div class="t1" style="font-weight:400">Notifications</div></div><span class="c2">${S.set.notifOn && worker() ? "On" : "Off"}</span>${CHEV}</button>
     <button class="cell noimg" id="bkBtn"><div class="main"><div class="t1" style="font-weight:400">Backup</div></div><span class="c2">${S.set.pin && worker() ? "On" : "Off"}</span>${CHEV}</button></div>`;
@@ -2215,20 +2358,16 @@ function openSettings(){
   h += `<div class="lbl">Live scoring</div><div class="grp">${row("Auto-refresh", sel("refresh", [["15","Every 15 sec"],["30","Every 30 sec"],["60","Every minute"],["0","Off"]]))}
     ${row("Scoring animations", tg("celebrate"))}</div>`;
   h += `<div class="lbl">Assistant</div><div class="grp">${row("Name", `<input class="tin" data-set="botName" value="${esc(s.botName)}" maxlength="18">`)}
-    ${row("Model", sel("model", [["claude-haiku-5-5","Haiku (fast, cheapest)"],["claude-sonnet-5-5","Sonnet (smarter)"]]))}
-    ${row("Claude API key", `<input class="tin" type="password" data-set="apiKey" value="${esc(s.apiKey)}" placeholder="Optional" autocomplete="off">`)}</div>
-    <div class="note">The weekly briefing works without a key. Add one (from console.anthropic.com) to chat with ${esc(s.botName)}. Haiku costs well under a cent per question; Sonnet is a few cents and the key stays on this phone.</div>`;
+    <button class="cell noimg" id="aiBtn"><div class="main"><div class="t1" style="font-weight:400">Audible AI</div></div><span class="c2">${s.apiKey ? effLabel() : "Free"}</span>${CHEV}</button></div>
+    <div class="note">Everything works free. Add your own Claude API key under Audible AI to chat with ${esc(s.botName)}.</div>`;
   h += `<div class="lbl">Data</div><div class="grp"><button class="cell noimg" id="rlPl"><div class="main"><div class="t1" style="font-weight:400;color:var(--blue)">Reload player list</div></div></button>
     <button class="cell noimg" id="clrC"><div class="main"><div class="t1" style="font-weight:400;color:var(--blue)">Clear cached stats</div></div></button></div>`;
-  h += `<div class="lbl">About</div><div class="grp"><button class="cell noimg" id="relBtn"><div class="main"><div class="t1" style="font-weight:400">What's New</div></div><span class="c2">Version ${VERSION}</span>${CHEV}</button></div>`;
+  h += `<div class="lbl">About</div><div class="grp"><button class="cell noimg" id="relBtn"><div class="main"><div class="t1" style="font-weight:400">What's New</div></div><span class="c2">Version ${VERSION}</span>${CHEV}</button>
+    <button class="cell noimg" id="tourBtn"><div class="main"><div class="t1" style="font-weight:400">Replay the tour</div></div>${CHEV}</button></div>`;
   h += `<div class="btns"><button class="btn red" id="logout">Use a different Sleeper account</button></div>
     <div class="foot">Audible reads public Sleeper data and ESPN scores/news. Lineup changes, claims, and trades happen in Sleeper.</div>`;
   openSheet("Settings", h);
-  $("#lgSel").onchange = async e => {
-    S.league = S.leagues.find(l => l.league_id === e.target.value); store.set("gd_league", S.league.league_id);
-    closeSheet(); S.week = S.state.week; loading("Loading " + S.league.name + "…");
-    try{ await loadLeague(); render(true); syncWatcher(true); scheduleBackup(); }catch(err){ fail(err); }
-  };
+  $("#lgBtn").onclick = openLeagues; $("#aiBtn").onclick = openAI; $("#tourBtn").onclick = () => { closeSheet(); setTimeout(startTour, 350); };
   $$("#shBody [data-set]").forEach(el => {
     const k = el.dataset.set;
     const save = () => { S.set[k] = el.type === "checkbox" ? el.checked : (k === "apiKey" ? el.value.trim() : el.value); if(k === "botName" && !S.set[k].trim()) S.set[k] = DEF_SET.botName; saveSettings(); if(k === "refresh") startLive(); render(); };
@@ -2239,6 +2378,186 @@ function openSettings(){
   $("#rlPl").onclick = async () => { closeSheet(); try{ await loadPlayers(true); render(); toast("Player list updated"); }catch(e){ fail(e); } };
   $("#clrC").onclick = () => { Object.keys(localStorage).filter(k => /^gd_(proj|season|hist|ai)_/.test(k)).forEach(k => store.del(k)); closeSheet(); toast("Cache cleared. Refreshing…"); loadLeague().then(render); };
   $("#logout").onclick = () => { store.del("gd_user"); store.del("gd_league"); closeSheet(); clearInterval(S.timer); setup(); };
+}
+
+/* =============== 1.4: profile menu, leagues, pull to refresh =============== */
+const CHECK = '<svg class="chk" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const MI = {
+  swap:'<svg viewBox="0 0 24 24"><path d="M4 8h15M15 4l4 4-4 4M20 16H5M9 12l-4 4 4 4"/></svg>',
+  ref:'<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>',
+  ai:'<svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="6"/><circle cx="9.5" cy="12" r="1.1"/><circle cx="14.5" cy="12" r="1.1"/><path d="M4 12H2M22 12h-2"/></svg>',
+  gear:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>',
+  tour:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>',
+  help:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></svg>',
+  news:'<svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
+  live:'<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M6 5v14M18 5v14M12 5v14"/></svg>'
+};
+function uav(cls){ const u = S.user || {}; return `<div class="av ${cls || ""}">${esc((u.display_name || "?").slice(0, 1).toUpperCase())}${u.avatar ? `<img src="${CDN}/avatars/thumbs/${esc(u.avatar)}" alt="" onerror="this.remove()">` : ""}</div>`; }
+function lgAv(l){ return `<div class="av" style="border-radius:12px">${esc((l.name || "?").slice(0, 1).toUpperCase())}${l.avatar ? `<img src="${CDN}/avatars/thumbs/${esc(l.avatar)}" alt="" onerror="this.remove()">` : ""}</div>`; }
+function pfFill(){ const u = S.user || {}, b = $("#pfBtn"); b.innerHTML = `${esc((u.display_name || "?").slice(0, 1).toUpperCase())}${u.avatar ? `<img src="${CDN}/avatars/thumbs/${esc(u.avatar)}" alt="" onerror="this.remove()">` : ""}`; }
+function openMenu(){
+  if(!S.league) return;
+  const T = S.myRid ? team(S.myRid) : null, m = $("#pmenu"), it = (k, ic, l, r) => `<button data-m="${k}" role="menuitem">${ic}<span>${l}</span>${r ? `<em>${r}</em>` : ""}</button>`;
+  m.innerHTML = `<div class="pmh">${uav("")}<div style="min-width:0"><b>${esc(S.user.display_name)}</b><span>${T ? esc(T.name) + " · " : ""}${esc(S.league.name)}</span></div></div><hr>
+    ${it("league", MI.swap, "Switch league", S.leagues.length > 1 ? S.leagues.length + " leagues" : "")}${it("refresh", MI.ref, "Refresh", S.updated ? tm(S.updated) : "")}<hr>
+    ${it("ai", MI.ai, esc(S.set.botName) + " AI", S.set.apiKey ? effLabel() : "Free")}${it("settings", MI.gear, "Settings")}${it("tour", MI.tour, "Replay tour")}${it("help", MI.help, "Help")}`;
+  m.classList.add("on"); $("#pscrim").classList.add("on");
+}
+function closeMenu(){ $("#pmenu").classList.remove("on"); $("#pscrim").classList.remove("on"); }
+$("#pfBtn").onclick = () => $("#pmenu").classList.contains("on") ? closeMenu() : openMenu();
+$("#pscrim").onclick = closeMenu;
+$("#pmenu").addEventListener("click", async e => {
+  const b = e.target.closest("[data-m]"); if(!b) return; const k = b.dataset.m; closeMenu();
+  if(k === "league") openLeagues();
+  else if(k === "refresh"){ const pb = $("#pfBtn"); pb.style.opacity = .5; await refresh(true); pb.style.opacity = 1; toast("Updated " + tm(new Date())); }
+  else if(k === "ai") openAI();
+  else if(k === "settings") openSettings();
+  else if(k === "tour") setTimeout(startTour, 250);
+  else if(k === "help") openHelp();
+});
+S.lgRec = {};
+function openLeagues(){
+  const body = () => `<div class="grp">${S.leagues.map(l => `<button class="cell" data-lg="${esc(l.league_id)}">${lgAv(l)}<div class="main"><div class="t1">${esc(l.name)}</div><div class="t2">${esc(S.lgRec[l.league_id] || (l.total_rosters ? l.total_rosters + " teams" : ""))}</div></div>${l.league_id === S.league.league_id ? CHECK : ""}</button>`).join("")}</div>
+    <div class="foot">${S.leagues.length > 1 ? "Tap a league to switch. Everything follows, including what " + esc(S.set.botName) + " knows when you ask." : "This is your only Sleeper league this season. Join another in Sleeper and it shows up here."}</div>`;
+  const bindLg = () => $$("#shBody [data-lg]").forEach(b => b.onclick = () => switchLeague(b.dataset.lg));
+  openSheet("Your leagues", body()); bindLg();
+  Promise.all(S.leagues.filter(l => !S.lgRec[l.league_id]).map(async l => {
+    try{
+      const rs = (await api(`/league/${l.league_id}/rosters`)) || [], mine = rs.find(r => r.owner_id === S.user.user_id || (r.co_owners || []).includes(S.user.user_id)), st = (mine && mine.settings) || {};
+      S.lgRec[l.league_id] = (mine ? `${st.wins || 0}-${st.losses || 0}${st.ties ? "-" + st.ties : ""} · ` : "") + `${rs.length || l.total_rosters} teams`;
+    }catch(e){}
+  })).then(() => { if($("#sheet").classList.contains("on") && $("#shTitle").textContent === "Your leagues"){ const sc = $("#shBody").scrollTop; $("#shBody").innerHTML = body(); bindLg(); $("#shBody").scrollTop = sc; } });
+}
+async function switchLeague(id){
+  const l = S.leagues.find(x => x.league_id === id); closeSheet();
+  if(!l || l.league_id === S.league.league_id) return;
+  S.league = l; store.set("gd_league", id); S.week = S.state.week; AI.sched = null; S._rk = null; S.plog = {}; S._capTold = false;
+  window.scrollTo(0, 0); loading("Loading " + l.name + "…");
+  try{ await loadLeague(); loadChat(); render(true); syncWatcher(true); scheduleBackup(); toast("Now viewing " + l.name); }catch(err){ fail(err); }
+}
+function openHelp(){
+  const q = (t, d) => `<div class="cell noimg" style="align-items:flex-start"><div class="main"><div class="t1" style="white-space:normal">${t}</div><div class="t2" style="white-space:normal;line-height:1.45">${d}</div></div></div>`;
+  openSheet("Help", `<div class="grp">${q("Is Audible free?", "Yes. Scores, lineups, waivers, news, alerts and the daily briefing are all free. Chatting with " + esc(S.set.botName) + " uses your own Claude API key, which you pay Anthropic for directly, usually a few dollars a month or less.")}
+    ${q("Can Audible change my lineup?", "No. Sleeper only lets other apps read your league. Audible tells you what to do, and the buttons take you to Sleeper to do it.")}
+    ${q("How do I get alerts?", "Open Settings, then Notifications. Add Audible to your Home Screen first, since iPhone only allows alerts for Home Screen apps.")}
+    ${q("How do I keep my settings if I get a new phone?", "Open Settings, then Backup, and set a PIN. Sign in with the same Sleeper username on the new phone and enter the PIN.")}
+    ${q("Scores look stuck", "Pull down on any screen to refresh. During games, scores update on their own every few seconds.")}</div>
+    <div class="btns"><button class="btn gray" id="hTour">Replay the tour</button></div><div class="foot">Audible ${VERSION}. Not affiliated with Sleeper, ESPN or the NFL.</div>`);
+  $("#hTour").onclick = () => { closeSheet(); setTimeout(startTour, 350); };
+}
+/* pull down to refresh */
+(function(){
+  const el = $("#ptr"); let y0 = null, armed = false, busy = false;
+  const blocked = () => busy || tourOn || !S.league || $("#nav").style.display === "none" || $("#sheet").classList.contains("on") || $("#chat").classList.contains("on") || $("#pmenu").classList.contains("on");
+  const show = p => { el.style.opacity = Math.min(1, p / 44).toFixed(2); el.style.transform = `translateY(${(Math.min(p, 96) * .62 - 20).toFixed(1)}px) rotate(${Math.round(p * 3.2)}deg)`; };
+  document.addEventListener("touchstart", e => { armed = false; y0 = (!blocked() && scrollY <= 0 && e.touches.length === 1 && !e.target.closest("nav, .fab, .rail, .pmenu")) ? e.touches[0].clientY : null; }, {passive:true});
+  document.addEventListener("touchmove", e => {
+    if(y0 == null) return; const dy = e.touches[0].clientY - y0;
+    if(scrollY > 2){ y0 = null; show(0); return; }
+    const p = dy > 0 ? Math.max(-scrollY, dy * .45) : 0; show(p);
+    const a = p >= 62; if(a !== armed){ armed = a; el.classList.toggle("armed", a); if(a) haptic(); }
+  }, {passive:true});
+  const end = async () => {
+    if(y0 == null) return; y0 = null;
+    if(!armed){ show(0); return; }
+    armed = false; busy = true; el.classList.add("spin"); el.style.opacity = 1; el.style.transform = "translateY(26px)";
+    try{ await Promise.all([refresh(true), new Promise(r => setTimeout(r, 550))]); }catch(e){}
+    el.classList.remove("spin", "armed"); show(0); busy = false;
+  };
+  document.addEventListener("touchend", end); document.addEventListener("touchcancel", end);
+})();
+
+/* =============== 1.4: guided tour =============== */
+const TOUR = [
+  {tab:"home", sel:".bot", t:"Your daily briefing", d:"Every day I check your lineup, your matchup, the waiver wire and the standings, and put what matters right here."},
+  {tab:"home", sel:".bug", t:"Your matchup, live", d:"Scores update on their own. The ball on the field shows your chance to win: green is you, blue is them."},
+  {tab:"team", sel:".trow[data-p]", r:16, t:"Tap any player", d:"You'll get my take, his season stats, a game log and the latest news. A blue dot means news you haven't read yet."},
+  {sel:"#nav", r:999, t:"Getting around", d:"Tap a tab, or hold and slide the glass bubble across."},
+  {sel:"#fab", r:999, t:"Ask me anything", d:"Start or sit, waivers, trades. Chatting with me uses your own Claude API key. Everything else in the app is free."},
+  {sel:"#pfBtn", r:999, t:"Your menu", d:"Switch leagues, set up Audible AI and change settings here. And pull down on any screen to refresh."}
+];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let tourI = 0;
+async function startTour(){
+  if(tourOn || !S.league) return; closeMenu(); if($("#sheet").classList.contains("on")) closeSheet();
+  tourOn = true; tourI = 0;
+  const T = $("#tour"); T.innerHTML = `<i class="hole"></i><div class="tip" role="dialog" aria-live="polite"></div>`; T.classList.add("on");
+  await tourShow();
+}
+function endTour(){
+  tourOn = false; $("#tour").classList.remove("on"); $("#tour").innerHTML = ""; store.set("gd_tour", 1);
+  if(S.tab !== "home") go("home"); window.scrollTo(0, 0);
+}
+async function tourShow(){
+  const T = $("#tour"), hole = T.querySelector(".hole"), tip = T.querySelector(".tip");
+  for(; tourI < TOUR.length; tourI++){
+    const st = TOUR[tourI];
+    if(st.tab && S.tab !== st.tab){ go(st.tab); await sleep(380); }
+    $("#fab").classList.remove("hide");
+    const el = $(st.sel.startsWith("#") ? st.sel : "#app " + st.sel); if(!el || !el.offsetWidth) continue;
+    const fixed = !!el.closest("#nav, #fab, #bar");
+    if(fixed){ if(st.sel === "#pfBtn") window.scrollTo(0, 0); }
+    else { const r0 = el.getBoundingClientRect(); window.scrollTo(0, Math.max(0, scrollY + r0.top - 140)); }
+    await sleep(80);
+    const r = el.getBoundingClientRect(), pad = fixed ? 5 : 7, top = Math.max(6, r.top - pad), h = Math.min(r.height + pad * 2, innerHeight * .46);
+    hole.style.cssText = `left:${Math.max(4, r.left - pad)}px;top:${top}px;width:${Math.min(innerWidth - 8, r.width + pad * 2)}px;height:${h}px;border-radius:${st.r || 24}px`;
+    const last = tourI === TOUR.length - 1;
+    tip.innerHTML = `<div class="th"><div class="tb">${abot("")}</div><b>${st.t}</b></div><p>${st.d}</p>
+      <div class="tf"><div class="dots">${TOUR.map((_, k) => `<i class="${k === tourI ? "on" : ""}"></i>`).join("")}</div>${last ? "" : `<button class="skip" id="tSkip">Skip</button>`}<button class="next" id="tNext">${last ? "Let's go" : "Next"}</button></div>`;
+    const th = tip.offsetHeight, below = top + h + 14, room = innerHeight - below - 14;
+    tip.style.top = (room >= th ? below : Math.max(54, top - 14 - th)) + "px";
+    $("#tNext").onclick = () => { haptic(); tourI++; if(tourI >= TOUR.length) endTour(); else tourShow(); };
+    const sk = $("#tSkip"); if(sk) sk.onclick = endTour;
+    return;
+  }
+  endTour();
+}
+
+/* =============== 1.4: Audible AI: plans, key guide, effort, length, spend =============== */
+function plansHtml(){
+  const on = !!S.set.apiKey;
+  return `<div class="plans"><div class="plan ${on ? "" : "cur"}"><b>Free</b><span>$0, forever</span><ul><li>Live matchups and win odds</li><li>Lineups, waivers, league activity</li><li>News and the game tracker</li><li>Alerts and the daily briefing</li></ul></div>
+    <div class="plan ${on ? "cur" : ""}"><b>${esc(S.set.botName)} AI</b><span>Your own Claude key. Pay only for what you ask.</span><ul><li>Everything in Free</li><li>Chat with ${esc(S.set.botName)} about your team</li><li>Start/sit, waiver and trade analysis</li><li>Usually a few dollars a month or less</li></ul></div></div>`;
+}
+function aiGuide(){
+  return `<div class="gcard steps">
+    <div class="stp"><i>1</i><div><b>Open the Claude Console</b><p>Sign up or log in. This is separate from a Claude Pro or Max subscription, which doesn't include it.</p><a class="btn" href="https://console.anthropic.com/settings/billing" target="_blank" rel="noopener">Open Claude Console</a></div></div>
+    <div class="stp"><i>2</i><div><b>Add $5 of credit</b><p>Under Billing, buy $5 of credits. Leave auto-reload off so you can never be charged more than you put in.</p></div></div>
+    <div class="stp"><i>3</i><div><b>Create a key</b><p>Go to API keys, tap Create key, name it Audible, and copy it. It starts with sk-ant.</p><a class="btn" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Open API keys</a></div></div>
+    <div class="stp"><i>4</i><div style="flex:1;min-width:0"><b>Paste it here</b><p>Your key stays on this phone. Don't share it with anyone.</p><input id="keyIn" type="password" placeholder="sk-ant-…" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="btn" id="keySave" style="background:var(--blue);color:#fff">Turn on ${esc(S.set.botName)} AI</button></div></div></div>`;
+}
+function bindKeySave(done){
+  const b = $("#keySave"); if(!b) return;
+  b.onclick = () => { const v = $("#keyIn").value.trim(); if(!/^sk-/.test(v)){ toast("That doesn't look like a Claude key. It starts with sk-ant."); return; } S.set.apiKey = v; saveSettings(); done(); };
+}
+function openAI(){
+  const s = S.set, on = !!s.apiKey, sp = spend(), lim = +s.aiLimit || 0, pc = lim ? Math.min(100, sp.usd / lim * 100) : 0;
+  const seg = (key, opts) => `<div class="seg">${opts.map(([v, l]) => `<button data-ai="${key}" data-v="${v}" class="${(s[key] || opts[0][0]) === v ? "on" : ""}">${l}</button>`).join("")}</div>`;
+  const desc = (opts, v) => (opts.find(o => o[0] === v) || opts[0])[2];
+  let h = plansHtml();
+  if(!on) h += `<div class="lbl">Get ${esc(s.botName)} AI in 4 steps</div>${aiGuide()}`;
+  else {
+    h += `<div class="lbl">Effort</div>${seg("effort", EFFS)}<div class="note" id="aiEffD">${desc(EFFS, s.effort)}</div>
+      <div class="grp" style="margin-top:12px"><div class="cell noimg"><div class="main"><div class="t1" style="font-weight:400">Deep checks the web for news</div></div><label class="tgl"><input type="checkbox" id="aiWeb" ${s.deepWeb !== false ? "checked" : ""}><i></i></label></div></div>
+      <div class="lbl">Answer length</div>${seg("length", LENS)}<div class="note" id="aiLenD">${desc(LENS, s.length)}</div>
+      <div class="lbl">This month</div><div class="gcard"><div class="wprow num"><span><b>$${sp.usd.toFixed(2)}</b> spent</span><span>${lim ? "of your $" + lim + " limit" : "no limit set"}</span></div>
+        <div class="sbar ${pc >= 80 ? "hot" : ""}"><i style="width:${lim ? pc : 0}%"></i></div><div class="xs c2">${sp.q} question${sp.q === 1 ? "" : "s"} so far. This is an estimate; your Claude Console shows the exact bill.</div></div>
+      <div class="grp" style="margin-top:10px"><div class="cell noimg"><div class="main"><div class="t1" style="font-weight:400">Monthly limit</div></div><select class="sel" id="aiLim">${[[1,"$1"],[3,"$3"],[5,"$5"],[10,"$10"],[0,"No limit"]].map(([v, l]) => `<option value="${v}" ${lim === v ? "selected" : ""}>${l}</option>`).join("")}</select></div></div>
+      <div class="note">At the limit, ${esc(s.botName)} switches to Quick until next month, so you're never surprised.</div>
+      <div class="lbl">Your key</div><div class="grp"><div class="cell noimg"><div class="main"><div class="t1" style="font-weight:400">Claude API key</div></div><span class="c2">sk-ant-…${esc(s.apiKey.slice(-4))}</span></div>
+        <button class="cell noimg" id="keyRm"><div class="main"><div class="t1" style="font-weight:400;color:var(--red)">Remove key</div></div></button></div>
+      <div class="note">Saved on this phone, and in your PIN backup if you turned that on.</div>`;
+  }
+  openSheet(s.botName + " AI", h);
+  bindKeySave(() => { toast(S.set.botName + " AI is on"); openAI(); render(); });
+  $$("#shBody [data-ai]").forEach(b => b.onclick = () => {
+    const k = b.dataset.ai; S.set[k] = b.dataset.v; saveSettings();
+    $$(`#shBody [data-ai="${k}"]`).forEach(x => x.classList.toggle("on", x === b)); segPills($("#shBody"));
+    $(k === "effort" ? "#aiEffD" : "#aiLenD").textContent = desc(k === "effort" ? EFFS : LENS, b.dataset.v);
+  });
+  const w = $("#aiWeb"); if(w) w.onchange = () => { S.set.deepWeb = w.checked; saveSettings(); };
+  const lm = $("#aiLim"); if(lm) lm.onchange = () => { S.set.aiLimit = +lm.value; S._capTold = false; saveSettings(); openAI(); };
+  const rm = $("#keyRm"); if(rm) rm.onclick = () => { S.set.apiKey = ""; saveSettings(); openAI(); render(); toast("Key removed. You're on Free."); };
 }
 
 /* =============== events =============== */
@@ -2281,8 +2600,6 @@ function navTo(tab){
 }
 let navSkipClick = 0;
 $$("nav button").forEach(b => b.onclick = () => { if(Date.now() < navSkipClick) return; navTo(b.dataset.tab); });
-$("#refreshBtn").onclick = async () => { const b = $("#refreshBtn"); b.style.opacity = .4; await refresh(true); b.style.opacity = 1; };
-$("#setBtn").onclick = openSettings;
 let lastY = 0;
 addEventListener("scroll", () => {
   const y = scrollY, fab = $("#fab");
@@ -2300,12 +2617,14 @@ const haptic = (() => { let l = null; return () => { try{
   const i = document.createElement("input"); i.type = "checkbox"; i.setAttribute("switch", ""); i.tabIndex = -1; l.appendChild(i); document.body.appendChild(l);
   l.click(); l.remove();
 }catch(e){} }; })();
-document.addEventListener("click", e => { if(e.target.closest(".seg button, .chip, #refreshBtn, #chSend, #fab")) haptic(); }, true);
+document.addEventListener("click", e => { if(e.target.closest(".seg button, .chip, #pfBtn, .pmenu button, #chSend, #chEff, #fab")) haptic(); }, true);
 document.addEventListener("touchstart", () => {}, {passive:true}); // lets :active press states fire on iOS
 
 /* liquid glass bubble that slides under the selected tab */
 /* keep the page behind a sheet or chat still */
+let tourOn = false;
 document.addEventListener("touchmove", e => {
+  if(tourOn){ if(e.cancelable) e.preventDefault(); return; }
   const sheetOn = $("#sheet").classList.contains("on"), chatOn = $("#chat").classList.contains("on");
   if(!sheetOn && !chatOn) return;
   if(e.target.closest && e.target.closest(".rail, .spark.log, .hscroll, .lines")) return;            // sideways scrollers inside
@@ -2494,20 +2813,32 @@ function fail(e){
 }
 function setup(){
   $("#bar").style.display = "none"; $("#nav").style.display = "none"; $("#fab").style.display = "none";
-  $("#app").innerHTML = `<form class="setup" id="sf"><div style="width:76px;height:76px">${abot("")}</div><h1>Audible</h1>
-    <div class="c2" style="font-size:17px">Your Sleeper leagues with live scores, lineup alerts, waivers, news, and your own AI coach, all in one place. Enter your Sleeper username to start. No password needed.</div>
+  $("#app").innerHTML = `<form class="setup wel" id="sf"><div class="welbot">${abot("")}</div><h1>Welcome to Audible</h1>
+    <div class="c2" style="font-size:17px;line-height:1.4">Your Sleeper fantasy team, made simple. I'm Audible, your coach on the sideline.</div>
+    <div class="welpts"><div>${MI.live}<span><b>Live matchups</b> with win odds, lineups, waivers and news</span></div>
+      <div>${MI.news}<span><b>Alerts that matter</b>: lineup problems, lead changes and finals</span></div>
+      <div>${MI.ai}<span><b>An AI coach</b> for start/sit, waivers and trades (optional)</span></div></div>
+    <div class="stepl">Step 1 · Your Sleeper username</div>
     <input class="field" id="un" placeholder="Sleeper username" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username">
+    <div class="xs c2" style="line-height:1.4">It's the name on your Sleeper profile. No password needed. Audible can only read your leagues, never change them.</div>
     <div class="err" id="err"></div><button class="btn" type="submit">Continue</button></form>`;
   $("#sf").onsubmit = async e => {
-    e.preventDefault(); const n = $("#un").value.trim(); if(!n) return;
+    e.preventDefault(); const n = $("#un").value.trim().replace(/^@/, ""); if(!n) return;
     $("#err").textContent = "Looking you up…";
     try{
       const u = await api(`/user/${encodeURIComponent(n)}`);
-      if(!u || !u.user_id){ $("#err").textContent = "Couldn't find that username on Sleeper."; return; }
-      store.set("gd_user", {user_id:u.user_id, username:n, display_name:u.display_name, avatar:u.avatar});
+      if(!u || !u.user_id){ $("#err").textContent = "Couldn't find that username on Sleeper. Check the spelling in your Sleeper profile."; return; }
+      store.set("gd_user", {user_id:u.user_id, username:n, display_name:u.display_name, avatar:u.avatar}); store.set("gd_new", 1);
       if(await tryRestore(n)) restoreScreen(n, boot); else boot();
     }catch(err){ $("#err").textContent = "Couldn't reach Sleeper. Check your connection."; }
   };
+}
+function pickLeague(){
+  $("#bar").style.display = "none"; $("#nav").style.display = "none"; $("#fab").style.display = "none";
+  $("#app").innerHTML = `<div class="setup" style="justify-content:flex-start;padding-top:calc(var(--sat) + 40px)"><div class="stepl">Step 2 · Pick your league</div><h1 style="margin:0">Hi, ${esc(S.user.display_name)}</h1>
+    <div class="c2" style="font-size:17px;line-height:1.4">You're in ${S.leagues.length} leagues. Which one first? You can switch anytime from your picture in the top left.</div>
+    <div class="lgpick">${S.leagues.map(l => `<button data-lgp="${esc(l.league_id)}">${lgAv(l)}<div style="flex:1;min-width:0"><b>${esc(l.name)}</b><span>${[l.total_rosters ? l.total_rosters + " teams" : "", (l.scoring_settings || {}).rec ? ((l.scoring_settings.rec === 1) ? "PPR" : l.scoring_settings.rec + " PPR") : ""].filter(Boolean).join(" · ") || "Sleeper league"}</span></div>${CHEV}</button>`).join("")}</div></div>`;
+  $$("#app [data-lgp]").forEach(b => b.onclick = () => { store.set("gd_league", b.dataset.lgp); boot(); });
 }
 async function boot(){
   loadSettings();
@@ -2524,16 +2855,19 @@ async function boot(){
       $("#app").innerHTML = `<div class="setup"><h1>No leagues found</h1><div class="c2">${esc(S.user.display_name)} isn't in any NFL leagues this season.</div><button class="btn" id="ag">Try another username</button></div>`;
       $("#ag").onclick = () => { store.del("gd_user"); setup(); }; return;
     }
+    const isNew = !!store.get("gd_new");
+    if(isNew && S.leagues.length > 1 && !S.leagues.some(l => l.league_id === store.get("gd_league"))) return pickLeague();
     S.league = S.leagues.find(l => l.league_id === store.get("gd_league")) || S.leagues[0];
     S.week = S.state.week; S.tab = TITLES[S.set.startTab] ? S.set.startTab : "home";
     loading("Loading " + S.league.name + "…");
     await loadLeague();
-    $("#bar").style.display = ""; $("#nav").style.display = ""; $("#fab").style.display = "";
+    $("#bar").style.display = ""; $("#nav").style.display = ""; $("#fab").style.display = ""; pfFill();
     render(true); startLive();
     if(location.hash && route(location.hash)) history.replaceState(null, "", location.pathname + location.search);
     syncWatcher(false);
     const seen = store.get("gd_seen_ver");
-    if(seen !== VERSION){ if(seen || store.get("gd_settings")) setTimeout(() => openWhatsNew(false), 700); else store.set("gd_seen_ver", VERSION); }
+    if(isNew){ store.del("gd_new"); store.set("gd_seen_ver", VERSION); if(!store.get("gd_tour")) setTimeout(startTour, 900); }
+    else if(seen !== VERSION){ if(seen || store.get("gd_settings")) setTimeout(() => openWhatsNew(false), 700); else store.set("gd_seen_ver", VERSION); }
   }catch(e){ fail(e); }
 }
 boot();
