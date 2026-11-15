@@ -2,6 +2,23 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.9 — Audible for iPad and Mac
+*Nov 15, 2026*
+
+One file, three shapes. Under 760px it is the phone app, pixel for pixel: a before-and-after comparison of all five tabs at 390px shows no difference.
+
+- **From 760px (iPad portrait)** the tab bar becomes a rail down the left, sheets become a panel on the right, and the chat becomes a panel that closes when you tap outside it.
+- **From 1100px (iPad landscape, Mac)** the rail opens into a sidebar with the league switcher and an Ask Audible button, and every section lays out in two columns: briefing beside the NFL slate and league activity, the matchup beside lineup check and the other scores, starters beside bench, players beside news, standings beside scores and activity.
+- **The chat docks.** On the widest layout it sits beside the app and nothing is locked or made inert, so both stay usable. The page gives up the width instead of being covered, and drops to one column while it is docked on mid-size screens.
+- **Views are built as main and side.** A `dash(main, side)` helper wraps the two halves. On a phone the wrappers are plain blocks in the original order, so nothing moves. `sideFirst` keeps the phone order where the side column belongs on top.
+- **Keyboard.** 1 to 5 switch sections, Command-K toggles the chat, slash searches players, the bracket keys change weeks, R refreshes, Escape goes back a page then closes the panel, ? lists the shortcuts. Return sends a message on a hover-capable pointer; Shift-Return makes a new line.
+- **Pointer.** Hover states, a pointer cursor, focus rings, styled scrollbars, and selectable text in chat and articles, all behind `(hover:hover) and (pointer:fine)` so touch devices are unaffected.
+- **Gestures that only make sense on a phone are off on big screens:** the sliding lens on the tab bar and drag-to-dismiss on sheets.
+- **Crossing a breakpoint redraws**, so rotating an iPad or resizing a Mac window swaps layouts cleanly.
+- **The tour points at the sidebar** on big screens instead of the tab bar and floating button.
+- **iPad launch screens** for nine iPad sizes in both orientations.
+- **Install wording follows the device:** Add to Home Screen on iPad, Add to Dock on Mac.
+
 ## 1.8.1 — Chat header, rebuilt so it can't go missing
 *Nov 15, 2026*
 

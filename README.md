@@ -24,6 +24,19 @@ Free · No account · Nothing to download
 
 That's it. No password, no account to make. Adding it to your Home Screen is what makes it look and act like a real app, and it's also the only way iPhone allows notifications.
 
+## iPad and Mac
+
+Same link, and it lays itself out for the screen it's on.
+
+- **iPad:** open the link in Safari, tap **Share**, then **Add to Home Screen**.
+- **Mac:** open the link in Safari, choose **File**, then **Add to Dock**.
+
+On a big screen the tab bar becomes a sidebar, each section spreads into two columns, and players and games open in a panel beside what you were looking at. On a Mac or a landscape iPad, Audible docks next to the app so you can ask about a player while you're looking at him.
+
+With a keyboard: **1** to **5** switch sections, **⌘K** opens Audible, **/** searches players, **[** and **]** change weeks, **R** refreshes, **Esc** goes back, and **?** shows the list.
+
+To bring your settings across, turn on **Backup** in Settings on your phone first, then sign in with the same Sleeper username and enter your PIN.
+
 ## What it does
 
 <table>
