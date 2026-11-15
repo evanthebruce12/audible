@@ -2,6 +2,17 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.7.2 — Endzone type and posts, measured
+*Nov 14, 2026*
+
+- **The lean is gone.** The old lettering was placed with a frame built from the field's two axes, which are 13.4 degrees off square at the endzones, so every letter was sheared like a bad italic. Worse, the shear flips sign between the two ends, so one endzone's type leaned with its slab and the other leaned against it. The frame is now orthonormal and built from the endzone's own edge: the baseline runs exactly parallel to that edge and the letters stand square to it.
+- **The two ends are a 180 degree pair.** Each endzone reads toward its own endline, the way they are actually painted, instead of both facing the same way.
+- **Glyphs are never stretched.** `lengthAdjust="spacingAndGlyphs"` was squashing the type sideways to hit a target width, which is what made the strokes look thick and soft. Type is now sized to the band and spaced out to fill the width, so the strokes stay the weight the typeface drew them. Weight dropped from 900 to 800. Long names shrink to fit instead of overflowing.
+- **Centred on the right point.** The type was anchored at `FP(a, .5)`, which the perspective curve puts 5.7 units off the real screen midpoint between the two sidelines, so the paint sat low and clipped the endline. It now centres on the true midpoint, and fits inside the tighter of each pair of converging band edges.
+- **Uprights are dead vertical.** They were splayed outward by hand, which is wrong: a camera at eye level keeps vertical lines vertical. Both uprights are now plumb and the same height.
+- **The posts are round.** Every member is drawn as three strokes, shadow and body and highlight, off one light from the upper left, so the pipes read as pipes. The base is a tapered grey cylinder with an elliptical cap and a contact shadow.
+- **Showcase page had two `fPost` definitions**, so it had been rendering a different goalpost from the app since 1.7. Deduped and resynced to the app's code.
+
 ## 1.6.2 — The field has the right shape
 *Nov 14, 2026*
 
