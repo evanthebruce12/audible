@@ -2,7 +2,16 @@
 
 All notable changes to Audible. Newest first.
 
-## 1.5.2 — Two fixes
+## 1.6 — The field in 3D
+*Nov 14, 2026*
+
+- **The field is projected, not flat.** One function, `FP(a, c)`, maps along-field and across-field coordinates to screen space through a perspective parameter, and everything else derives from it: the turf, the ten-yard bands, the endzones, the yard lines, the sidelines, the numbers, the red zone, the goalposts, the ball, the trail, the line of scrimmage and the first-down marker. Nothing can drift out of register because nothing has its own geometry.
+- **Goalposts** stand at the back of each endzone with a ground shadow and a darker base stem, scaled by depth and leaning very slightly inward.
+- **The ball travels on the ground plane.** It is positioned by projecting the interpolated yard line each frame rather than sliding along a fixed centre line, so it tracks the slope of the field and scales with distance. The arc is a lift measured off that projected ground position.
+- **Yard markers lie on the grass.** `.los` and `.fdl` were vertical bars; they are now lines drawn sideline to sideline in perspective.
+- Team abbreviations moved out of the endzones, which are now slanted parallelograms where horizontal text spills past the edges, and sit above the field where they stay legible.
+
+ Two fixes
 *Nov 14, 2026*
 
 - **Stale colour band on player cards.** A strip of `#f2f2f7`, the light theme's `--bg`, could sit frozen across a card in dark mode. Theme switching only swaps CSS variables, so a layer the compositor had already rasterised kept the old palette. `applyTheme` now forces a reflow on the sheet, chat and app after the switch. The permanent `will-change:transform` on `.sheet` that made the sheet a long-lived layer in the first place went in 1.4.9.
