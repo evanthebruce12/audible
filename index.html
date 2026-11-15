@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<style>html,body{background:#06080f;color-scheme:dark}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1119,8 +1121,12 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.9.3";
+const VERSION = "1.9.4";
 const RELEASES = [
+  {v:"1.9.4", date:"Nov 15, 2026", title:"A cleaner launch", items:[
+    ["No flash when it opens","The screen stays the splash colour from the first frame, instead of blinking a lighter shade between the launch screen and Audible."],
+    ["Pictures are ready before you see them","Audible holds the splash until every headshot and logo on your first screen has loaded and is ready to draw, so nothing pops in. On a fast connection that fits inside the intro, so it costs no time."],
+    ["League activity arrives with everything else","It used to fill in a moment after the app opened."]]},
   {v:"1.9.3", date:"Nov 15, 2026", title:"Tidier iPad and Mac details", items:[
     ["Edit lineup button matches the starters","On a big screen it sits under your starters and is the same width as the list."],
     ["Week arrows sit next to the week","On iPad and Mac they hug the label instead of stretching across the page."]]},
@@ -1428,6 +1434,7 @@ function criticalImgs(){
     }));
     (S.games || []).forEach(g => { add(g.home && g.home.logo); add(g.away && g.away.logo); });
     (S.rosters || []).forEach(r => { const t = team(r.roster_id); if(t && t.avatar) add(`${CDN}/avatars/thumbs/${t.avatar}`); });
+    (S.tx || []).slice(0, 6).forEach(t => Object.keys(Object.assign({}, t.adds, t.drops)).forEach(id => { const pl = P(id); if(pl && pl.id) add(hsSrc(pl)); }));
   }catch(e){}
   return [...out];
 }
@@ -1444,6 +1451,29 @@ function prewarm(list, ms){
   });
 }
 /* once we are in, quietly pull the rest so later screens are ready too */
+/* Wait for the images that are actually on screen right now: every <img> in
+   the first screen and a half of the rendered page, decoded, plus the list
+   above. Decoded matters: "loaded" only means the bytes arrived, and an image
+   that still has to decode paints a frame late, which is the pop-in. The
+   splash keeps working while this runs, capped so a dead image server can't
+   hold the app shut. */
+function prewarmScreen(extra, ms){
+  const list = new Set(extra || []), waits = [];
+  const lim = innerHeight * 1.5;
+  document.querySelectorAll("#app img").forEach(im => {
+    const r = im.getBoundingClientRect(); if(r.top > lim) return;
+    if(im.complete && im.naturalWidth) waits.push(im.decode ? im.decode().catch(() => {}) : Promise.resolve());
+    else waits.push(new Promise(done => { im.addEventListener("load", () => (im.decode ? im.decode() : Promise.resolve()).catch(() => {}).then(done), {once:true}); im.addEventListener("error", done, {once:true}); }));
+    list.delete(im.getAttribute("src"));
+  });
+  list.forEach(src => waits.push(new Promise(done => {
+    const i = IMGC.get(src) || new Image(); if(!IMGC.has(src)){ i.src = src; IMGC.set(src, i); }
+    const fin = () => (i.decode ? i.decode() : Promise.resolve()).catch(() => {}).then(done);
+    if(i.complete) fin(); else { i.addEventListener("load", fin, {once:true}); i.addEventListener("error", done, {once:true}); }
+  })));
+  if(!waits.length) return Promise.resolve();
+  return Promise.race([Promise.all(waits), new Promise(r => setTimeout(r, ms || 4000))]);
+}
 function warmRest(){
   const idle = window.requestIdleCallback || (f => setTimeout(f, 400));
   idle(() => {
@@ -1626,9 +1656,10 @@ async function loadLeague(){
   S.myRid = mine ? mine.roster_id : null;
   S.tx = null; S.trendAdd = null; S.trendDrop = null;
   S.updated = new Date();
-  await Promise.all([loadGames(), loadProj()]);
+  const txReady = loadTx();
+  await Promise.all([loadGames(), loadProj(), Promise.race([txReady, sleep(1500)])]);
   // background extras
-  Promise.all([loadSeason(), loadHistory(), loadTx(), loadTrending(), loadNews()]).then(() => render());
+  Promise.all([loadSeason(), loadHistory(), txReady, loadTrending(), loadNews()]).then(() => render());
 }
 async function loadTx(){
   const id = S.league.league_id, w = S.state.week || 1, weeks = [w, w-1, w-2].filter(x => x >= 1);
@@ -4660,7 +4691,7 @@ async function boot(){
     if(hint && hint.season){
       pre(API + `/user/${S.user.user_id}/leagues/nfl/${hint.season}`);
       if(lid0){
-        ["", "/rosters", "/users", `/matchups/${hint.week}`].forEach(x => pre(API + `/league/${lid0}${x}`));
+        ["", "/rosters", "/users", `/matchups/${hint.week}`].concat([hint.week, hint.week - 1, hint.week - 2].filter(w => w >= 1).map(w => `/transactions/${w}`)).forEach(x => pre(API + `/league/${lid0}${x}`));
         pre(sbUrl(hint.st === "post" ? 3 : 2, hint.week, hint.sseason));
         const pc = store.get(`gd_proj_${lid0}_${hint.sseason}_${hint.week}`);
         if(!(pc && Date.now() - pc.t < 2*3600e3)) pre(API + `/projections/nfl/regular/${hint.sseason}/${hint.week}`);
@@ -4691,7 +4722,7 @@ async function boot(){
     bootProg(.92, .99);
     $("#bar").style.display = ""; $("#nav").style.display = ""; $("#fab").style.display = ""; pfFill();
     render(true);
-    const warming = prewarm(criticalImgs(), 2000);
+    const warming = prewarmScreen(criticalImgs(), 4000);
     /* yesterday's player list got us in; fetch today's now that nobody is waiting */
     if(playersStale) setTimeout(() => loadPlayers(true, true).then(() => render()).catch(() => {}), 5000);
     checkUpdate();

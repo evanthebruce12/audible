@@ -2,6 +2,13 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.9.4 — A cleaner launch
+*Nov 15, 2026*
+
+- **No flash between the launch screen and the splash.** In the iPad recording the screen went from the launch colour (#06080f) to a lighter grey for a frame or two around 0.57s, then back to navy. That grey is the web view painting its default background before the page's styles apply. The first thing in `<head>` is now `color-scheme: dark` and a one-line style that paints `html` navy, so the very first frame matches the launch screen.
+- **The splash waits for the first screen's images to be decoded, not just requested.** It used to wait at most 2 seconds for a fixed list, and only for the bytes to arrive. `prewarmScreen()` now waits on every `<img>` in the first screen and a half of the rendered page, plus the critical list, through `decode()`, capped at 4 seconds. Measured with images artificially delayed by 3.5s: the old build revealed the app with 2 of 2 on-screen images still loading; the new one held the splash to 3.8s and revealed with 0 unready. When images arrive within the intro, the hand-off time is unchanged (2.2s).
+- **League activity loads before the hand-off** (capped at 1.5s) and its requests are prefetched at launch, since on the two-column layout it is on the first screen. Its headshots are on the critical list.
+
 ## 1.9.3 — Tidier iPad and Mac details
 *Nov 15, 2026*
 
