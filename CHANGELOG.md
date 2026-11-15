@@ -2,6 +2,15 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.8.1 — Chat header, rebuilt so it can't go missing
+*Nov 15, 2026*
+
+- **The header is the first row of the chat panel again.** It had been a separate fixed layer since 1.4.6, moved out to dodge a blur that turned out to be iOS's. Two fixed layers can be moved apart, and the keyboard was doing exactly that. One box cannot come apart.
+- **The page behind is pinned** while the chat is open (`body` fixed at its scroll offset, restored on close), so iOS has nothing to scroll when it brings the text box into view.
+- **Keyboard detection no longer trusts `innerHeight`.** Some iOS versions shrink the layout viewport with the keyboard and some only the visual one. It is judged against the tallest the screen has been since the chat opened, which also removes the gap that sat between the text box and the keyboard.
+- **Nothing shows through above the keyboard.** The iOS 26 keyboard is translucent, and a strip of the Today tab was visible between the chat and the keyboard. The panel now paints a 100vh spread around itself once it has finished sliding up.
+- **A stale pan is released.** If the view is still offset after the keyboard closes, it is scrolled back and re-measured.
+
 ## 1.8 — The blur, found. Plus a rebuilt field.
 *Nov 15, 2026*
 

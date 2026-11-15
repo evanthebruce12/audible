@@ -130,14 +130,18 @@ html[data-theme=light] .circ{background:#fff!important}
    layer was rasterised at. Measured on a device: header text edges 5px,
    body text 1px, on the same screen. The header is now a sibling that
    never transforms. */
-.chd{position:fixed;left:0;right:0;top:0;z-index:56;padding-top:calc(10px + var(--sat));
-  background:#0b0b0d;opacity:0;pointer-events:none;transition:opacity .22s ease .1s;
-  max-width:none;margin:0;transform:none!important;will-change:auto!important}
-html[data-theme=light] .chd{background:#fafafc}
-.chd>*{max-width:600px}
-.chd.on{opacity:1;pointer-events:auto}
+/* ---- chat header ----
+   The header is the first row of the chat panel again. It lived outside the
+   panel as its own fixed layer for a while, to dodge a blur that turned out to
+   be iOS's, and two fixed layers can be moved apart: when the keyboard pans
+   the screen the panel was following and the header was not, so Done and
+   Clear ended up under the clock. One box cannot come apart. */
+.chat .chd{flex:none;position:relative;z-index:2;max-width:none;width:100%;margin:0;padding:calc(10px + var(--sat)) 16px 10px;background:#0b0b0d}
+html[data-theme=light] .chat .chd{background:#fafafc}
 .chat{padding-top:0}
-.chat .chlog{padding-top:calc(62px + var(--sat))}
+/* iOS 26 keyboards are glass: anything the panel does not cover shows through.
+   Paint well past both ends of the panel so the page behind never does. */
+.chat.on.cov{box-shadow:0 0 0 100vh var(--bg)}
 /* ---- big plays carry weight ---- */
 .play.big{position:relative}
 .play.big::after{content:"";position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:0 3px 3px 0;background:var(--orange)}
@@ -915,8 +919,8 @@ html[data-theme=light] .pmenu{background:rgba(252,252,253,.82);box-shadow:inset 
   <button data-tab="league"><svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5.5h3V7a3 3 0 0 1-3 3M7 5.5H4V7a3 3 0 0 0 3 3M12 14v4M8 21h8"/></svg>League</button>
 </div></nav>
 <button class="fab" id="fab" style="display:none" aria-label="Ask Audible"></button>
-<div class="chd" id="chd"><button id="chClose" class="chbtn">Done</button><div class="chtitle"><span id="chBot"></span><b id="chName">Audible</b></div><button id="chClear" class="chbtn">Clear</button></div>
 <div class="chat" id="chat">
+  <div class="chd" id="chd"><button id="chClose" class="chbtn">Done</button><div class="chtitle"><span id="chBot"></span><b id="chName">Audible</b></div><button id="chClear" class="chbtn">Clear</button></div>
   <div class="chlog" id="chLog"></div>
   <form class="chin" id="chForm"><button type="button" id="chEff" class="effchip" aria-label="Effort">Auto</button><textarea id="chText" rows="1" placeholder="Ask about your team…"></textarea><button type="submit" id="chSend" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></form>
 </div>
@@ -945,8 +949,13 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.8";
+const VERSION = "1.8.1";
 const RELEASES = [
+  {v:"1.8.1", date:"Nov 15, 2026", title:"Chat header, rebuilt so it can't go missing", items:[
+    ["Done and Clear are part of the chat itself","They were a separate layer that the keyboard could slide away from the rest. They're now the top row of the chat, so they go wherever it goes."],
+    ["The page behind is pinned","iPhone can no longer scroll the screen underneath the chat when the keyboard opens."],
+    ["No more see-through strip above the keyboard","The new glass keyboard showed whatever the chat didn't cover. The chat now paints past its own edges."],
+    ["Settings shows your version","If you're ever unsure an update landed, it's at the bottom of Settings."]]},
   {v:"1.8", date:"Nov 15, 2026", title:"The blur, found. Plus a rebuilt field.", items:[
     ["The blur at the top was never Audible","Since iOS 26.1, iPhone lays its own blur and dark strip over the top of any Home Screen app added with a see-through status bar, and an app can't switch it off. Audible now asks for a solid status bar instead. iPhone only reads that when the icon is added, so it needs one remove and re-add: Settings, About, Sharpen the top bar walks you through it. Turn on Backup first."],
     ["Done and Clear stay put in chat","When the keyboard opened, iPhone slid the screen and the chat header stayed behind, under the clock or off screen. It moves with the chat now."],
@@ -1578,10 +1587,10 @@ function md(t){
 const SUGG = ["Give me my weekly briefing", "Who should I start at flex this week?", "Any waiver adds worth making?", "Is there a trade I should look at?", "How do my playoff chances look?"];
 function openChat(prefill){
   $("#chName").textContent = S.set.botName; $("#chBot").innerHTML = abot("a28"); loadChat(); renderChat(); setTimeout(abPop, 60);
-  document.documentElement.classList.add("ovl"); $("#chd").classList.add("on"); $("#chat").classList.add("on"); tintBar(); document.body.style.overflow = "hidden"; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = true; }); chatFit();
+  document.documentElement.classList.add("ovl"); $("#chat").classList.add("on"); tintBar(); chatLock(true); setTimeout(() => { const c = $("#chat"); if(c.classList.contains("on")) c.classList.add("cov"); }, 560); document.body.style.overflow = "hidden"; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = true; }); chatFit();
   if(prefill) sendChat(prefill);
 }
-function closeChat(){ $("#chd").classList.remove("on"); $("#chat").classList.remove("on"); tintBar(); if(!$("#sheet").classList.contains("on")) document.documentElement.classList.remove("ovl"); document.body.style.overflow = ""; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = false; }); $("#chText").blur(); chatFit(); }
+function closeChat(){ $("#chText").blur(); $("#chat").classList.remove("cov"); $("#chat").classList.remove("on"); tintBar(); chatLock(false); if(!$("#sheet").classList.contains("on")) document.documentElement.classList.remove("ovl"); document.body.style.overflow = ""; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = false; }); $("#chText").blur(); chatFit(); }
 function renderChat(){
   const log = $("#chLog");
   const free = !S.set.apiKey;
@@ -1831,28 +1840,38 @@ async function sendChat(text){
   }
 }
 /* keep the chat exactly the size of what's visible above the keyboard */
-let chatKb = false;
+let chatKb = false, chatBase = 0, chatY = 0;
 function chatFit(){
   const vv = window.visualViewport, ch = $("#chat"); if(!vv) return;
-  const hd = $("#chd");
-  if(!ch.classList.contains("on")){ ch.style.top = ch.style.height = ch.style.bottom = ch.style.paddingBottom = ""; hd.style.top = ""; ch.classList.remove("kb"); chatKb = false; return; }
-  const top = Math.max(0, vv.offsetTop), cover = Math.max(vv.height, innerHeight - top), under = Math.max(0, cover - vv.height);
-  ch.style.top = top + "px"; ch.style.height = cover + "px"; ch.style.bottom = "auto";
-  /* The header is a sibling of the panel, so it has to be moved with it. When
-     the keyboard opens iOS pans the visual viewport down, and iOS 26 does not
-     always pan it back afterwards: the panel followed, the header stayed at
-     the layout top, and Done and Clear slid up under the clock or off screen. */
-  hd.style.top = top + "px";
-  const kb = under > 120; ch.classList.toggle("kb", kb);
-  ch.style.paddingBottom = kb ? under + "px" : "";
+  if(!ch.classList.contains("on")){ ch.style.top = ch.style.height = ch.style.bottom = ch.style.paddingBottom = ""; ch.classList.remove("kb"); chatKb = false; chatBase = 0; return; }
+  /* Some iOS versions shrink the layout viewport with the keyboard and some
+     only shrink the visual one, so "is the keyboard up" is judged against the
+     tallest the screen has been since the chat opened, not against innerHeight. */
+  chatBase = Math.max(chatBase, vv.height, innerHeight);
+  const top = Math.max(0, vv.offsetTop), kb = vv.height < chatBase - 120;
+  ch.style.top = top + "px"; ch.style.bottom = "auto"; ch.style.height = vv.height + "px"; ch.style.paddingBottom = "";
+  ch.classList.toggle("kb", kb);
   if(kb !== chatKb){ chatKb = kb; const lg = $("#chLog"); lg.scrollTop = lg.scrollHeight; }
 }
+/* While the chat is up the page behind it is pinned, so there is nothing for
+   iOS to scroll when it tries to bring the text box into view. */
+function chatLock(on){
+  const b = document.body;
+  if(on){ chatY = window.scrollY; b.style.position = "fixed"; b.style.top = -chatY + "px"; b.style.left = "0"; b.style.right = "0"; b.style.width = "100%"; }
+  else if(b.style.position === "fixed"){ b.style.position = b.style.top = b.style.left = b.style.right = b.style.width = ""; window.scrollTo(0, chatY); }
+}
+/* iOS 26 can leave the screen panned after the keyboard has gone. Once it is
+   down, put the view back where it belongs and measure again. */
+function chatSettle(){
+  if(!$("#chat").classList.contains("on")) return;
+  const vv = window.visualViewport;
+  if(vv && vv.offsetTop > 0 && document.activeElement !== $("#chText")) window.scrollTo(0, 0);
+  chatFit();
+}
 if(window.visualViewport){ visualViewport.addEventListener("resize", chatFit); visualViewport.addEventListener("scroll", chatFit); }
-/* iOS can leave the viewport panned after the keyboard goes without firing
-   either event, so re-measure around focus changes and whenever we come back. */
-["focusin", "focusout"].forEach(ev => document.addEventListener(ev, () => { if($("#chat").classList.contains("on")) [0, 120, 360, 700].forEach(ms => setTimeout(chatFit, ms)); }));
+["focusin", "focusout"].forEach(ev => document.addEventListener(ev, () => { if($("#chat").classList.contains("on")) [0, 120, 360, 700, 1200].forEach(ms => setTimeout(ev === "focusout" ? chatSettle : chatFit, ms)); }));
 window.addEventListener("scroll", () => { if($("#chat").classList.contains("on")) chatFit(); }, {passive:true});
-document.addEventListener("visibilitychange", () => { if(!document.hidden) setTimeout(chatFit, 60); });
+document.addEventListener("visibilitychange", () => { if(!document.hidden) setTimeout(chatSettle, 60); });
 function autosize(){ const t = $("#chText"); t.style.height = "auto"; t.style.height = Math.min(120, t.scrollHeight) + "px"; }
 $("#chText").addEventListener("input", autosize);
 $("#chForm").onsubmit = e => { e.preventDefault(); sendChat($("#chText").value); };
