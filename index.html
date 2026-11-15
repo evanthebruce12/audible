@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="color-scheme" content="dark">
-<style>html,body{background:#06080f;color-scheme:dark}</style>
+<style>html,body{background:#111215;color-scheme:dark}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Audible">
-<meta name="theme-color" content="#06080f">
+<meta name="theme-color" content="#111215">
 <style>
-#boot{position:fixed;inset:0;z-index:999;background:#06080f;display:flex;align-items:center;justify-content:center;
+#boot{position:fixed;inset:0;z-index:999;background:#111215;display:flex;align-items:center;justify-content:center;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,system-ui,sans-serif;color:#fff;-webkit-font-smoothing:antialiased;
   transition:opacity .34s ease-out}
 #boot.gone{opacity:0;pointer-events:none}
@@ -1121,8 +1121,10 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.9.4";
+const VERSION = "1.9.5";
 const RELEASES = [
+  {v:"1.9.5", date:"Nov 15, 2026", title:"The launch flash, matched", items:[
+    ["No more blink on open","iPhone and iPad show their own dark grey for an instant between the launch screen and any home screen web app, and no app can switch that off. Audible's launch screen and splash are now that same shade, so there's nothing to see change. You'll need to remove and re-add the icon once for the new launch screen to take."]]},
   {v:"1.9.4", date:"Nov 15, 2026", title:"A cleaner launch", items:[
     ["No flash when it opens","The screen stays the splash colour from the first frame, instead of blinking a lighter shade between the launch screen and Audible."],
     ["Pictures are ready before you see them","Audible holds the splash until every headshot and logo on your first screen has loaded and is ready to draw, so nothing pops in. On a fast connection that fits inside the intro, so it costs no time."],
@@ -1344,7 +1346,7 @@ function tintBar(){
   const light = document.documentElement.dataset.theme === "light";
   const chat = $("#chat") && $("#chat").classList.contains("on");
   const bt = $("#boot");
-  m.content = (bt && !bt.classList.contains("gone")) ? "#06080f" : light ? (chat ? "#fafafc" : "#f2f2f7") : (chat ? "#0b0b0d" : "#000000");
+  m.content = (bt && !bt.classList.contains("gone")) ? "#111215" : light ? (chat ? "#fafafc" : "#f2f2f7") : (chat ? "#0b0b0d" : "#000000");
 }
 function applyTheme(){
   const t = S.set.theme === "system" ? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : S.set.theme;

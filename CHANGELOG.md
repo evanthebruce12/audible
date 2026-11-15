@@ -2,6 +2,13 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.9.5 — The launch flash, matched
+*Nov 15, 2026*
+
+- **1.9.4 did not fix the flash, and can't have.** A new recording shows the same sequence at 2.39s: launch screen, a grey frame or two, then the splash. The grey is the web view's own background before the page paints at all, so nothing in the page (including the navy `html` style added in 1.9.4) is drawn yet. It is a known WebKit bug on standalone home screen apps, still open, which also lists `background_color`, inline `html` backgrounds and critical CSS as not helping.
+- **So the splash now matches the grey instead.** Measured over flat regions of both recordings, the grey comes out about #111215 (the navy launch screen, #06080f, records 1 to 3 levels high, which calibrates the reading). The launch images, splash, `theme-color`, manifest colours and the first-paint style are all #111215 now, so the gap has nothing to contrast with.
+- **iOS caches launch images at install**, so an existing icon has to be removed and re-added once to pick up the new ones.
+
 ## 1.9.4 — A cleaner launch
 *Nov 15, 2026*
 
