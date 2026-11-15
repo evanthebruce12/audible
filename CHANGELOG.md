@@ -2,6 +2,44 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.8 — The blur, found. Plus a rebuilt field.
+*Nov 15, 2026*
+
+**The blur at the top of the screen**
+
+- **It was never ours.** Since iOS 26.1, a Home Screen web app installed with `apple-mobile-web-app-status-bar-style=black-translucent` gets a system scroll-edge blur and a dark scrim over the top of the page. The page cannot turn it off, and an opaque header underneath does not stop it. Every earlier fix here (dropping `backdrop-filter`, un-promoting layers, moving the chat header out of its transformed panel) removed a real softness of our own, which is why each one helped a little and none of them ended it.
+- **The tag is gone.** Without it iOS draws a solid status bar above the page, tinted by `theme-color`, and nothing sits under it to blur. `theme-color` now follows whatever is directly beneath the bar: splash, chat header, or page.
+- **Existing installs need one re-add.** iOS reads the status bar style only when the icon is added. Settings > About > *Sharpen the top bar* appears on installs that still have the old style (detected as a non-zero top safe-area inset while standalone) and walks through backup, remove, re-add, restore.
+
+**Chat**
+
+- **Done and Clear no longer disappear.** The header became a sibling of the chat panel in 1.4.6, but only the panel was being moved to `visualViewport.offsetTop`. When the keyboard opened, iOS panned the viewport and the header stayed at the layout top, under the clock or off screen. iOS 26 also does not always pan back after the keyboard closes. The header now moves with the panel and is re-measured around focus changes.
+- **Answers that ran out of room are retried.** A reply that hit `max_tokens` with no text (the whole allowance spent on reasoning) is asked again with 24,000 tokens and reasoning off before any error is shown. Default caps raised from 4,096 to 6,000 (Quick) and 8,192 (Balanced).
+
+**Sheets**
+
+- **A navigation stack.** Opening a page while a sheet is up pushes it with a slide; Back, or a swipe from the left edge, pops it; Done closes everything. A covered page keeps its real DOM, handlers and scroll position, so returning to a game does not rebuild or refetch it. The article reader's own "Back to player" button is replaced by this.
+- **Late content eases in.** Play-by-play, game logs and news that arrive after the sheet is up fade up instead of popping. Numbers are left out of the comparison so a live stat ticking over is not treated as new content.
+
+**Launch**
+
+- **The player list never blocks a launch twice.** It was re-downloaded in front of the splash whenever the saved copy was over 12 hours old, which is every morning. A saved copy of any age is used at once and refreshed in the background.
+- **Requests go out together.** Season state, league list, league, rosters, users, matchups, scoreboard and projections were a chain. They are now all requested when the script starts, predicted from the previous launch, and the chain just collects them. With 700ms per request, a returning launch went from about 5.6s to 2.4s, which is the length of the intro.
+- **A working state.** If the app is not ready when the intro ends, Audible scans and blinks, the headset light pulses, and a bar tracks the real steps of the load.
+
+**The field**
+
+- **It fills its card.** `svg.field` shared a class name with the sign-in text box and had been inheriting 15px of padding and a background.
+- **Surface.** Alternating five-yard mowing bands, hash marks and sideline ticks every yard, pylons, a contact shadow, yard numbers painted in the plane on both sides with the line running between the digits.
+- **Team names** in the endzones instead of abbreviations, with the lettering colour chosen from the paint. A black primary falls back to the alternate colour.
+- **The endzone angle was still two degrees off.** Matrix terms were rounded to one decimal. They carry three now.
+- **Plays are read from the sentence.** Left, right or middle; short or deep; caught, dropped or picked; wide, short, blocked or off the upright. A completion is thrown to its side, caught, then run.
+- **The ball has a shadow** that stays on the turf and shrinks as it climbs.
+- **The gain is painted on the field** in team colour from the line of scrimmage, red for a loss.
+- **Missed field goals animate.** So do punts, kickoffs, sacks, incompletions, interceptions and fumbles, each with its own plate. First downs are called.
+- **New touchdown graphic.** Team colour, moving stripes, the word, the team, quarter and clock.
+- **Replays cancel cleanly.** Starting one while another was running left two animation loops fighting over the ball.
+
 ## 1.7.2 — Endzone type and posts, measured
 *Nov 14, 2026*
 

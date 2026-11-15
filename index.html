@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Audible">
 <meta name="theme-color" content="#06080f">
 <style>
@@ -55,14 +54,36 @@
 @keyframes bflare{0%{opacity:0;transform:scale(.25)}30%{opacity:.8;transform:scale(1.45)}100%{opacity:0;transform:scale(2)}}
 @keyframes bdot{0%{opacity:0}18%{opacity:1}30%{opacity:.1}44%{opacity:1}58%{opacity:.35}100%{opacity:1}}
 @keyframes bdotg{0%{opacity:0}18%{opacity:.22}30%{opacity:.02}44%{opacity:.22}58%{opacity:.08}100%{opacity:.22}}
+/* ---- still loading: he keeps working instead of freezing ----
+   Once the intro has played, a slow launch used to leave a finished, static
+   logo on screen. Now his eyes scan and blink, the headset light pulses, and a
+   bar under him tracks the real steps of the load. */
+#boot.wait .eye{opacity:1;animation:bscan 2.8s cubic-bezier(.45,0,.55,1) infinite}
+#boot.wait .dot{opacity:1;animation:bpulse 1.4s ease-in-out infinite}
+#boot.wait .dotg{animation:bpulseg 1.4s ease-in-out infinite;transform-origin:42.5px -7px}
+#boot.wait .sweep{animation:bsweep 2.8s ease-out 1.1s infinite}
+#boot.wait .hd0,#boot.wait .set{animation:bbob 2.8s ease-in-out infinite}
+@keyframes bscan{0%,100%{transform:translateX(0) scaleY(1)}14%,30%{transform:translateX(-3.4px) scaleY(1)}33%{transform:translateX(-3.4px) scaleY(.1)}36%{transform:translateX(-3.4px) scaleY(1)}58%,76%{transform:translateX(3.4px) scaleY(1)}79%{transform:translateX(3.4px) scaleY(.1)}82%{transform:translateX(3.4px) scaleY(1)}}
+@keyframes bpulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes bpulseg{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.5;transform:scale(1.7)}}
+@keyframes bbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.6px)}}
+#boot .bprog{position:absolute;left:50%;top:calc(50% + 84px);width:136px;height:3px;margin-left:-68px;border-radius:2px;
+  background:rgba(255,255,255,.1);overflow:hidden;opacity:0;transition:opacity .4s ease}
+#boot .bprog.on{opacity:1}
+#boot .bprog i{display:block;height:100%;border-radius:2px;background:linear-gradient(90deg,#3d6af2,#5fd4ff);
+  transform-origin:0 50%;transform:scaleX(0);transition:transform .55s cubic-bezier(.3,.7,.2,1)}
+#boot .bprog::after{content:"";position:absolute;top:0;bottom:0;width:38px;left:-38px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:bglint 1.5s ease-in-out infinite}
+@keyframes bglint{0%{transform:translateX(0)}100%{transform:translateX(176px)}}
 /* no motion: show him finished, leave straight away */
 @media (prefers-reduced-motion:reduce){
   #boot .set,#boot .band,#boot .cupL,#boot .cupR,#boot .boom,#boot .hd0,#boot .face,#boot .eye,#boot .sweep,#boot .flare,#boot .dot,#boot.go .dotg{animation:none!important}
   #boot .bbot{opacity:1}#boot .eye,#boot .dot{opacity:1}#boot .dotg{opacity:.22}#boot .sweep,#boot .flare{opacity:0}
+  #boot .bprog::after{animation:none;display:none}
 }
 #boot.gone .bbot{transform:scale(.92)}
 #boot .bbot svg{width:100%;height:100%;display:block}
-#boot .bmsg{position:absolute;left:0;right:0;bottom:max(64px,calc(env(safe-area-inset-bottom) + 48px));text-align:center;
+#boot .bmsg{position:absolute;left:0;right:0;top:calc(50% + 100px);padding:0 28px;text-align:center;
   font-size:14px;font-weight:500;color:rgba(255,255,255,.42);opacity:0;transition:opacity .45s ease}
 #boot .bmsg.on{opacity:1}
 /* ---- 1.4.1 crisp top: blur only when it's actually visible ---- */
@@ -117,7 +138,6 @@ html[data-theme=light] .chd{background:#fafafc}
 .chd.on{opacity:1;pointer-events:auto}
 .chat{padding-top:0}
 .chat .chlog{padding-top:calc(62px + var(--sat))}
-.chat.kb .chd{padding-top:6px;padding-bottom:6px}
 /* ---- big plays carry weight ---- */
 .play.big{position:relative}
 .play.big::after{content:"";position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:0 3px 3px 0;background:var(--orange)}
@@ -129,11 +149,24 @@ html[data-theme=light] .chd{background:#fafafc}
 .play.t-exp{background:linear-gradient(90deg,rgba(255,159,10,.10),transparent 42%)}
 .play.t-td .pt,.play.t-exp .pt{font-weight:600}
 .tag.b{background:rgba(10,132,255,.18);color:#4da3ff}
-.field .gain.score .gt2{font-size:13px;font-weight:800;letter-spacing:.04em}
-.field .ezflash{pointer-events:none}
-.field .ezflash.lit{animation:ezlit .85s cubic-bezier(.2,.9,.3,1)}
-@keyframes ezlit{0%{opacity:0}12%{opacity:.85}100%{opacity:0}}
-.reduce .field .ezflash.lit{animation:none}
+/* ---- the field ----
+   svg.field shares a class name with the sign-in text box and had been
+   inheriting its 15px padding and background, which is why the field sat
+   small inside its card. */
+svg.field{padding:0;background:none;border-radius:0;font-size:inherit}
+.field .ezflash,.field .tdbn,.field .gain,.field .ring,.field .gpglow{pointer-events:none}
+.field .ezflash.lit{animation:ezlit 1.1s ease-out both}
+@keyframes ezlit{0%{opacity:0}9%{opacity:.82}26%{opacity:.16}42%{opacity:.66}100%{opacity:0}}
+.field .gain .gin,.field .ring{transform-box:fill-box;transform-origin:center}
+.field .gain.in .gin{animation:gin .4s cubic-bezier(.3,1.45,.5,1) both}
+.field .gain.in.big .gin{animation:ginb .58s cubic-bezier(.25,1.5,.4,1) both}
+@keyframes gin{0%{opacity:0;transform:translateY(5px) scale(.8)}100%{opacity:1;transform:none}}
+@keyframes ginb{0%{opacity:0;transform:scale(.4)}58%{opacity:1;transform:scale(1.13)}100%{opacity:1;transform:none}}
+.field .ring.go{animation:fring .78s cubic-bezier(.2,.7,.3,1) both}
+@keyframes fring{0%{opacity:.95;transform:scale(.3)}100%{opacity:0;transform:scale(3.6)}}
+.field .gp.lit .gpglow{animation:gplit 1.6s ease-out both}
+@keyframes gplit{0%{opacity:0}16%{opacity:1}40%{opacity:.45}58%{opacity:.95}100%{opacity:0}}
+.reduce .field .ezflash.lit,.reduce .field .gain .gin,.reduce .field .ring.go,.reduce .field .gp.lit .gpglow{animation:none}
 /* ---- "this guy did something" marker on roster rows ---- */
 .bp{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:800;
   letter-spacing:.03em;vertical-align:1px;line-height:1.5}
@@ -158,15 +191,22 @@ html[data-theme=light] .chd{background:#fafafc}
 .tour .tdemo .play{padding:8px 10px}
 .tour .tdemo .play .pt{font-size:13px}
 /* ---- touchdown banner, in the spirit of ESPN's ---- */
-.field .tdbn{pointer-events:none}
-.field .tdbig{fill:#fff;font:800 19px -apple-system,sans-serif;text-anchor:middle;letter-spacing:.34em}
-.field .tdghost{fill:#fff;opacity:.10;font:900 54px -apple-system,sans-serif;text-anchor:middle;letter-spacing:.04em}
-.field .tdbn.run{animation:tdbn 2.4s cubic-bezier(.22,.9,.3,1) both}
-.field .tdbn.run .tdbig{animation:tdbig 2.4s cubic-bezier(.18,.9,.25,1) both}
-.field .tdbn.run .tdghost{animation:tdgh 2.4s cubic-bezier(.18,.9,.25,1) both}
-@keyframes tdbn{0%{opacity:0}9%{opacity:1}76%{opacity:1}100%{opacity:0}}
-@keyframes tdbig{0%{opacity:0;letter-spacing:.9em}14%{opacity:1}26%{letter-spacing:.34em}80%{opacity:1;letter-spacing:.34em}100%{opacity:0;letter-spacing:.2em}}
-@keyframes tdgh{0%{opacity:0;transform:translateX(26px)}20%{opacity:.10}80%{opacity:.10;transform:translateX(0)}100%{opacity:0;transform:translateX(-14px)}}
+.field .tdbig{fill:#fff;font:italic 900 27px -apple-system,system-ui,sans-serif;letter-spacing:.012em}
+.field .tdsub{fill:#fff;fill-opacity:.86;font:700 8.4px -apple-system,system-ui,sans-serif;letter-spacing:.16em}
+.field .tdghost{fill:#fff;fill-opacity:.14;font:italic 900 60px -apple-system,system-ui,sans-serif;text-anchor:end;letter-spacing:-.015em}
+.field .tdbig,.field .tdsub,.field .tdghost,.field .tdrule{transform-box:fill-box;transform-origin:0% 100%}
+.field .tdbn.run{animation:tdbn 2.6s linear both}
+.field .tdbn.run .tdst{animation:tdst 2.6s linear both}
+.field .tdbn.run .tdbig{animation:tdbig 2.6s cubic-bezier(.2,.9,.25,1) both}
+.field .tdbn.run .tdrule{animation:tdrule 2.6s cubic-bezier(.2,.9,.25,1) both}
+.field .tdbn.run .tdsub{animation:tdsub 2.6s ease both}
+.field .tdbn.run .tdghost{animation:tdgh 2.6s cubic-bezier(.2,.8,.3,1) both}
+@keyframes tdbn{0%{opacity:0}7%{opacity:1}85%{opacity:1}100%{opacity:0}}
+@keyframes tdst{0%{transform:translateX(-46px)}100%{transform:translateX(34px)}}
+@keyframes tdbig{0%{opacity:0;transform:translateX(-74px) skewX(-18deg)}15%{opacity:1;transform:translateX(6px) skewX(-5deg)}23%{transform:translateX(0) skewX(0)}84%{opacity:1;transform:translateX(4px)}100%{opacity:0;transform:translateX(28px)}}
+@keyframes tdrule{0%,13%{transform:scaleX(0)}33%{transform:scaleX(1)}85%{opacity:1;transform:scaleX(1)}100%{opacity:0;transform:scaleX(1)}}
+@keyframes tdsub{0%,25%{opacity:0;transform:translateY(4px)}39%{opacity:1;transform:translateY(0)}85%{opacity:1}100%{opacity:0}}
+@keyframes tdgh{0%{opacity:0;transform:translateX(54px)}20%{opacity:1}100%{opacity:1;transform:translateX(-12px)}}
 .reduce .field .tdbn.run,.reduce .field .tdbn.run *{animation:none}
 </style>
 <link rel="apple-touch-icon" href="icon.png">
@@ -549,9 +589,10 @@ nav button:active{transform:scale(.9)}
 .trkcard{background:var(--bg2);border-radius:16px;overflow:hidden}
 .trkhd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 14px;font-size:14px;font-weight:600}
 .field{display:block;width:100%;height:auto}
-.field .fn{fill:rgba(255,255,255,.55);font:700 9px -apple-system,sans-serif;text-anchor:middle}
+.field .fn{fill:#fff;fill-opacity:.52;font-family:-apple-system,system-ui,sans-serif;font-weight:800}
+.field .fn.far{fill-opacity:.3}
 .field .ezt{fill:#fff;font-family:-apple-system,system-ui,sans-serif;font-weight:800;text-anchor:middle;opacity:.98;-webkit-font-smoothing:antialiased}
-.field .gt2{fill:#fff;font:700 11px -apple-system,sans-serif;text-anchor:middle}
+.field .gt2{fill:#fff;font:800 9.4px -apple-system,system-ui,sans-serif;text-anchor:middle;letter-spacing:.05em}
 .lastp{padding:10px 14px;font-size:13px;line-height:1.35}
 .play{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 14px;position:relative}
 .play+.play::before{content:"";position:absolute;top:0;left:14px;right:0;height:.5px;background:var(--sep)}
@@ -586,6 +627,8 @@ nav button:active{transform:scale(.88)}
 nav button.on svg{animation:tabpop .55s var(--spring)}
 @keyframes tabpop{0%{transform:scale(.72)}100%{transform:none}}
 .enter{animation:enter .45s var(--ios)}
+.rise{animation:enter .42s var(--ios)}
+.play{transition:background-color .22s ease}
 @keyframes enter{from{opacity:0;transform:translateY(12px) scale(.992)}}
 /* sliding segmented control */
 .seg{position:relative}
@@ -651,7 +694,6 @@ html[data-theme=light] .circ svg{stroke:#000}
 .chin button svg{width:16px;height:16px}
 .chat.kb .chin{margin-bottom:8px}
 .chat{box-sizing:border-box}
-.chat.kb .chd{padding-top:6px;padding-bottom:6px}
 /* game sheet */
 .gbox{transition:background .4s}
 .lines{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:14px;font-size:13px}
@@ -705,7 +747,24 @@ button.news{width:100%;border:0;background:none;font:inherit;color:inherit;curso
 .rimg{width:100%;border-radius:14px;display:block;margin-bottom:12px;aspect-ratio:16/9;object-fit:cover}
 .rh{font-size:24px;line-height:1.2;font-weight:800;letter-spacing:-.02em;margin:0 2px}
 .rbody p{font-size:17px;line-height:1.55;margin:0 2px 14px;color:var(--label)}
+.stepn{flex:none;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:1px 12px 0 0}
 .rback{border:0;background:none;color:var(--blue);font:inherit;font-size:16px;padding:4px 2px 12px;cursor:pointer}
+/* ---- pages inside the sheet ----
+   Tapping a player inside a game used to swap the sheet's contents in a single
+   frame, and Done threw the whole thing away. The sheet is a small navigation
+   stack now: the new page slides in over the old one, Back slides it off. */
+.sheet .sh{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:8px}
+.sheet .sh b{max-width:52vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.sheet .sh #shDone{justify-self:end}
+.sheet .sh .shback{justify-self:start;display:inline-flex;align-items:center;gap:5px;margin-left:-4px;padding:4px 8px 4px 0;
+  font-weight:400;opacity:0;pointer-events:none;transform:translateX(-8px);transition:opacity .22s ease,transform .34s var(--ios)}
+.sheet .sh .shback.on{opacity:1;pointer-events:auto;transform:none}
+.sheet .sh .shback:active{opacity:.45}
+.sheet.nav{overflow:hidden;box-shadow:0 60vh 0 0 var(--bg)}
+.sheet.nav .sb:not(.shghost){position:relative;z-index:2;background:var(--bg);box-shadow:-10px 0 28px rgba(0,0,0,.34)}
+.sheet .sb.shghost{position:absolute;left:0;right:0;bottom:0;z-index:1;margin:0;overflow:hidden;pointer-events:none;background:var(--bg)}
+.sheet.nav.back .sb:not(.shghost){z-index:1;box-shadow:none}
+.sheet.nav.back .sb.shghost{z-index:2;box-shadow:-10px 0 28px rgba(0,0,0,.34)}
 .news.pn .pd{font-size:13px;color:var(--label2);line-height:1.35;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .take p{font-size:15px;line-height:1.4;padding:7px 0}.take p+p{border-top:.5px solid var(--sep)}
 .spark.log{overflow-x:auto;justify-content:flex-start;height:110px;scrollbar-width:none}
@@ -844,6 +903,7 @@ html[data-theme=light] .pmenu{background:rgba(252,252,253,.82);box-shadow:inset 
    <rect x="7" y="38.8" width="14" height="10.4" rx="5.2" fill="none" stroke="#7b8498" stroke-width=".8" opacity=".28"/></g>
  </g></g></svg>
   </div>
+  <div class="bprog" id="bootProg"><i></i></div>
   <div class="bmsg" id="bootMsg"></div>
 </div>
 
@@ -865,7 +925,7 @@ html[data-theme=light] .pmenu{background:rgba(252,252,253,.82);box-shadow:inset 
 <div class="ptr" id="ptr"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></div>
 <div class="tour" id="tour"></div>
 <div class="scrim" id="scrim"></div>
-<div class="sheet" id="sheet"><div class="sh"><span></span><b id="shTitle"></b><button id="shDone">Done</button></div><div class="sb" id="shBody"></div></div>
+<div class="sheet" id="sheet"><div class="sh"><button id="shBack" class="shback" aria-label="Back"><svg viewBox="0 0 12 20" width="11" height="19" aria-hidden="true"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back</span></button><b id="shTitle"></b><button id="shDone">Done</button></div><div class="sb" id="shBody"></div></div>
 <div class="toasts" id="toasts"></div>
 
 <script>
@@ -885,8 +945,22 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.7.2";
+const VERSION = "1.8";
 const RELEASES = [
+  {v:"1.8", date:"Nov 15, 2026", title:"The blur, found. Plus a rebuilt field.", items:[
+    ["The blur at the top was never Audible","Since iOS 26.1, iPhone lays its own blur and dark strip over the top of any Home Screen app added with a see-through status bar, and an app can't switch it off. Audible now asks for a solid status bar instead. iPhone only reads that when the icon is added, so it needs one remove and re-add: Settings, About, Sharpen the top bar walks you through it. Turn on Backup first."],
+    ["Done and Clear stay put in chat","When the keyboard opened, iPhone slid the screen and the chat header stayed behind, under the clock or off screen. It moves with the chat now."],
+    ["Pages slide inside a sheet","Tap a player inside a game and he slides in over it. Back, or a swipe from the left edge, returns you to the game. Done still closes everything."],
+    ["Faster in the morning","The 5MB player list used to re-download in front of the splash once a day. Now yesterday's copy gets you in and today's loads quietly afterwards. Everything else is requested at once instead of one after another."],
+    ["He keeps working while you wait","If a launch runs long, Audible scans and blinks, his headset light pulses, and a bar tracks the real steps."],
+    ["A new field","Mowed stripes, hash marks, pylons, yard numbers painted in perspective with the line running between the digits, team names in the endzones, and a field that finally fills its card."],
+    ["Plays look like the play","Passes go to the side they were thrown, get caught, then run. The ball has a shadow that stays on the turf. The gain is painted on the field in team color."],
+    ["Every outcome has a moment","Field goals split the uprights and the posts light up. Misses sail wide, fall short, or get blocked. Interceptions, fumbles, sacks, punts and incompletions each play out, and first downs get called."],
+    ["A new touchdown graphic","Team color, speed stripes, the word, the team and the clock."],
+    ["Long questions get answered","If an answer ran out of room, Audible now tries again with far more instead of giving up."]]},
+  {v:"1.7.2", date:"Nov 14, 2026", title:"Endzone type and posts, measured", items:[
+    ["Endzone lettering sits square","No more lean, and each end reads toward its own endline."],
+    ["Goalposts stand straight","Plumb uprights, drawn as round pipe."]]},
   {v:"1.7.1", date:"Nov 14, 2026", title:"Endzones and goalposts, properly", items:[
     ["Endzone names fill the endzone","Sized and stretched to the space and laid into the plane of the field, instead of small type standing upright."],
     ["Goalposts in three dimensions","A grey weighted base, a gooseneck carrying the uprights out over the endline, and one upright a touch taller because you are seeing them at an angle."],
@@ -1027,7 +1101,20 @@ const store = {
   set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
   del(k){ try { localStorage.removeItem(k); } catch(e){} }
 };
+/* Launch used to be a chain: wait for the season state, then the league list,
+   then the league. None of those needs the one before it if we remember last
+   time's answers, so they are all requested at once the moment the script
+   starts and the chain below just collects them. A wrong guess (new week, new
+   league) costs nothing: that request is ignored and made again normally. */
+const PRE = new Map();
+function pre(url){
+  if(PRE.has(url)) return;
+  const p = fetch(url, {cache:"no-store"}).then(r => { if(!r.ok) throw new Error("Request failed (" + r.status + ")"); return r.json(); });
+  p.catch(() => {}); PRE.set(url, p);
+}
 async function getJSON(url){
+  const early = PRE.get(url);
+  if(early){ PRE.delete(url); try{ return await early; }catch(e){} }
   const r = await fetch(url, {cache:"no-store"});
   if(!r.ok) throw new Error("Request failed (" + r.status + ")");
   return r.json();
@@ -1048,10 +1135,19 @@ const CHEV = '<svg class="chev" viewBox="0 0 8 13"><path d="M1.5 1.5 6.5 6.5 1.5
 /* =============== settings & theme =============== */
 function loadSettings(){ const sv = store.get("gd_settings") || {}; S.set = {...DEF_SET, ...sv}; if(!sv.effort) S.set.effort = sv.model === "claude-sonnet-5-5" ? "balanced" : "auto"; applyTheme(); }
 function saveSettings(){ store.set("gd_settings", S.set); applyTheme(); if(typeof scheduleBackup === "function") scheduleBackup(); }
+/* The status bar is opaque now and takes theme-color, so keep it the colour of
+   whatever is directly beneath it: the splash, the chat header, or the page. */
+function tintBar(){
+  const m = document.querySelector('meta[name=theme-color]'); if(!m) return;
+  const light = document.documentElement.dataset.theme === "light";
+  const chat = $("#chat") && $("#chat").classList.contains("on");
+  const bt = $("#boot");
+  m.content = (bt && !bt.classList.contains("gone")) ? "#06080f" : light ? (chat ? "#fafafc" : "#f2f2f7") : (chat ? "#0b0b0d" : "#000000");
+}
 function applyTheme(){
   const t = S.set.theme === "system" ? (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark") : S.set.theme;
   document.documentElement.dataset.theme = t;
-  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = t === "light" ? "#f2f2f7" : "#000000";
+  tintBar();
   document.body.classList.toggle("reduce", !S.set.celebrate);
   /* Switching theme only changes CSS variables, so a layer the compositor has
      already rasterised can keep the old palette: a band of the previous
@@ -1067,10 +1163,15 @@ try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", app
 
 /* =============== players =============== */
 const KEEP = new Set(["QB","RB","WR","TE","K","DEF","DL","DE","DT","LB","DB","CB","S"]);
-async function loadPlayers(force){
+/* The player list is a 5MB download. It used to be re-fetched, in front of the
+   splash, whenever the saved copy was over 12 hours old, which is every
+   morning. A saved copy of any age is now used straight away and refreshed
+   quietly afterwards, so only the very first launch ever waits for it. */
+let playersStale = false;
+async function loadPlayers(force, quiet){
   const c = store.get("gd_players4");
-  if(c && c.p && !force && Date.now() - c.t < 12*3600e3){ S.players = c.p; return; }
-  loading("Loading the player list. This happens about once a day.");
+  if(c && c.p && !force){ S.players = c.p; playersStale = Date.now() - c.t > 20*3600e3; return; }
+  if(!quiet) loading("Getting every NFL player. This only happens the first time.");
   const raw = await api("/players/nfl");
   const p = {};
   for(const id in raw){
@@ -1079,7 +1180,7 @@ async function loadPlayers(force){
     const name = x.position === "DEF" ? `${x.first_name||""} ${x.last_name||""}`.trim() : (x.full_name || `${x.first_name||""} ${x.last_name||""}`.trim());
     p[id] = [name || id, x.position || "", x.team || "", x.injury_status || "", (x.fantasy_positions || [x.position]).join(","), x.number || "", x.age || "", x.years_exp == null ? "" : x.years_exp, x.injury_body_part || "", x.espn_id || "", x.depth_chart_position || "", x.depth_chart_order == null ? "" : x.depth_chart_order];
   }
-  S.players = p; store.set("gd_players4", {t:Date.now(), p}); store.del("gd_players3"); store.del("gd_players2");
+  S.players = p; playersStale = false; store.set("gd_players4", {t:Date.now(), p}); store.del("gd_players3"); store.del("gd_players2");
 }
 function P(id){
   if(!id || id === "0") return {id:"0", name:"Empty", pos:"", team:"", inj:"", fp:[], empty:true};
@@ -1224,10 +1325,11 @@ async function loadHistory(){
 
 /* =============== NFL games (ESPN) =============== */
 const FIX = {WSH:"WAS", LA:"LAR", JAC:"JAX"};
+const sbUrl = (st, week, season) => `${ESPN}/scoreboard?seasontype=${st}&week=${week}&dates=${season}`;
 async function loadGames(){
   try{
     const st = S.state.season_type === "post" ? 3 : 2;
-    const d = await getJSON(`${ESPN}/scoreboard?seasontype=${st}&week=${S.week}&dates=${S.state.season}`);
+    const d = await getJSON(sbUrl(st, S.week, S.state.season));
     S.games = (d.events || []).map(ev => {
       const c = ev.competitions[0], st = c.status || ev.status, t = st.type || {};
       const side = h => { const x = c.competitors.find(k => k.homeAway === h) || {}; const tm = x.team || {};
@@ -1476,10 +1578,10 @@ function md(t){
 const SUGG = ["Give me my weekly briefing", "Who should I start at flex this week?", "Any waiver adds worth making?", "Is there a trade I should look at?", "How do my playoff chances look?"];
 function openChat(prefill){
   $("#chName").textContent = S.set.botName; $("#chBot").innerHTML = abot("a28"); loadChat(); renderChat(); setTimeout(abPop, 60);
-  document.documentElement.classList.add("ovl"); $("#chd").classList.add("on"); $("#chat").classList.add("on"); document.body.style.overflow = "hidden"; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = true; }); chatFit();
+  document.documentElement.classList.add("ovl"); $("#chd").classList.add("on"); $("#chat").classList.add("on"); tintBar(); document.body.style.overflow = "hidden"; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = true; }); chatFit();
   if(prefill) sendChat(prefill);
 }
-function closeChat(){ $("#chd").classList.remove("on"); $("#chat").classList.remove("on"); if(!$("#sheet").classList.contains("on")) document.documentElement.classList.remove("ovl"); document.body.style.overflow = ""; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = false; }); $("#chText").blur(); chatFit(); }
+function closeChat(){ $("#chd").classList.remove("on"); $("#chat").classList.remove("on"); tintBar(); if(!$("#sheet").classList.contains("on")) document.documentElement.classList.remove("ovl"); document.body.style.overflow = ""; ["#app","#nav","#bar","#fab","#sheet","#scrim"].forEach(q => { const el = $(q); if(el) el.inert = false; }); $("#chText").blur(); chatFit(); }
 function renderChat(){
   const log = $("#chLog");
   const free = !S.set.apiKey;
@@ -1658,7 +1760,7 @@ async function sendChat(text){
   const out = {role:"assistant", content:"", streaming:true};
   await aiPrep();
   const plan = aiPlan(text), before = spend().usd, lim = +S.set.aiLimit || 0;
-  const req = {model:plan.model, max_tokens:plan.deep ? 16000 : 4096, system:sysPrompt(text, plan), messages:msgs};
+  const req = {model:plan.model, max_tokens:plan.deep ? 20000 : plan.mode === "balanced" ? 8192 : 6000, system:sysPrompt(text, plan), messages:msgs};
   const hdrs = {"content-type":"application/json", "x-api-key":S.set.apiKey.trim(), "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true"};
   let stopReason = "", ticker = 0;
   try{
@@ -1698,9 +1800,22 @@ async function sendChat(text){
         out.content = (d.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim();
       }
     }
+    if(!out.content.trim() && stopReason === "max_tokens"){
+      /* The whole allowance went on reasoning and none was left for the answer.
+         That is our limit, not the question's fault: ask again with far more
+         room and the reasoning switched off, and only then give up. */
+      out.status = S.set.botName + " needs a little longer on this one…"; if(S.chat.indexOf(out) < 0) S.chat.push(out); renderChat();
+      for(const extra of [{thinking:{type:"disabled"}}, {}]){
+        try{
+          const d = await claudeOnce({...req, max_tokens:24000, ...extra}, hdrs); addSpend(req.model, d.usage, 0, false);
+          stopReason = d.stop_reason || stopReason;
+          const t = answerText(d.content || []); if(t){ out.content = t; break; }
+        }catch(e){ if(e.status !== 400 || /credit|balance/i.test(e.raw || "")) throw e; }
+      }
+    }
     if(!out.content.trim()){
       const i = S.chat.indexOf(out); if(i >= 0) S.chat.splice(i, 1);
-      throw new Error(stopReason === "max_tokens" ? S.set.botName + " ran out of room thinking before he could answer. Try a shorter question." : stopReason === "refusal" ? S.set.botName + " couldn't answer that one. Try rewording it." : S.set.botName + " didn't send an answer (" + (stopReason || "no reason given") + "). Try again, or pick a different Effort.");
+      throw new Error(stopReason === "max_tokens" ? S.set.botName + " couldn't fit an answer to that, even with extra room. Try asking one part at a time." : stopReason === "refusal" ? S.set.botName + " couldn't answer that one. Try rewording it." : S.set.botName + " didn't send an answer (" + (stopReason || "no reason given") + "). Try again, or pick a different Effort.");
     }
   }catch(e){
     const i = S.chat.indexOf(out); if(i >= 0 && !out.content) S.chat.splice(i, 1);
@@ -1719,14 +1834,25 @@ async function sendChat(text){
 let chatKb = false;
 function chatFit(){
   const vv = window.visualViewport, ch = $("#chat"); if(!vv) return;
-  if(!ch.classList.contains("on")){ ch.style.top = ch.style.height = ch.style.bottom = ch.style.paddingBottom = ""; ch.classList.remove("kb"); chatKb = false; return; }
+  const hd = $("#chd");
+  if(!ch.classList.contains("on")){ ch.style.top = ch.style.height = ch.style.bottom = ch.style.paddingBottom = ""; hd.style.top = ""; ch.classList.remove("kb"); chatKb = false; return; }
   const top = Math.max(0, vv.offsetTop), cover = Math.max(vv.height, innerHeight - top), under = Math.max(0, cover - vv.height);
   ch.style.top = top + "px"; ch.style.height = cover + "px"; ch.style.bottom = "auto";
+  /* The header is a sibling of the panel, so it has to be moved with it. When
+     the keyboard opens iOS pans the visual viewport down, and iOS 26 does not
+     always pan it back afterwards: the panel followed, the header stayed at
+     the layout top, and Done and Clear slid up under the clock or off screen. */
+  hd.style.top = top + "px";
   const kb = under > 120; ch.classList.toggle("kb", kb);
   ch.style.paddingBottom = kb ? under + "px" : "";
   if(kb !== chatKb){ chatKb = kb; const lg = $("#chLog"); lg.scrollTop = lg.scrollHeight; }
 }
 if(window.visualViewport){ visualViewport.addEventListener("resize", chatFit); visualViewport.addEventListener("scroll", chatFit); }
+/* iOS can leave the viewport panned after the keyboard goes without firing
+   either event, so re-measure around focus changes and whenever we come back. */
+["focusin", "focusout"].forEach(ev => document.addEventListener(ev, () => { if($("#chat").classList.contains("on")) [0, 120, 360, 700].forEach(ms => setTimeout(chatFit, ms)); }));
+window.addEventListener("scroll", () => { if($("#chat").classList.contains("on")) chatFit(); }, {passive:true});
+document.addEventListener("visibilitychange", () => { if(!document.hidden) setTimeout(chatFit, 60); });
 function autosize(){ const t = $("#chText"); t.style.height = "auto"; t.style.height = Math.min(120, t.scrollHeight) + "px"; }
 $("#chText").addEventListener("input", autosize);
 $("#chForm").onsubmit = e => { e.preventDefault(); sendChat($("#chText").value); };
@@ -1841,7 +1967,7 @@ async function loadSummary(gid, force){
   const d = await getJSON(`${ESPN}/summary?event=${gid}`);
   const comp = (((d.header || {}).competitions) || [])[0] || {};
   const teams = {}, byAbbr = {};
-  (comp.competitors || []).forEach(x => { const t = x.team || {}; const o = {id:String(t.id), abbr:FIX[t.abbreviation] || t.abbreviation, color:t.color ? "#" + t.color : "", logo:((t.logos || [])[0] || {}).href || t.logo || "", ha:x.homeAway, score:x.score}; teams[o.id] = o; byAbbr[o.abbr] = o; });
+  (comp.competitors || []).forEach(x => { const t = x.team || {}; const o = {id:String(t.id), abbr:FIX[t.abbreviation] || t.abbreviation, nick:t.name || t.shortDisplayName || "", alt:t.alternateColor ? "#" + t.alternateColor : "", color:t.color ? "#" + t.color : "", logo:((t.logos || [])[0] || {}).href || t.logo || "", ha:x.homeAway, score:x.score}; teams[o.id] = o; byAbbr[o.abbr] = o; });
   const dv = d.drives || {}, raw = [...(dv.previous || [])];
   if(dv.current && !raw.some(x => x.id === dv.current.id)) raw.push(dv.current);
   const drives = raw.map(dr => {
@@ -1905,7 +2031,7 @@ const FX = yte => 30 + (100 - Math.max(0, Math.min(100, yte))) * 3;
    depth / near width = 0.17. The first pass used 0.47 and 0.28, which is why
    the field looked stretched and impossibly deep. FVH leaves headroom above
    the turf for the goalposts, which stand beyond each endline. */
-const FTOP = 44, FBOT = 98, FHF = 144, FHN = 158, FQ = .35, FCX = 180, FEZ = 1/12, FVH = 108;
+const FTOP = 44, FBOT = 98, FHF = 144, FHN = 158, FQ = .35, FCX = 180, FEZ = 1/12, FVH = 108, YD = 1/120;
 const fPersp = c => c * (1 + FQ) / (1 + FQ * c);
 function FP(a, c){
   const p = fPersp(c), y = FTOP + (FBOT - FTOP) * p, h = FHF + (FHN - FHF) * p;
@@ -1913,11 +2039,30 @@ function FP(a, c){
 }
 const FA = yte => FEZ + (100 - yte) / 120;          /* yards-to-endzone -> along */
 const fN = n => (Math.round(n * 10) / 10);
+const fN3 = n => (Math.round(n * 1000) / 1000);     /* matrix terms: one decimal bends the angle by 2 degrees */
 function fQuad(a0, a1, c0, c1){
   const A = FP(a0, c0 == null ? 0 : c0), B = FP(a1, c0 == null ? 0 : c0);
   const C = FP(a1, c1 == null ? 1 : c1), D = FP(a0, c1 == null ? 1 : c1);
   return `${fN(A.x)},${fN(A.y)} ${fN(B.x)},${fN(B.y)} ${fN(C.x)},${fN(C.y)} ${fN(D.x)},${fN(D.y)}`;
 }
+/* which "along" value lands on a given screen x, at midfield depth */
+const fAofX = x => .5 + (x - FCX) / (2 * (FHF + (FHN - FHF) * fPersp(.5)));
+
+/* ---- team paint ----
+   ESPN hands back some primaries as pure black, which disappears on a dark
+   card. Fall back to the alternate, then to a neutral, and pick the lettering
+   colour from the paint underneath it. */
+const fLum = h => { const n = parseInt(h.slice(1), 16); return (.2126 * (n >> 16) + .7152 * ((n >> 8) & 255) + .0722 * (n & 255)) / 255; };
+const fHex = c => /^#[0-9a-f]{6}$/i.test(c || "");
+function fCol(t, fb){
+  const c = t && t.color;
+  if(!fHex(c)) return fb;
+  if(fLum(c) < .07){ const a = t.alt; return fHex(a) && fLum(a) > .1 && fLum(a) < .8 ? a : "#3b3f4a"; }
+  return c;
+}
+const fInk = c => fHex(c) && fLum(c) > .58 ? "#10131a" : "#fff";
+const fName = t => { const n = String((t && (t.nick || t.abbr)) || "").toUpperCase(); return n && n.length <= 11 ? n : String((t && t.abbr) || "").toUpperCase(); };
+
 /* Real posts: a weighted grey cylinder base, a gooseneck that carries the
    crossbar out over the endline, and two uprights that are dead vertical and
    the same height - a camera at eye level keeps vertical lines vertical. Each
@@ -1930,66 +2075,118 @@ function gpBar(d, w){
     `<path d="${d}" fill="none" stroke="${col}" stroke-width="${fN(sw)}" stroke-linecap="round" stroke-linejoin="round"${op?` opacity="${op}"`:""} transform="translate(${fN(dx)} ${fN(dy)})"/>`;
   return sh(o, o, GPD, w) + sh(0, 0, GPY, w * .92) + sh(-o, -o, GPL, w * .24, ".55");
 }
-function fPost(a, dir){
+function fPostGeo(a, dir){
   const b = FP(a, .5), s = b.s;
-  const W = 6.4 * s, up = 34 * s, neck = 9.5 * s, gw = 2.1 * s;
-  const bw = 3.8 * s, bh = 7.5 * s;
-  const nx = b.x + neck * dir, ny = b.y - bh - neck, by = b.y - bh;
+  const W = 6.4 * s, up = 34 * s, neck = 9.5 * s, gw = 2.1 * s, bw = 3.8 * s, bh = 7.5 * s;
+  return {b, s, W, up, neck, gw, bw, bh, nx: b.x + neck * dir, ny: b.y - bh - neck, by: b.y - bh};
+}
+function fPost(a, dir, cls){
+  const {b, W, up, neck, gw, bw, bh, nx, ny, by} = fPostGeo(a, dir);
   const neckD = `M${fN(b.x)} ${fN(by)} L${fN(b.x)} ${fN(by - neck * .45)} Q${fN(b.x)} ${fN(ny)} ${fN(nx)} ${fN(ny)}`;
-  return `<g class="gp">
+  return `<g class="gp ${cls || ""}">
     <ellipse cx="${fN(b.x)}" cy="${fN(b.y + 1)}" rx="${fN(bw * .95)}" ry="${fN(bw * .3)}" fill="#000" opacity=".35"/>
     <path d="M${fN(b.x - bw / 2)} ${fN(by)} L${fN(b.x - bw * .56)} ${fN(b.y)} Q${fN(b.x)} ${fN(b.y + bw * .34)} ${fN(b.x + bw * .56)} ${fN(b.y)} L${fN(b.x + bw / 2)} ${fN(by)} Z" fill="#8e8e93"/>
     <path d="M${fN(b.x - bw / 2)} ${fN(by)} L${fN(b.x - bw * .56)} ${fN(b.y)} L${fN(b.x - bw * .1)} ${fN(b.y + bw * .2)} L${fN(b.x - bw * .08)} ${fN(by)} Z" fill="#d8d8dd" opacity=".75"/>
     <path d="M${fN(b.x + bw * .22)} ${fN(by)} L${fN(b.x + bw * .3)} ${fN(b.y + bw * .13)} L${fN(b.x + bw * .56)} ${fN(b.y)} L${fN(b.x + bw / 2)} ${fN(by)} Z" fill="#5c5c61" opacity=".8"/>
     <ellipse cx="${fN(b.x)}" cy="${fN(by)}" rx="${fN(bw / 2)}" ry="${fN(bw * .22)}" fill="#c7c7cc"/>
+    <circle class="gpglow" cx="${fN(nx)}" cy="${fN(ny - up * .5)}" r="${fN(up * .9)}" fill="url(#gpg)" opacity="0"/>
     ${gpBar(neckD, gw)}
     ${gpBar(`M${fN(nx - W)} ${fN(ny)} L${fN(nx + W)} ${fN(ny)}`, gw)}
     ${gpBar(`M${fN(nx - W)} ${fN(ny)} L${fN(nx - W)} ${fN(ny - up)}`, gw)}
     ${gpBar(`M${fN(nx + W)} ${fN(ny)} L${fN(nx + W)} ${fN(ny - up)}`, gw)}</g>`;
 }
+/* Yard numbers are paint, so they lie in the plane: the baseline runs along the
+   field and the digits lean with the perspective toward the far sideline. The
+   far row is upside down, because that is how it is painted. */
+function fNum(n, a, c, far){
+  const q = FP(a, c), t = FP(a, c - .05), b = FP(a, c + .05);
+  let vx = t.x - b.x, vy = t.y - b.y; const vl = Math.hypot(vx, vy) || 1; vx /= vl; vy /= vl;
+  const k = .8, sg = far ? -1 : 1, m = `matrix(${sg} 0 ${fN3(-vx * k * sg)} ${fN3(-vy * k * sg)} ${fN(q.x)} ${fN(q.y)})`;
+  const fs = fN(10.2 * q.s), gap = fN(1.5 * q.s), d = String(n);
+  /* the yard line runs between the digits, the way it does on real turf */
+  return `<g class="fn${far ? " far" : ""}" transform="${m}" font-size="${fs}"><text x="${-gap}" text-anchor="end" dominant-baseline="central">${d[0]}</text><text x="${gap}" text-anchor="start" dominant-baseline="central">${d[1]}</text></g>`;
+}
 function fieldSVG(off, def){
-  let g = `<polygon points="${fQuad(0,1)}" fill="url(#turf)"/>`;
-  for(let i = 0; i < 5; i++) g += `<polygon points="${fQuad(FEZ+(i*2)*(10/120), FEZ+(i*2+1)*(10/120))}" fill="rgba(255,255,255,.04)"/>`;
-  g += `<polygon class="ezo" points="${fQuad(0,FEZ)}" fill="${esc(off && off.color || "#0a84ff")}" opacity=".85"/>`;
-  g += `<polygon class="ezd" points="${fQuad(1-FEZ,1)}" fill="${esc(def && def.color || "#ff453a")}" opacity=".85"/>`;
+  const co = fCol(off, "#0a84ff"), cd = fCol(def, "#ff453a");
+  const F0 = FP(0,0), F1 = FP(1,0), N0 = FP(0,1), N1 = FP(1,1), TH = 5;
+  let g = "";
+  /* contact shadow, then the slab's front edge, then the playing surface */
+  g += `<ellipse cx="180" cy="${FBOT + TH + 2.5}" rx="176" ry="6.5" fill="url(#fsh)"/>`;
+  const SE = FP(FEZ,1), SD = FP(1-FEZ,1);
+  g += `<polygon points="${fN(N0.x)},${fN(N0.y)} ${fN(N1.x)},${fN(N1.y)} ${fN(N1.x - 1.2)},${fN(N1.y+TH)} ${fN(N0.x + 1.2)},${fN(N0.y+TH)}" fill="#125c33"/>`;
+  g += `<polygon class="slo" points="${fN(N0.x)},${fN(N0.y)} ${fN(SE.x)},${fN(N0.y)} ${fN(SE.x)},${fN(N0.y+TH)} ${fN(N0.x + 1.2)},${fN(N0.y+TH)}" fill="${esc(co)}"/>`;
+  g += `<polygon class="sld" points="${fN(SD.x)},${fN(N1.y)} ${fN(N1.x)},${fN(N1.y)} ${fN(N1.x - 1.2)},${fN(N1.y+TH)} ${fN(SD.x)},${fN(N1.y+TH)}" fill="${esc(cd)}"/>`;
+  g += `<polygon points="${fN(N0.x)},${fN(N0.y)} ${fN(N1.x)},${fN(N1.y)} ${fN(N1.x - 1.2)},${fN(N1.y+TH)} ${fN(N0.x + 1.2)},${fN(N0.y+TH)}" fill="#000" opacity=".34"/>`;
+  g += `<polygon points="${fQuad(0,1)}" fill="url(#turf)"/>`;
+  /* mowing: alternate five-yard bands, light then dark */
+  for(let i = 0; i < 20; i++) g += `<polygon points="${fQuad(FEZ + i*5*YD, FEZ + (i+1)*5*YD)}" fill="${i % 2 ? "rgba(0,0,0,.075)" : "rgba(255,255,255,.05)"}"/>`;
+  g += `<polygon class="ezo" points="${fQuad(0,FEZ)}" fill="${esc(co)}"/>`;
+  g += `<polygon class="ezd" points="${fQuad(1-FEZ,1)}" fill="${esc(cd)}"/>`;
+  g += `<polygon points="${fQuad(0,FEZ)}" fill="url(#ezsh)"/><polygon points="${fQuad(1-FEZ,1)}" fill="url(#ezsh)"/>`;
   g += `<polygon class="rz" points="${fQuad(FA(20),FA(0))}" fill="#ff453a" opacity="0"/>`;
-  for(let y = 0; y <= 100; y += 5){
-    const A = FP(FEZ + y/120, 0), B = FP(FEZ + y/120, 1);
-    g += `<line x1="${fN(A.x)}" y1="${fN(A.y)}" x2="${fN(B.x)}" y2="${fN(B.y)}" stroke="rgba(255,255,255,${y%10?.13:.28})" stroke-width="${y%10?.6:1}"/>`;
+  /* hash marks and sideline ticks, every yard */
+  let hd = "";
+  for(let y = 1; y < 100; y++){
+    if(y % 5 === 0) continue; const a = FEZ + y * YD;
+    [[.012,.045],[.36,.388],[.612,.64],[.955,.988]].forEach(([c0, c1]) => { const A = FP(a, c0), B = FP(a, c1); hd += `M${fN(A.x)} ${fN(A.y)}L${fN(B.x)} ${fN(B.y)}`; });
   }
-  const F0 = FP(0,0), F1 = FP(1,0), N0 = FP(0,1), N1 = FP(1,1);
-  g += `<line x1="${fN(F0.x)}" y1="${fN(F0.y)}" x2="${fN(F1.x)}" y2="${fN(F1.y)}" stroke="rgba(255,255,255,.45)" stroke-width=".9"/>`;
-  g += `<line x1="${fN(N0.x)}" y1="${fN(N0.y)}" x2="${fN(N1.x)}" y2="${fN(N1.y)}" stroke="rgba(255,255,255,.55)" stroke-width="1.3"/>`;
-  [10,20,30,40,50,40,30,20,10].forEach((n, i) => { const q = FP(FEZ + ((i+1)*10/120), .68);
-    g += `<text class="fn" x="${fN(q.x)}" y="${fN(q.y)}" font-size="${fN(8.5*q.s)}">${n}</text>`; });
-  /* a front edge so the field reads as a solid slab rather than a sticker */
-  const S0 = FP(0,1), S1 = FP(1,1), SE = FP(FEZ,1), SD = FP(1-FEZ,1), TH = 4;
-  g += `<polygon points="${fN(S0.x)},${fN(S0.y)} ${fN(S1.x)},${fN(S1.y)} ${fN(S1.x)},${fN(S1.y+TH)} ${fN(S0.x)},${fN(S0.y+TH)}" fill="#15713e"/>`;
-  g += `<polygon class="slo" points="${fN(S0.x)},${fN(S0.y)} ${fN(SE.x)},${fN(S0.y)} ${fN(SE.x)},${fN(S0.y+TH)} ${fN(S0.x)},${fN(S0.y+TH)}" fill="${esc(off && off.color || "#0a84ff")}" opacity=".62"/>`;
-  g += `<polygon class="sld" points="${fN(SD.x)},${fN(S1.y)} ${fN(S1.x)},${fN(S1.y)} ${fN(S1.x)},${fN(S1.y+TH)} ${fN(SD.x)},${fN(S1.y+TH)}" fill="${esc(def && def.color || "#ff453a")}" opacity=".62"/>`;
-  g += fPost(-.045, 1) + fPost(1.045, -1);
+  g += `<path d="${hd}" stroke="#fff" stroke-width=".45" opacity=".3" fill="none"/>`;
+  for(let y = 5; y < 100; y += 5){
+    const A = FP(FEZ + y*YD, 0), B = FP(FEZ + y*YD, 1);
+    g += `<line x1="${fN(A.x)}" y1="${fN(A.y)}" x2="${fN(B.x)}" y2="${fN(B.y)}" stroke="#fff" stroke-opacity="${y % 10 ? .2 : .42}" stroke-width="${y % 10 ? .6 : .9}"/>`;
+  }
+  [0, 100].forEach(y => { const A = FP(FEZ + y*YD, 0), B = FP(FEZ + y*YD, 1);
+    g += `<line x1="${fN(A.x)}" y1="${fN(A.y)}" x2="${fN(B.x)}" y2="${fN(B.y)}" stroke="#fff" stroke-opacity=".92" stroke-width="1.5"/>`; });
+  g += `<polygon points="${fQuad(0,1)}" fill="none" stroke="#fff" stroke-opacity=".86" stroke-width="1.25" stroke-linejoin="round"/>`;
+  [10,20,30,40,50,40,30,20,10].forEach((n, i) => { const a = FEZ + (i + 1) * 10 * YD; g += fNum(n, a, .79, false) + fNum(n, a, .2, true); });
+  /* pylons at the four corners of each endzone */
+  [[FEZ,1],[1-FEZ,1],[0,1],[1,1],[FEZ,0],[1-FEZ,0],[0,0],[1,0]].forEach(([a, c]) => { const q = FP(a, c), w = 1.5 * q.s, h = 3.3 * q.s;
+    g += `<rect x="${fN(q.x - w/2)}" y="${fN(q.y - h)}" width="${fN(w)}" height="${fN(h)}" rx=".4" fill="#ff8a1f"/>`; });
   return `<svg class="field" viewBox="0 0 360 ${FVH}" aria-hidden="true"><defs>
-    <linearGradient id="turf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b6f3f"/><stop offset="1" stop-color="#31a461"/></linearGradient>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#06080f"/></linearGradient>
+    <linearGradient id="turf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c7341"/><stop offset=".55" stop-color="#27904f"/><stop offset="1" stop-color="#34a862"/></linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c1224"/><stop offset=".62" stop-color="#080b17"/><stop offset="1" stop-color="#05070d"/></linearGradient>
+    <radialGradient id="lts" cx=".5" cy=".46" r=".62"><stop offset="0" stop-color="#7fb2ff" stop-opacity=".2"/><stop offset=".55" stop-color="#5a86e0" stop-opacity=".06"/><stop offset="1" stop-color="#5a86e0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="fsh"><stop offset="0" stop-color="#000" stop-opacity=".7"/><stop offset=".7" stop-color="#000" stop-opacity=".3"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+    <linearGradient id="ezsh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity=".07"/></linearGradient>
     <radialGradient id="glow"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-    <linearGradient id="tdg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${esc(off && off.color || "#0a84ff")}" stop-opacity=".85"/><stop offset=".55" stop-color="${esc(off && off.color || "#0a84ff")}" stop-opacity=".18"/><stop offset="1" stop-color="${esc(off && off.color || "#0a84ff")}" stop-opacity="0"/></linearGradient></defs>
+    <radialGradient id="gpg"><stop offset="0" stop-color="#ffe45c" stop-opacity=".75"/><stop offset="1" stop-color="#ffd60a" stop-opacity="0"/></radialGradient>
+    <linearGradient id="tdg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${esc(co)}" stop-opacity="1"/><stop offset=".5" stop-color="${esc(co)}" stop-opacity=".62"/><stop offset="1" stop-color="${esc(co)}" stop-opacity=".1"/></linearGradient>
+    <linearGradient id="tdv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></linearGradient>
+    <linearGradient id="ballg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9713d"/><stop offset=".5" stop-color="#8f4e25"/><stop offset="1" stop-color="#5d2e12"/></linearGradient>
+    </defs>
     <rect width="360" height="${FVH}" fill="url(#sky)"/>
+    <rect width="360" height="${FVH}" fill="url(#lts)"/>
+    ${fPost(-.045, 1, "gpl")}
     ${g}
+    ${ezText(FEZ/2, "ezot", fName(off), fInk(co))}
+    ${ezText(1-FEZ/2, "ezdt", fName(def), fInk(cd))}
+    <polygon class="pband" points="" opacity="0"/>
+    <polygon class="parrow" points="" opacity="0"/>
+    <line class="los" x1="0" x2="0" y1="0" y2="0" stroke="#2f8cff" stroke-width="1.9" stroke-linecap="round" opacity="0"/>
+    <line class="fdl" x1="0" x2="0" y1="0" y2="0" stroke="#ffd60a" stroke-width="1.9" stroke-linecap="round" opacity="0"/>
     <polygon class="ezflash" points="${fQuad(1-FEZ,1)}" fill="#fff" opacity="0"/>
-    <path class="trail" d="" fill="none" stroke="#fff" stroke-width="1.8" stroke-dasharray="4 4" opacity=".75"/>
-    <line class="los" x1="0" x2="0" y1="0" y2="0" stroke="#0a84ff" stroke-width="2.2" opacity="0"/>
-    <line class="fdl" x1="0" x2="0" y1="0" y2="0" stroke="#ffd60a" stroke-width="2.2" opacity="0"/>
+    ${fPost(1.045, -1, "gpr")}
+    <ellipse class="bshadow" rx="6" ry="1.9" fill="#000" opacity="0"/>
+    <path class="trail" d="" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="3.4 3.4" stroke-linecap="round" opacity=".8"/>
     <circle class="bglow" r="15" fill="url(#glow)" opacity="0"/>
-    <g class="ball" opacity="0"><ellipse rx="7" ry="4.4" fill="#8a4b22" stroke="#fff" stroke-width="1"/><line x1="-2.8" y1="0" x2="2.8" y2="0" stroke="#fff" stroke-width="1"/></g>
-    ${ezText(FEZ/2, "ezot", off && off.abbr)}
-    ${ezText(1-FEZ/2, "ezdt", def && def.abbr)}
-    <g class="tdbn" opacity="0">
-      <rect width="360" height="${FVH}" fill="#07090f"/>
-      <rect width="360" height="${FVH}" fill="url(#tdg)"/>
-      <text class="tdghost" x="180" y="${FVH*.72}">${esc((off && off.abbr) || "")}</text>
-      <text class="tdbig" x="180" y="${FVH*.58}">TOUCHDOWN</text>
+    <circle class="ring" r="9" fill="none" stroke="#fff" stroke-width="1.6" opacity="0"/>
+    <g class="ball" opacity="0">
+      <path d="M-7.6 0 Q-4 -4.7 0 -4.7 Q4 -4.7 7.6 0 Q4 4.7 0 4.7 Q-4 4.7 -7.6 0 Z" fill="url(#ballg)" stroke="#2c1508" stroke-width=".7"/>
+      <path d="M-5.2 -2.6 Q-4.3 0 -5.2 2.6 M5.2 -2.6 Q4.3 0 5.2 2.6" fill="none" stroke="#fff" stroke-width="1" stroke-linecap="round" opacity=".95"/>
+      <path d="M-2.6 -1.5 H2.6 M-1.9 -2.5 V-.5 M-.6 -2.6 V-.4 M.6 -2.6 V-.4 M1.9 -2.5 V-.5" fill="none" stroke="#fff" stroke-width=".75" stroke-linecap="round"/>
+      <path d="M-5.6 -1.9 Q-2 -4 3 -3.6" fill="none" stroke="#fff" stroke-width=".7" stroke-linecap="round" opacity=".28"/>
     </g>
-    <g class="gain" opacity="0"><rect class="gbg" x="-26" y="-11" width="52" height="20" rx="10" fill="rgba(0,0,0,.6)"/><text y="4" class="gt2"></text></g>
+    <g class="tdbn" opacity="0">
+      <rect width="360" height="${FVH}" fill="#06080f"/>
+      <rect width="360" height="${FVH}" fill="url(#tdg)"/>
+      <g class="tdst">${Array.from({length:13}, (_, i) => `<polygon points="${-70 + i*40},${FVH} ${-40 + i*40},0 ${-22 + i*40},0 ${-52 + i*40},${FVH}" fill="#fff" opacity="${i % 2 ? ".05" : ".085"}"/>`).join("")}</g>
+      <rect width="360" height="${FVH}" fill="url(#tdv)"/>
+      <text class="tdghost" x="350" y="${fN(FVH*.82)}"></text>
+      <text class="tdbig" x="24" y="${fN(FVH*.52)}">TOUCHDOWN</text>
+      <rect class="tdrule" x="25" y="${fN(FVH*.6)}" width="150" height="2.4" rx="1.2" fill="#fff"/>
+      <text class="tdsub" x="25" y="${fN(FVH*.78)}"></text>
+    </g>
+    <g class="gain" opacity="0"><g class="gin"><rect class="gbg" x="-26" y="-9.5" width="52" height="19" rx="9.5" fill="rgba(0,0,0,.6)"/><text y="3.7" class="gt2"></text></g></g>
   </svg>`;
 }
 /* Endzone lettering sits IN the plane of the field, on a frame built from the
@@ -2001,7 +2198,7 @@ function fieldSVG(off, def){
    weight the typeface drew them. */
 const EZW = {I:.30,J:.58,M:.93,W:.95,L:.62,T:.65,F:.60,E:.63,S:.66,A:.72,B:.70,C:.72,
              D:.74,G:.77,H:.77,K:.70,N:.77,O:.79,P:.68,Q:.79,R:.70,U:.75,V:.71,X:.70,
-             Y:.68,Z:.63," ":.26};
+             Y:.68,Z:.63," ":.26,"1":.52,"4":.66,"9":.66};
 const ezNat = t => [...t].reduce((n, c) => n + (EZW[c] || .70), 0);
 function ezFit(a, txt){
   const t = String(txt == null ? "" : txt).toUpperCase(), n = Math.max(1, t.length);
@@ -2021,33 +2218,34 @@ function ezFit(a, txt){
     if(e < 0 === !flip){ if(d > lo) lo = d; } else { if(d < hi) hi = d; }
   }
   const yc = (lo + hi) / 2, half = (hi - lo) / 2;
-  const span = depth * .74;                      /* paint stops short of both sidelines */
+  const span = depth * .76;                      /* paint stops short of both sidelines */
   let size = half * 2 * .86 / 1.3;               /* cap block against the 10-yard band */
   const nat = ezNat(t) || 1;
   if(nat * size > span) size = span / nat;
   const gap = n > 1 ? Math.max(0, Math.min(size * .34, (span - nat * size) / (n - 1))) : 0;
   const ox = cx0 + nx * yc + ux * gap / 2, oy = cy0 + ny * yc + uy * gap / 2;
-  return {m: `matrix(${fN(ux)} ${fN(uy)} ${fN(nx)} ${fN(ny)} ${fN(ox)} ${fN(oy)})`,
+  return {m: `matrix(${fN3(ux)} ${fN3(uy)} ${fN3(nx)} ${fN3(ny)} ${fN(ox)} ${fN(oy)})`,
           size: fN(size), ls: fN(gap), t: t};
 }
-function ezApply(el, a, txt){
+function ezApply(el, a, txt, ink){
   if(!el) return;
   const z = ezFit(a, txt);
   el.textContent = z.t;
   el.setAttribute("transform", z.m);
   el.setAttribute("font-size", z.size);
   el.setAttribute("letter-spacing", z.ls);
+  el.setAttribute("fill", ink || "#fff");
 }
-function ezText(a, cls, txt){
+function ezText(a, cls, txt, ink){
   const z = ezFit(a, txt);
-  return `<text class="ezt ${cls}" transform="${z.m}" font-size="${z.size}" letter-spacing="${z.ls}" dominant-baseline="central">${esc(z.t)}</text>`;
+  return `<text class="ezt ${cls}" transform="${z.m}" font-size="${z.size}" letter-spacing="${z.ls}" fill="${ink || "#fff"}" dominant-baseline="central">${esc(z.t)}</text>`;
 }
 
 /* a yard line drawn across the field in perspective */
 function fLine(el, yte, op){
   if(!el) return;
   if(op === 0){ el.setAttribute("opacity", "0"); return; }
-  const A = FP(FA(yte), 0), B = FP(FA(yte), 1);
+  const A = FP(FA(yte), .006), B = FP(FA(yte), .994);
   el.setAttribute("x1", fN(A.x)); el.setAttribute("y1", fN(A.y));
   el.setAttribute("x2", fN(B.x)); el.setAttribute("y2", fN(B.y));
   el.setAttribute("opacity", op);
@@ -2055,96 +2253,230 @@ function fLine(el, yte, op){
 
 function orient(svg, off, def){
   if(!svg || !off || !off.abbr) return;
-  svg.querySelector(".ezo").setAttribute("fill", off.color || "#0a84ff");
-  svg.querySelector(".ezd").setAttribute("fill", (def && def.color) || "#ff453a");
+  const co = fCol(off, "#0a84ff"), cd = fCol(def, "#ff453a");
+  svg.querySelector(".ezo").setAttribute("fill", co);
+  svg.querySelector(".ezd").setAttribute("fill", cd);
   const so = svg.querySelector(".slo"), sd = svg.querySelector(".sld");
-  if(so) so.setAttribute("fill", off.color || "#0a84ff");
-  if(sd) sd.setAttribute("fill", (def && def.color) || "#ff453a");
-  const ot = svg.querySelector(".ezot"), dt = svg.querySelector(".ezdt");
+  if(so) so.setAttribute("fill", co);
+  if(sd) sd.setAttribute("fill", cd);
   /* the fit is baked in, so refit whenever the names change length */
-  ezApply(ot, FEZ/2, off.abbr); ezApply(dt, 1 - FEZ/2, (def && def.abbr) || "");
-  ot.setAttribute("fill", "#fff"); dt.setAttribute("fill", "#fff");
+  ezApply(svg.querySelector(".ezot"), FEZ/2, fName(off), fInk(co));
+  ezApply(svg.querySelector(".ezdt"), 1 - FEZ/2, fName(def), fInk(cd));
   const c = svg.closest(".trkcard"), dv = c && c.querySelector(".drv"); if(dv) dv.textContent = off.abbr + " driving →";
+}
+/* The ball is drawn at a ground point plus a height. Its shadow stays on the
+   turf and shrinks as it climbs, which is what makes a pass read as being in
+   the air rather than sliding up the screen. */
+function setBall(svg, a, c, z, rot, k){
+  const g = FP(a, c), ball = svg.querySelector(".ball"), sh = svg.querySelector(".bshadow");
+  const s = g.s * .8 * (k || 1), lift = Math.max(0, z || 0), up = Math.min(1, lift / 46);
+  ball.setAttribute("transform", `translate(${fN(g.x)} ${fN(g.y - lift - 2.6 * g.s)}) rotate(${fN(rot || 0)}) scale(${fN3(s)})`);
+  ball.setAttribute("opacity", "1");
+  if(sh){
+    sh.setAttribute("cx", fN(g.x)); sh.setAttribute("cy", fN(g.y + .4));
+    sh.setAttribute("rx", fN(5.6 * g.s * (1 - .42 * up))); sh.setAttribute("ry", fN(1.7 * g.s * (1 - .42 * up)));
+    sh.setAttribute("opacity", fN3(.46 * (1 - .62 * up)));
+  }
+  return {x: g.x, y: g.y - lift - 2.6 * g.s, gx: g.x, gy: g.y, s: g.s};
+}
+/* the gain, painted on the turf from the line of scrimmage to the ball */
+function setBand(svg, a0, a1, col, op){
+  const b = svg.querySelector(".pband"), ar = svg.querySelector(".parrow");
+  if(!b) return;
+  if(!op || Math.abs(a1 - a0) < YD * .6){ b.setAttribute("opacity", "0"); ar.setAttribute("opacity", "0"); return; }
+  const d = a1 >= a0 ? 1 : -1, tip = a1, neck = a1 - d * Math.min(Math.abs(a1 - a0), YD * 2.4);
+  b.setAttribute("points", fQuad(Math.min(a0, neck), Math.max(a0, neck), .43, .57));
+  const A = FP(neck, .34), B = FP(tip, .5), C = FP(neck, .66);
+  ar.setAttribute("points", `${fN(A.x)},${fN(A.y)} ${fN(B.x)},${fN(B.y)} ${fN(C.x)},${fN(C.y)}`);
+  b.setAttribute("fill", col); ar.setAttribute("fill", col);
+  b.setAttribute("opacity", op); ar.setAttribute("opacity", op);
+}
+function fieldReset(svg){
+  svg._tok = (svg._tok || 0) + 1;
+  (svg._ts || []).forEach(clearTimeout); svg._ts = [];
+  const q = s => svg.querySelector(s);
+  q(".gain").setAttribute("opacity", "0"); q(".gain").setAttribute("class", "gain");
+  q(".trail").setAttribute("d", "");
+  setBand(svg, 0, 0, "", 0);
+  const bn = q(".tdbn"); if(bn){ bn.setAttribute("class", "tdbn"); bn.setAttribute("opacity", "0"); }
+  const fl = q(".ezflash"); if(fl){ fl.setAttribute("class", "ezflash"); fl.setAttribute("opacity", "0"); }
+  const rg = q(".ring"); if(rg){ rg.setAttribute("class", "ring"); rg.setAttribute("opacity", "0"); }
+  svg.querySelectorAll(".gp.lit").forEach(n => n.setAttribute("class", n.getAttribute("class").replace(" lit", "")));
+  return svg._tok;
 }
 function placeBall(svg, yte, opts){
   opts = opts || {};
-  const q = FP(FA(yte), .5), ball = svg.querySelector(".ball"), gl = svg.querySelector(".bglow");
-  ball.setAttribute("transform", `translate(${fN(q.x)} ${fN(q.y)}) scale(${fN(q.s)})`); ball.setAttribute("opacity", "1");
-  gl.setAttribute("cx", fN(q.x)); gl.setAttribute("cy", fN(q.y)); gl.setAttribute("r", fN(15 * q.s));
+  if(!opts.keep) fieldReset(svg);
+  const a = FA(yte), q = setBall(svg, a, .5, 0, 0), gl = svg.querySelector(".bglow");
+  gl.setAttribute("cx", fN(q.gx)); gl.setAttribute("cy", fN(q.y)); gl.setAttribute("r", fN(15 * q.s));
   gl.setAttribute("opacity", opts.glow ? ".5" : "0");
-  fLine(svg.querySelector(".los"), yte, opts.los ? ".9" : 0);
-  fLine(svg.querySelector(".fdl"), yte - (opts.dist || 0), (opts.dist && yte - opts.dist > 0) ? ".9" : 0);
-  svg.querySelector(".rz").setAttribute("opacity", yte <= 20 ? ".14" : "0");
+  fLine(svg.querySelector(".los"), yte, opts.los ? ".95" : 0);
+  fLine(svg.querySelector(".fdl"), yte - (opts.dist || 0), (opts.dist && yte - opts.dist > 0) ? ".95" : 0);
+  svg.querySelector(".rz").setAttribute("opacity", yte <= 20 ? ".12" : "0");
+}
+/* ---- what a play looks like ----
+   Turn one line of play-by-play into a flight path. The feed gives the start,
+   the end and a sentence; the sentence says a good deal more than it seems:
+   which side of the field, short or deep, caught or dropped, wide or blocked.
+   Each leg is a start and end on the ground (along, across) plus a height. */
+function playPlan(pl){
+  const t = pl.text || "", ty = pl.type || "", tr = playTier(pl), k = tr && tr.k;
+  const clampA = a => Math.max(FEZ * .2, Math.min(1 - FEZ * .22, a));
+  const a0 = FA(pl.s), yds = +pl.yds || 0, td = k === "td";
+  const side = /\bright\b/i.test(t) ? 1 : /\bleft\b/i.test(t) ? -1 : 0, deep = /\bdeep\b/i.test(t);
+  let a1 = td ? 1 - FEZ * .5 : clampA(FA(pl.e));
+  const legs = []; let plate = "", tone = "", fx = "", band = true, home = false, top = false;
+  const air = (A0, C0, A1, C1, H, ms, spin) => legs.push({a0:A0, c0:C0, z0:0, a1:A1, c1:C1, z1:0, H, ms, spin:spin == null ? 1 : spin, air:true});
+  const run = (A0, C0, A1, C1, ms) => legs.push({a0:A0, c0:C0, z0:0, a1:A1, c1:C1, z1:0, H:0, ms, spin:0});
+  const runMs = d => Math.min(1250, 380 + Math.abs(d) / YD * 19), airMs = d => Math.min(1150, 500 + Math.abs(d) / YD * 21);
+  const dist = +((t.match(/(\d+)\s*-?\s*yard field goal/i) || [])[1] || 0);
+  if(k === "fg" || k === "fgx"){
+    /* the posts face the camera, so "through the uprights" is between them in x */
+    const G = fPostGeo(1.045, -1), aP = fAofX(G.nx), zP = FP(aP, .5).y - (G.ny - G.up * .52);
+    const H = 15 + Math.min(18, (aP - a0) / YD * .22), ms = 1050 + Math.min(450, (aP - a0) / YD * 9);
+    band = false; top = true;
+    if(k === "fg"){
+      legs.push({a0, c0:.5, z0:0, a1:aP, c1:.5, z1:zP, H, ms, spin:3, air:true});
+      plate = (dist ? dist + " YD " : "") + "FIELD GOAL · GOOD"; tone = "good"; fx = "posts";
+    } else {
+      const blocked = /block/i.test(t), short = /\bshort\b/i.test(t), post = /upright|crossbar/i.test(t);
+      if(blocked){
+        legs.push({a0, c0:.5, z0:0, a1:a0 + YD * 2.2, c1:.5, z1:7, H:3, ms:300, spin:1, air:true});
+        legs.push({a0:a0 + YD * 2.2, c0:.5, z0:7, a1:a0 - YD * 4, c1:.66, z1:0, H:9, ms:620, spin:2, air:true});
+        plate = "NO GOOD · BLOCKED";
+      } else if(short){
+        legs.push({a0, c0:.5, z0:0, a1:aP - YD * 7, c1:.5, z1:0, H:H * .8, ms, spin:3, air:true});
+        plate = "NO GOOD · SHORT";
+      } else if(post){
+        const sx = side < 0 ? -1 : 1, aU = fAofX(G.nx + sx * G.W);
+        legs.push({a0, c0:.5, z0:0, a1:aU, c1:.5, z1:zP, H, ms, spin:3, air:true});
+        legs.push({a0:aU, c0:.5, z0:zP, a1:aU - YD * 6, c1:.5 + .14 * sx, z1:0, H:4, ms:560, spin:2, air:true});
+        plate = "NO GOOD · OFF THE UPRIGHT";
+      } else {
+        const sx = side < 0 ? -1 : 1, aW = fAofX(G.nx + sx * (G.W + 7.5 * G.s));
+        legs.push({a0, c0:.5, z0:0, a1:aW, c1:.5, z1:zP * 1.04, H, ms, spin:3, air:true});
+        plate = "NO GOOD" + (side ? " · WIDE " + (side < 0 ? "LEFT" : "RIGHT") : "");
+      }
+      tone = "bad"; fx = "miss";
+    }
+  } else if(/punt/i.test(ty) || /\bpunts\b/i.test(t)){
+    const d = +((t.match(/punts (\d+) yard/i) || [])[1] || 0);
+    a1 = clampA(a0 + YD * (d || 40)); band = false; top = true;
+    legs.push({a0, c0:.5, z0:0, a1, c1:.5 + side * .16, z1:0, H:24 + Math.min(10, (d || 40) * .16), ms:1250 + (d || 40) * 6, spin:2.5, air:true});
+    plate = "PUNT" + (d ? " · " + d + " YDS" : ""); tone = "";
+  } else if(/kickoff/i.test(ty) || /\bkicks \d+ yard/i.test(t)){
+    const d = +((t.match(/kicks (\d+) yard/i) || [])[1] || 0);
+    a1 = clampA(a0 + YD * (d || 60)); band = false; top = true;
+    legs.push({a0, c0:.5, z0:0, a1, c1:.5, z1:0, H:30, ms:1500, spin:2.5, air:true});
+    plate = /touchback/i.test(t) ? "KICKOFF · TOUCHBACK" : "KICKOFF"; tone = "";
+  } else if(/\bsack/i.test(t)){
+    run(a0, .5, a1, .5 + side * .1, runMs(a1 - a0) * .9);
+    plate = "SACK" + (yds ? " · " + (yds > 0 ? "+" : "−") + Math.abs(yds) : ""); tone = "bad"; fx = "hit";
+  } else if(/incomplete/i.test(t)){
+    const aT = clampA(a0 + YD * (deep ? 24 : 9)), cT = .5 + side * .24;
+    air(a0, .5, aT, cT, deep ? 22 : 11, airMs(aT - a0));
+    legs.push({a0:aT, c0:cT, z0:0, a1:aT + YD * 1.6, c1:cT + side * .03, z1:0, H:3.2, ms:260, spin:.6, air:true});
+    plate = "INCOMPLETE"; tone = "mute"; band = false; home = true;
+  } else if(k === "turn" && /INTERCEPTED/i.test(t)){
+    const aT = clampA(a0 + YD * (deep ? 22 : 10)), cT = .5 + side * .24;
+    air(a0, .5, aT, cT, deep ? 22 : 11, airMs(aT - a0));
+    plate = "INTERCEPTED"; tone = "bad"; fx = "turn"; band = false;
+  } else if(/\bpass\b/i.test(t) || /pass/i.test(ty)){
+    const cT = .5 + side * .23;
+    let airY = deep ? Math.max(yds * .72, Math.min(yds, 16)) : Math.min(yds, /screen|behind/i.test(t) ? 0 : 6);
+    if(yds - airY < 2.5 || td && yds < 12) airY = yds;
+    const aC = td && airY === yds ? a1 : clampA(a0 + YD * airY);
+    air(a0, .5, aC, cT, Math.min(30, 8 + Math.abs(airY) * .55) * (td ? 1.1 : 1), airMs(aC - a0) * (td ? 1.12 : 1));
+    if(Math.abs(a1 - aC) > YD * 1.5) run(aC, cT, a1, cT + (.5 - cT) * .45, runMs(a1 - aC) * (td ? 1.1 : 1));
+  } else {
+    const cT = .5 + side * .15 * (/end\b/i.test(t) ? 1.5 : 1);
+    run(a0, .5, a1, cT, runMs(a1 - a0) * (td ? 1.15 : 1));
+  }
+  if(k === "turn" && /FUMBLES/i.test(t)){
+    const L = legs[legs.length - 1];
+    legs.push({a0:L.a1, c0:L.c1, z0:0, a1:clampA(L.a1 + YD * 1.6), c1:L.c1 + .14, z1:0, H:6.5, ms:420, spin:2, air:true});
+    plate = "FUMBLE LOST"; tone = "bad"; fx = "turn";
+  }
+  if(k === "turn" && /safety/i.test(t) && !plate){ plate = "SAFETY"; tone = "bad"; fx = "turn"; }
+  if(td){ plate = "TOUCHDOWN"; tone = "good"; fx = "td"; }
+  if(!plate){
+    const first = pl.dist && yds >= pl.dist && !td;
+    plate = (yds > 0 ? "+" + yds + " YDS" : yds < 0 ? "−" + Math.abs(yds) + " YDS" : "NO GAIN") + (first && yds < 20 ? " · 1ST DOWN" : "");
+    tone = yds >= 20 ? "hot" : first ? "first" : yds < 0 ? "bad" : "";
+    if(yds >= 40) fx = "boom"; else if(yds >= 20) fx = "pop";
+  }
+  if(/\bPENALTY\b/.test(t) && /no play/i.test(t)){ plate = "PENALTY"; tone = "first"; fx = ""; }
+  if(!legs.length) run(a0, .5, a1, .5, 400);
+  return {legs, plate, tone, fx, band, home, top, td, tr};
+}
+const PLATE = {good:"rgba(40,190,84,.96)", bad:"rgba(255,69,58,.96)", hot:"rgba(255,149,10,.97)", first:"rgba(255,214,10,.97)", mute:"rgba(84,84,92,.92)", "":"rgba(12,14,22,.82)"};
+function showPlate(svg, P, x, y){
+  const gain = svg.querySelector(".gain"), bg = gain.querySelector(".gbg"), tx = gain.querySelector("text");
+  const w = Math.max(46, P.plate.length * 6.15 + 20);
+  bg.setAttribute("x", fN(-w / 2)); bg.setAttribute("width", fN(w)); bg.setAttribute("fill", PLATE[P.tone] || PLATE[""]);
+  tx.textContent = P.plate; tx.setAttribute("fill", P.tone === "first" || P.tone === "hot" ? "#141000" : "#fff");
+  gain.setAttribute("transform", `translate(${fN(Math.max(w / 2 + 6, Math.min(354 - w / 2, x)))} ${fN(Math.max(12, y))})`);
+  gain.setAttribute("class", "gain"); void gain.getBBox();
+  gain.setAttribute("class", "gain in" + (P.tone === "good" || P.tone === "hot" || P.tone === "bad" ? " big" : ""));
+  gain.setAttribute("opacity", "1");
 }
 function animPlay(svg, pl){
   if(!svg || pl.s == null || pl.e == null) return;
-  const tr0 = playTier(pl), isFG = !!(tr0 && tr0.k === "fg");
-  /* A kick started and ended on the same yard line, so nothing moved. Send it
-     at the uprights instead, and leave it up there rather than dropping it. */
-  const a0 = FA(pl.s), a1 = isFG ? .988 : FA(pl.e), p0 = FP(a0, .5), p1 = FP(a1, .5);
-  const isPass = /pass/i.test(pl.type) && !/incomplete|intercept|sack/i.test(pl.text);
-  const ball = svg.querySelector(".ball"), trail = svg.querySelector(".trail"),
-        gain = svg.querySelector(".gain"), gl = svg.querySelector(".bglow");
   orient(svg, pl.team, pl.def);
   placeBall(svg, pl.s, {los:true, dist:pl.dist});
-  gain.setAttribute("opacity", "0"); trail.setAttribute("d", "");
-  /* tapping another play while the banner is still up used to leave it there */
-  const bn0 = svg.querySelector(".tdbn");
-  if(bn0){ clearTimeout(bn0._t); bn0.setAttribute("class", "tdbn"); bn0.setAttribute("opacity", "0"); }
-  const tr = tr0, scored = tr && tr.k === "td", reduce = !S.set.celebrate;
-  const span = Math.abs(p1.x - p0.x);
-  const base = Math.min(1500, 650 + span * 6);
-  const dur = reduce ? 1 : Math.min(scored ? 1750 : 1500, Math.round(base * (scored ? 1.35 : tr && tr.rank >= 4 ? 1.12 : 1)));
-  /* lift is measured off the ground plane, which now slopes with perspective,
-     so the arc is added to the projected y rather than a fixed centre line */
-  const H = isFG ? Math.min(46, 16 + span * .2) : isPass ? Math.min(40, 12 + span * .22) * (scored ? 1.1 : 1) : 0;
-  /* the ball finishes level with the crossbar on a kick, not back on the turf */
-  const END = isFG ? (7 + 15) * p1.s * .9 : 0;
-  const t0 = performance.now();
-  const flash = svg.querySelector(".ezflash"); if(flash) flash.setAttribute("opacity", "0");
-  let d = `M${fN(p0.x)} ${fN(p0.y)}`;
-  const step = now => {
-    const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-    const g = FP(a0 + (a1 - a0) * e, .5), lift = H * 4 * e * (1 - e) + END * e;
-    const x = g.x, y = g.y - lift, sc = g.s * (1 + (H ? .3 * 4 * e * (1 - e) : 0));
-    const rot = (isPass || isFG) ? (p1.x >= p0.x ? -1 : 1) * (1 - 2 * e) * (isFG ? 40 : 25) : 0;
-    ball.setAttribute("transform", `translate(${fN(x)} ${fN(y)}) rotate(${fN(rot)}) scale(${fN(sc)})`);
-    d += ` L${fN(x)} ${fN(y)}`; trail.setAttribute("d", d);
-    if(k < 1) requestAnimationFrame(step);
-    else {
-      gl.setAttribute("cx", fN(p1.x)); gl.setAttribute("cy", fN(p1.y - END)); gl.setAttribute("r", fN(15 * p1.s));
-      gl.setAttribute("opacity", scored ? "1" : tr && tr.rank >= 4 ? ".6" : ".35");
-      const lbl = scored ? "TOUCHDOWN" : isFG ? tr.lbl.toUpperCase() + " GOOD" : (/incomplete/i.test(pl.text) ? "Inc" : tr && tr.k === "turn" ? tr.lbl.toUpperCase() : (pl.yds > 0 ? "+" : "") + pl.yds + " yds");
-      const w = Math.max(52, lbl.length * 9 + 22), bg = gain.querySelector(".gbg");
-      bg.setAttribute("x", -w / 2); bg.setAttribute("width", w);
-      bg.setAttribute("fill", scored ? "rgba(48,209,88,.92)" : isFG ? "rgba(10,132,255,.92)" : tr && tr.k === "turn" ? "rgba(255,69,58,.92)" : "rgba(0,0,0,.6)");
-      gain.querySelector("text").textContent = lbl;
-      gain.setAttribute("class", "gain" + (scored || isFG ? " score" : ""));
-      /* the canvas got narrower in 1.6.2, so the old 354 clamp let a wide plate
-   like TOUCHDOWN run off the right edge on a short scoring run */
-      gain.setAttribute("transform", `translate(${fN(Math.max(w / 2 + 10, Math.min(350 - w / 2, p1.x)))} ${H ? 20 : fN(p1.y - 14)})`);
-      gain.setAttribute("opacity", scored && !reduce ? "0" : "1");
-      if(scored && !reduce) setTimeout(() => gain.setAttribute("opacity", "1"), 2350);
-      svg.querySelector(".rz").setAttribute("opacity", pl.e <= 20 && !scored ? ".14" : "0");
-      if(scored && flash && !reduce){
-        flash.setAttribute("opacity", "0"); void flash.getBBox();
-        flash.setAttribute("class", "ezflash lit");
-        setTimeout(() => flash.setAttribute("class", "ezflash"), 900);
-      }
-      if(scored && !reduce){
-        abFlash("hyped", 2600);
-        /* ESPN drops a banner over the whole card for a beat, then gives the
-           field back for the next play. Same idea, kept short. */
-        const bn = svg.querySelector(".tdbn");
-        if(bn){
-          const gr = svg.querySelector("#tdg");
-          if(gr && pl.team && pl.team.color) gr.querySelectorAll("stop").forEach(st => st.setAttribute("stop-color", pl.team.color));
-          const gh = bn.querySelector(".tdghost"); if(gh) gh.textContent = (pl.team && pl.team.abbr) || "";
-          bn.setAttribute("class", "tdbn run");
-          bn._t = setTimeout(() => { bn.setAttribute("class", "tdbn"); bn.setAttribute("opacity", "0"); }, 2400);
-        }
-      }
+  const tok = svg._tok, P = playPlan(pl), reduce = !S.set.celebrate;
+  const q = s => svg.querySelector(s), later = (f, ms) => svg._ts.push(setTimeout(() => { if(svg._tok === tok) f(); }, ms));
+  const trail = q(".trail"), gl = q(".bglow"), col = fCol(pl.team, "#0a84ff");
+  const bandCol = P.tone === "bad" ? "#ff453a" : col, L0 = P.legs[0], LN = P.legs[P.legs.length - 1];
+  const zAt = (L, e) => L.z0 + (L.z1 - L.z0) * e + L.H * 4 * e * (1 - e);
+  const finish = pos => {
+    const lastAir = LN.z1 > 1;
+    gl.setAttribute("cx", fN(pos.gx)); gl.setAttribute("cy", fN(pos.y)); gl.setAttribute("r", fN((P.td ? 20 : 15) * pos.s));
+    gl.setAttribute("opacity", P.td ? "1" : P.fx === "boom" || P.fx === "posts" ? ".75" : P.fx ? ".5" : ".3");
+    q(".rz").setAttribute("opacity", pl.e <= 20 && !P.td && P.band ? ".12" : "0");
+    const px = P.top ? 180 : pos.x, py = P.top ? 15 : (lastAir ? pos.y - 15 : pos.y - 14);
+    const ring = q(".ring");
+    if(P.fx && P.fx !== "td" && ring && !reduce){
+      ring.setAttribute("cx", fN(pos.x)); ring.setAttribute("cy", fN(pos.y));
+      ring.setAttribute("stroke", P.tone === "bad" ? "#ff453a" : P.fx === "posts" ? "#ffd60a" : "#fff");
+      ring.setAttribute("class", "ring"); void ring.getBBox(); ring.setAttribute("class", "ring go");
     }
+    if(P.fx === "posts" && !reduce){ const gp = q(".gpr"); if(gp) gp.setAttribute("class", "gp gpr lit"); abFlash("hyped", 2000); }
+    if(P.td && !reduce){
+      const flash = q(".ezflash"); flash.setAttribute("class", "ezflash"); void flash.getBBox(); flash.setAttribute("class", "ezflash lit");
+      abFlash("hyped", 2800);
+      /* ESPN drops a graphic over the whole card for a beat, then gives the
+         field back. Same idea: team colour, speed stripes, the word, the team. */
+      const bn = q(".tdbn");
+      svg.querySelectorAll("#tdg stop").forEach(st => st.setAttribute("stop-color", col));
+      const gh = bn.querySelector(".tdghost"), nm = fName(pl.team);
+      gh.textContent = nm; gh.style.fontSize = Math.min(60, Math.round(196 / (Math.max(3, nm.length) * .66))) + "px";
+      bn.querySelector(".tdsub").textContent = [(pl.team && pl.team.abbr) || "", pl.q ? "Q" + pl.q : "", pl.clock || ""].filter(Boolean).join("  ·  ");
+      later(() => { bn.setAttribute("class", "tdbn run"); }, 420);
+      later(() => { bn.setAttribute("class", "tdbn"); bn.setAttribute("opacity", "0"); showPlate(svg, P, px, py); }, 420 + 2600);
+    } else showPlate(svg, P, px, py);
+    if(P.home && !reduce) later(() => { setBall(svg, FA(pl.e), .5, 0, 0); gl.setAttribute("opacity", "0"); trail.setAttribute("d", ""); }, 1300);
+  };
+  if(reduce){
+    const pos = setBall(svg, LN.a1, LN.c1, LN.z1, 0);
+    if(P.band) setBand(svg, L0.a0, LN.a1, bandCol, ".68");
+    finish(pos); return;
+  }
+  let li = 0, t0 = performance.now(), d = "", pos = null, pen = false;
+  const step = now => {
+    if(svg._tok !== tok) return;
+    const L = P.legs[li], k = Math.min(1, (now - t0) / L.ms);
+    /* a thrown or kicked ball holds its speed; a runner gets going and pulls up */
+    const e = L.air ? k : (k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);
+    const a = L.a0 + (L.a1 - L.a0) * e, c = L.c0 + (L.c1 - L.c0) * e, z = zAt(L, e);
+    const fwd = L.a1 >= L.a0 ? 1 : -1;
+    const rot = L.air ? (L.spin >= 2 ? fwd * k * 360 * L.spin : fwd * (-22 + 44 * e)) : 0;
+    pos = setBall(svg, a, c, z, rot, 1 + (L.air ? .22 * Math.min(1, z / 30) : 0));
+    if(L.air){ d += (pen ? " L" : " M") + `${fN(pos.x)} ${fN(pos.y)}`; pen = true; trail.setAttribute("d", d); } else pen = false;
+    if(P.band) setBand(svg, L0.a0, a, bandCol, ".68");
+    if(k < 1){ requestAnimationFrame(step); return; }
+    if(++li < P.legs.length){ t0 = now; requestAnimationFrame(step); return; }
+    finish(pos);
   };
   requestAnimationFrame(step);
 }
@@ -2159,9 +2491,10 @@ function playTier(pl){
   if(!nullified && /touchdown/i.test(t))                       return {k:"td",   lbl:"TD",        cls:"g", rank:5};
   if(!nullified && /INTERCEPTED/i.test(t))                     return {k:"turn", lbl:"INT",       cls:"r", rank:4};
   if(!nullified && /FUMBLES/i.test(t) && /recovered by/i.test(t)) return {k:"turn", lbl:"Fumble",  cls:"r", rank:4};
-  if(/field goal/i.test(t) && /good/i.test(t) && !/no good/i.test(t)){
+  if(/field goal/i.test(t) && !nullified){
     const d = +((t.match(/(\d+)\s*-?\s*yard field goal/i) || [])[1] || 0);
-    return {k:"fg", lbl:d ? d + " yd FG" : "FG", cls:"b", rank:d >= 50 ? 4 : 3};
+    if(/no good|missed|blocked/i.test(t)) return {k:"fgx", lbl:/block/i.test(t) ? "FG blocked" : "FG missed", cls:"r", rank:3};
+    if(/good/i.test(t)) return {k:"fg", lbl:d ? d + " yd FG" : "FG", cls:"b", rank:d >= 50 ? 4 : 3};
   }
   if(/safety/i.test(t) && !nullified)                          return {k:"turn", lbl:"Safety",    cls:"r", rank:4};
   if(/sack/i.test(t) && y >= 8)                                return {k:"sack", lbl:"Big sack",  cls:"r", rank:2};
@@ -2188,7 +2521,7 @@ async function fillTracker(p){
   if(S.sheetPid !== p.id || !$("#trk")) return; box = $("#trk");
   const re = nameRe(p), all = sum.drives.flatMap(d => d.plays);
   const sig = all.length + "|" + (sum.sit ? sum.sit.dd + sum.sit.yte : "") + "|" + g.state;
-  const bx = $("#trk"); if(bx.dataset.sig === sig) return; bx.dataset.sig = sig;
+  const bx = $("#trk"); if(bx.dataset.sig === sig) return; const firstTrk = !bx.dataset.sig; bx.dataset.sig = sig;
   const mine = p.pos === "DEF" ? [] : all.filter(pl => playMatch(p, pl, re) && pl.s != null).reverse().slice(0, 12);
   const myTeam = sum.byAbbr[p.team] || {abbr:p.team}, opp = Object.values(sum.teams).find(t => t.abbr !== p.team) || {abbr:""};
   const live = g.state === "in" && sum.sit && sum.sit.yte != null;
@@ -2199,6 +2532,7 @@ async function fillTracker(p){
     ${live && sum.sit.last ? `<div class="lastp"><span class="c3">Last play</span> ${esc(shortPlay(sum.sit.last))}</div>` : ""}</div>
     ${p.pos === "DEF" ? "" : `<div class="lbl">His plays${mine.length ? ` · ${mine.length} touches/targets` : ""}</div>` + (mine.length ? `<div class="grp">${playRows(mine, p, re)}</div><div class="note">Tap a play to replay it on the field. Points per play are estimates using your league's scoring.</div>` : `<div class="grp"><div class="empty">No plays for him yet this game.</div></div>`)}`;
   const svg = box.querySelector(".field");
+  if(firstTrk) riseIn(box);
   if(live) placeBall(svg, sum.sit.yte, {los:true, glow:true, dist:sum.sit.dist});
   if(mine.length) setTimeout(() => animPlay(svg, mine[0]), live ? 900 : 250);
   box.querySelectorAll("[data-play]").forEach(b => b.onclick = () => {
@@ -2215,7 +2549,8 @@ async function openGame(gid){
     ${[g.odds, g.ou ? "O/U " + g.ou : "", g.net].filter(Boolean).length ? `<div class="xs c2" style="text-align:center;margin-top:10px">${[g.odds, g.ou ? "O/U " + g.ou : "", g.net].filter(Boolean).map(esc).join(" · ")}</div>` : ""}</div>`;
   const own = ownerMap(), mine = Object.keys(own).filter(id => own[id] === S.myRid).map(P).filter(p => p.team === g.home.abbr || p.team === g.away.abbr);
   const mineH = mine.length ? `<div class="lbl">Your players</div><div class="grp">${mine.map(p => tRow(p, null, weekPts(p.id))).join("")}</div>` : "";
-  openSheet(`${g.away.abbr} @ ${g.home.abbr}`, head + mineH + `<div id="gtrk"><div class="skel"></div><div class="skel"></div></div>`);
+  S.sheetArt = null;
+  openSheet(`${g.away.abbr} @ ${g.home.abbr}`, head + mineH + `<div id="gtrk"><div class="skel"></div><div class="skel"></div></div>`, true);
   fillGame(gid);
 }
 async function fillGame(gid){
@@ -2237,12 +2572,14 @@ async function fillGame(gid){
     .map(pl => ({pl, tr: playTier(pl)}))
     .filter(x => x.tr && x.tr.rank >= 3)
     .reverse().slice(0, 12).map(x => x.pl);
+  const firstFill = !!box.querySelector(".skel");
   box.innerHTML = `<div class="lbl">Field</div><div class="trkcard"><div class="trkhd"><span>${live ? `${esc(sum.sit.poss)} ball · ${esc(sum.sit.dd)}${sum.sit.red ? ' <span class="tag r">Red zone</span>' : ""}` : g.state === "post" ? "Final" : ""}</span><span class="c3 drv">${esc(off.abbr || "")} driving →</span></div>${fieldSVG(off, def)}</div>
     ${recent.length ? `<div class="lbl">${live ? "Current drive" : "Last drive"}${lastDrive.result ? " · " + esc(lastDrive.result) : ""}</div><div class="grp" id="gRecent">${playRows(recent, null)}</div>` : ""}
     ${gameExtras(g, sum, "bottom")}
     ${scoring.length ? `<div class="lbl">Scoring plays</div><div class="grp" id="gScore">${playRows(scoring, null)}</div>` : ""}
     ${bigs.length ? `<div class="lbl">Big plays</div><div class="grp" id="gBig">${playRows(bigs, null)}</div><div class="note">Tap any play to replay it on the field.</div>` : ""}`;
   box.insertAdjacentHTML("afterbegin", gameExtras(g, sum, "top"));
+  if(firstFill) riseIn(box);
   const svg = box.querySelector(".field");
   if(live) placeBall(svg, sum.sit.yte, {los:true, glow:true, dist:sum.sit.dist}); else if(recent[0]) animPlay(svg, recent[0]);
   const wire = (sel, list) => { const el = box.querySelector(sel); if(el) el.querySelectorAll("[data-play]").forEach(b => b.onclick = () => { box.querySelectorAll(".play.on").forEach(x => x.classList.remove("on")); b.classList.add("on"); svg.scrollIntoView({behavior:"smooth", block:"center"}); setTimeout(() => animPlay(svg, list[+b.dataset.play]), 250); }); };
@@ -2823,16 +3160,92 @@ function txCell(t){
 
 /* ---- News ---- */
 /* =============== sheets =============== */
-function openSheet(title, body){
-  $("#shTitle").textContent = title; $("#shBody").innerHTML = body; $("#shBody").scrollTop = 0;
-  sheetReset(); $("#sheet").classList.remove("scrolled");
+/* The sheet holds a stack of pages. Opening something while a sheet is already
+   up pushes it; Back pops; Done (or the scrim, or a swipe down) closes the lot.
+   A page that is covered keeps its real DOM, handlers and scroll position, so
+   coming back to a game does not rebuild or refetch it. */
+let shStack = [], shCur = null;
+const SH_RE = {};                       /* title -> re-render, for pages whose labels go stale */
+SH_RE.Settings = () => openSettings();
+function shBackBtn(){ $("#shBack").classList.toggle("on", shStack.length > 0); }
+function shSwap(dir, mutate){
+  const sh = $("#sheet"), b = $("#shBody"), ttl = $("#shTitle");
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches || !b.animate){ b.style.minHeight = Math.max(0, sh.offsetHeight - b.offsetTop) + "px"; mutate(); return; }
+  sh.querySelectorAll(".shghost").forEach(n => n.remove());
+  const h0 = sh.offsetHeight, y = b.scrollTop;
+  /* a page that is still loading is short for a moment; hold the sheet at the
+     height it already has so the old page can't show through underneath */
+  b.style.minHeight = Math.max(0, h0 - b.offsetTop) + "px";
+  const g = b.cloneNode(true);
+  g.removeAttribute("id"); g.querySelectorAll("[id]").forEach(n => n.removeAttribute("id"));
+  g.className = "sb shghost"; g.style.top = b.offsetTop + "px"; g.setAttribute("aria-hidden", "true");
+  mutate();
+  sh.classList.add("nav"); sh.classList.toggle("back", dir < 0);
+  sh.appendChild(g); g.scrollTop = y;
+  const h1 = sh.offsetHeight, D = 440, E = "cubic-bezier(.32,.72,0,1)";
+  b.animate(dir > 0 ? [{transform:"translateX(100%)"}, {transform:"translateX(0)"}]
+                    : [{transform:"translateX(-28%)", opacity:.35}, {transform:"translateX(0)", opacity:1}], {duration:D, easing:E});
+  const out = g.animate(dir > 0 ? [{transform:"translateX(0)", opacity:1}, {transform:"translateX(-28%)", opacity:.35}]
+                                : [{transform:"translateX(0)"}, {transform:"translateX(100%)"}], {duration:D, easing:E, fill:"forwards"});
+  if(h1 !== h0 && !sheetBase) sh.animate([{transform:`translateY(${h1 - h0}px)`}, {transform:"translateY(0)"}], {duration:D, easing:E});
+  ttl.animate([{opacity:0, transform:`translateX(${dir * 22}px)`}, {opacity:1, transform:"translateX(0)"}], {duration:D, easing:E});
+  const done = () => { g.remove(); if(!sh.querySelector(".shghost")) sh.classList.remove("nav", "back"); };
+  out.onfinish = done; out.oncancel = done;
+  sheetSettling(D + 60);                 /* nothing rebuilds while the pages are moving */
+}
+function openSheet(title, body, keep){
+  const sh = $("#sheet"), b = $("#shBody"), open = sh.classList.contains("on");
+  if(!keep){ S.sheetPid = null; S.sheetGid = null; S.sheetArt = null; }
+  const st = {title, pid:S.sheetPid || null, gid:S.sheetGid || null, art:S.sheetArt || null};
+  if(open && shCur && shCur.title === title && shCur.pid === st.pid && shCur.gid === st.gid && shCur.art === st.art){
+    /* the same page drawing itself again: stay put, keep the scroll */
+    const y = b.scrollTop; b.innerHTML = body; b.scrollTop = y; shCur = st; bindSheet(); return;
+  }
+  if(open && shCur){
+    const prev = shCur;
+    shSwap(1, () => {
+      const frag = document.createDocumentFragment(), y = b.scrollTop;
+      while(b.firstChild) frag.appendChild(b.firstChild);
+      shStack.push({st:prev, frag, y, scrolled:sh.classList.contains("scrolled")});
+      if(shStack.length > 8) shStack.shift();
+      $("#shTitle").textContent = title; b.innerHTML = body; b.scrollTop = 0; sh.classList.remove("scrolled");
+    });
+    shCur = st; shBackBtn(); bindSheet(); haptic(); return;
+  }
+  shStack = []; shCur = st; shBackBtn(); b.style.minHeight = "";
+  $("#shTitle").textContent = title; b.innerHTML = body; b.scrollTop = 0;
+  sheetReset(); sh.classList.remove("scrolled");
   document.documentElement.classList.add("ovl");
   sheetSettling();
-  $("#sheet").classList.add("mv");
-  $("#scrim").classList.add("on"); $("#sheet").classList.add("on"); bindSheet();
+  sh.classList.add("mv");
+  $("#scrim").classList.add("on"); sh.classList.add("on"); bindSheet();
+}
+function sheetBack(){
+  const p = shStack.pop(); if(!p) return closeSheet();
+  const sh = $("#sheet"), b = $("#shBody");
+  shSwap(-1, () => { b.textContent = ""; b.appendChild(p.frag); $("#shTitle").textContent = p.st.title; });
+  b.scrollTop = p.y; sh.classList.toggle("scrolled", !!p.scrolled);
+  S.sheetPid = p.st.pid; S.sheetGid = p.st.gid; S.sheetArt = p.st.art; shCur = p.st; shBackBtn(); haptic();
+  const re = SH_RE[p.st.title];
+  if(re) re();
+  else if(S.sheetPid) refreshSheet();
+  else if(S.sheetGid){ const g = (S.games || []).find(x => x.id === S.sheetGid); if(g && g.state === "in") setTimeout(() => { if(S.sheetGid === g.id) fillGame(g.id); }, 520); }
 }
 function closeSheet(){ S.sheetArt = null; sheetReset(); $("#sheet").classList.add("mv"); $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on");
-  if(!$("#chat").classList.contains("on")) document.documentElement.classList.remove("ovl"); S.sheetPid = null; S.sheetGid = null; }
+  if(!$("#chat").classList.contains("on")) document.documentElement.classList.remove("ovl"); S.sheetPid = null; S.sheetGid = null;
+  shCur = null; const dead = shStack; shStack = [];
+  setTimeout(() => { if(!shStack.length && !$("#sheet").classList.contains("on")) shBackBtn(); dead.length = 0; }, 420); }
+$("#shBack").onclick = sheetBack;
+/* swipe in from the left edge to go back, like everywhere else on the phone */
+(function(){
+  const sh = $("#sheet"); let x0 = null, y0 = 0;
+  sh.addEventListener("touchstart", e => { const t = e.touches[0]; x0 = (shStack.length && t.clientX < 28) ? t.clientX : null; y0 = t.clientY; }, {passive:true});
+  sh.addEventListener("touchmove", e => {
+    if(x0 == null) return; const t = e.touches[0];
+    if(t.clientX - x0 > 56 && Math.abs(t.clientY - y0) < 44){ x0 = null; sheetBack(); }
+  }, {passive:true});
+  sh.addEventListener("touchend", () => { x0 = null; });
+})();
 $("#scrim").onclick = closeSheet; $("#shDone").onclick = closeSheet;
 $("#sheet").addEventListener("transitionend", e => {
   if(e.target !== $("#sheet") || e.propertyName !== "transform") return;
@@ -2905,7 +3318,8 @@ function playerBody(id){
 }
 async function openPlayer(id){
   S.sheetPid = id; markNewsSeen(id); $$(`[data-p="${CSS.escape(id)}"] .ndot`).forEach(d => d.remove());
-  openSheet(shortName(P(id)), playerBody(id));
+  S.sheetGid = null; S.sheetArt = null;
+  openSheet(shortName(P(id)), playerBody(id), true);
   fillTracker(P(id));
   if(!S.plog[id]) loadPlayerLog(id).then(() => { if(S.sheetPid === id) refreshSheet(); });
   if(!(S.pnews || {})[id]) loadPlayerNews(id).then(() => { if(S.sheetPid === id) refreshSheet(); });
@@ -2941,11 +3355,9 @@ function readerBody(a){
 }
 async function openArticle(k){
   const a = S.arts[k]; if(!a) return;
-  const back = S.sheetPid || null;
   S.sheetPid = null; S.sheetGid = null; S.sheetArt = k;
-  openSheet("News", readerBody(a));
-  if(back) $("#shBody").insertAdjacentHTML("afterbegin", `<button class="rback" data-back="${esc(back)}">‹ Back to player</button>`);
-  if(!a.story && !a._tried){ await fullStory(a); if(S.sheetArt === k && $("#sheet").classList.contains("on")){ $("#shBody").innerHTML = (back ? `<button class="rback" data-back="${esc(back)}">‹ Back to player</button>` : "") + readerBody(a); } }
+  openSheet("News", readerBody(a), true);
+  if(!a.story && !a._tried){ await fullStory(a); if(S.sheetArt === k && $("#sheet").classList.contains("on")){ $("#shBody").innerHTML = readerBody(a); } }
 }
 document.addEventListener("click", e => {
   const n = e.target.closest("[data-art]"); if(n){ e.preventDefault(); e.stopPropagation(); openArticle(n.dataset.art); return; }
@@ -3050,10 +3462,20 @@ function refreshSheet(){
   if(rsPend) return;
   rsPend = requestAnimationFrame(() => { rsPend = 0; doRefreshSheet(); });
 }
+/* content that arrives after the screen is up eases in rather than popping */
+function riseIn(el){
+  if(!el || document.body.classList.contains("reduce")) return;
+  el.classList.remove("rise"); void el.offsetWidth; el.classList.add("rise");
+  el.addEventListener("animationend", () => el.classList.remove("rise"), {once:true});
+}
+/* numbers are left out of the fingerprint so a live stat ticking over is not mistaken for a new section */
+const secSig = n => (n.className || "") + "|" + (n.textContent || "").replace(/[\d.,+\-–−%]/g, "").slice(0, 26);
 function doRefreshSheet(){
   if(!S.sheetPid || !$("#sheet").classList.contains("on")) return;
   const b = $("#shBody"), y = b.scrollTop, old = $("#trk");
+  const had = new Set([...b.children].map(secSig));
   b.innerHTML = playerBody(S.sheetPid);
+  [...b.children].forEach(n => { if(n.id !== "trk" && !had.has(secSig(n))) riseIn(n); });
   const nw = $("#trk"); if(old && nw && old.innerHTML) nw.replaceWith(old);
   b.scrollTop = y; bindSheet(); fillTracker(P(S.sheetPid));
 }
@@ -3080,10 +3502,12 @@ function openSettings(){
   h += `<div class="lbl">Data</div><div class="grp"><button class="cell noimg" id="rlPl"><div class="main"><div class="t1" style="font-weight:400;color:var(--blue)">Reload player list</div></div></button>
     <button class="cell noimg" id="clrC"><div class="main"><div class="t1" style="font-weight:400;color:var(--blue)">Clear cached stats</div></div></button></div>`;
   h += `<div class="lbl">About</div><div class="grp"><button class="cell noimg" id="relBtn"><div class="main"><div class="t1" style="font-weight:400">What's New</div></div><span class="c2">Version ${VERSION}</span>${CHEV}</button>
-    <button class="cell noimg" id="tourBtn"><div class="main"><div class="t1" style="font-weight:400">Replay the tour</div></div>${CHEV}</button></div>`;
+    <button class="cell noimg" id="tourBtn"><div class="main"><div class="t1" style="font-weight:400">Replay the tour</div></div>${CHEV}</button>
+    ${oldInstall() ? `<button class="cell noimg" id="raBtn"><div class="main"><div class="t1" style="font-weight:400">Sharpen the top bar</div><div class="t2">One-time fix for the blur under the clock</div></div>${CHEV}</button>` : ""}</div>`;
   h += `<div class="btns"><button class="btn red" id="logout">Use a different Sleeper account</button></div>
     <div class="foot">Audible reads public Sleeper data and ESPN scores/news. Lineup changes, claims, and trades happen in Sleeper.</div>`;
   openSheet("Settings", h);
+  { const ra = $("#raBtn"); if(ra) ra.onclick = openReadd; }
   $("#lgBtn").onclick = openLeagues; $("#aiBtn").onclick = openAI; $("#tourBtn").onclick = () => { closeSheet(); setTimeout(startTour, 350); };
   $$("#shBody [data-set]").forEach(el => {
     const k = el.dataset.set;
@@ -3327,6 +3751,30 @@ async function switchLeague(id){
   window.scrollTo(0, 0); loading("Loading " + l.name + "…");
   try{ await loadLeague(); loadChat(); render(true); syncWatcher(true); scheduleBackup(); toast("Now viewing " + l.name); }catch(err){ fail(err); }
 }
+/* iOS 26.1 and later lay a system blur and a dark scrim over the top of any
+   Home Screen web app installed with a see-through status bar. The page can't
+   switch it off. Newer installs ask for a solid status bar instead, but iOS
+   only reads that choice when the icon is added, so an existing install has
+   to be removed and added again. A safe-area inset at the top while running
+   standalone means this is one of the old installs. */
+function safeTop(){
+  const d = document.createElement("div"); d.style.cssText = "position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none";
+  document.body.appendChild(d); const h = d.offsetHeight; d.remove(); return h;
+}
+const oldInstall = () => standalone() && safeTop() > 20;
+function openReadd(){
+  const bk = !!(S.set.pin && worker()), url = location.origin + location.pathname;
+  const step = (n, t, d) => `<div class="cell noimg" style="align-items:flex-start"><div class="stepn">${n}</div><div class="main"><div class="t1" style="white-space:normal">${t}</div><div class="t2" style="white-space:normal;line-height:1.45">${d}</div></div></div>`;
+  openSheet("Sharper top bar", `<div class="note" style="margin-top:10px">The soft, dimmed strip at the very top of the screen isn't Audible. Since iOS 26.1, iPhone blurs the top of any Home Screen app that was added with a see-through status bar, and an app can't turn that off. Audible now asks for a solid status bar, which iPhone leaves alone, but it only picks that up when the icon is added. So it takes one remove and re-add, about a minute.</div>
+    <div class="lbl">Do this once</div><div class="grp">
+    ${step(1, bk ? "Backup is on" : "Turn on Backup first", bk ? "Your key, settings, league and chats are saved, so nothing is lost." : "Removing the icon erases what's stored on this phone. Set a PIN in Backup so it all comes back.")}
+    ${step(2, "Remove Audible from the Home Screen", "Press and hold the icon, Remove App, Delete from Home Screen.")}
+    ${step(3, "Open the link in Safari and add it again", esc(url) + "<br>Share, then Add to Home Screen.")}
+    ${step(4, "Sign in with your Sleeper username", bk ? "Enter your backup PIN when asked and everything is back. Turn Notifications on again in Settings." : "Then enter your backup PIN when asked.")}</div>
+    <div class="btns">${bk ? "" : '<button class="btn" id="raBk">Open Backup</button>'}<button class="btn gray" id="raCopy">Copy the link</button></div>`);
+  const b = $("#raBk"); if(b) b.onclick = openBackup;
+  $("#raCopy").onclick = async () => { try{ await navigator.clipboard.writeText(url); toast("Link copied"); }catch(e){ toast(url); } };
+}
 function openHelp(){
   const q = (t, d) => `<div class="cell noimg" style="align-items:flex-start"><div class="main"><div class="t1" style="white-space:normal">${t}</div><div class="t2" style="white-space:normal;line-height:1.45">${d}</div></div></div>`;
   openSheet("Help", `<div class="grp">${q("Is Audible free?", "Yes. Scores, lineups, waivers, news, alerts and the daily briefing are all free. Chatting with " + esc(S.set.botName) + " uses your own Claude API key, which you pay Anthropic for directly, usually a few dollars a month or less.")}
@@ -3419,7 +3867,7 @@ async function tourShow(){
       hole.style.cssText = "opacity:0;width:0;height:0";
       tourBlock(T, null);
       tip.innerHTML = `<div class="th"><div class="tb">${abot("")}</div><b>${esc(st.t)}</b></div><p>${esc(st.d)}</p>
-        <div class="tdemo">${fieldSVG({abbr:"BUF", color:"#00338d"}, {abbr:"MIA", color:"#008e97"})}
+        <div class="tdemo">${fieldSVG({abbr:"BUF", nick:"Bills", color:"#00338d"}, {abbr:"MIA", nick:"Dolphins", color:"#008e97"})}
           <div class="grp tdrow">${playRows([DEMO_PLAY], null)}</div></div>
         ${foot(`<button class="next" id="tNext">Next</button>`)}`;
       tip.style.top = Math.max(54, (innerHeight - tip.offsetHeight) / 2) + "px";
@@ -3793,27 +4241,42 @@ let animT = 0;
   if(!bb || !b) return;
   const px = bb.getBoundingClientRect().width || 108, u = 150 / px;
   b.style.setProperty("--trv", Math.round((innerHeight / 2 + 64) * u) + "px");
-  const go = () => { if(b.isConnected && !b.classList.contains("go")){ b.classList.add("go"); animT = Date.now(); } };
+  const go = () => { if(b.isConnected && !b.classList.contains("go")){ b.classList.add("go"); animT = Date.now(); setTimeout(bootWait, BOOT_ANIM + 120); } };
   requestAnimationFrame(() => requestAnimationFrame(go));
   setTimeout(go, 300);                       /* belt and braces if a frame is dropped */
 })();
+/* The intro has finished and the app still isn't ready: switch him to working. */
+let bootP = 0, bootCap = .2, bootTick = 0;
+function bootWait(){
+  const b = $("#boot"); if(!b || bootDone) return;
+  b.classList.add("wait"); $("#bootProg").classList.add("on"); $("#bootMsg").classList.add("on");
+  clearInterval(bootTick);
+  bootTick = setInterval(() => {            /* creep toward the next real milestone so it never looks stuck */
+    if(bootDone || !b.isConnected){ clearInterval(bootTick); return; }
+    bootProg(bootP + (bootCap - bootP) * .07);
+  }, 350);
+}
+function bootProg(p, cap){
+  bootP = Math.max(bootP, Math.min(1, p)); if(cap) bootCap = Math.max(bootCap, cap);
+  const i = document.querySelector("#bootProg i"); if(i) i.style.transform = `scaleX(${bootP.toFixed(3)})`;
+}
 function loading(msg){
   const b = $("#boot");
   if(b && !bootDone){
-    // Sleeper-style: stay silent at first. Only speak up if the load is actually slow.
+    // Sleeper-style: stay silent through the intro. The line appears with the working state.
     const m = $("#bootMsg");
-    if(m && msg){ m.textContent = String(msg).replace(/…$/, ""); clearTimeout(bootSlow); bootSlow = setTimeout(() => m.classList.add("on"), Math.max(0, 2600 - (Date.now() - bootT))); }
+    if(m && msg) m.textContent = String(msg).replace(/…$/, "");
     return;
   }
   $("#app").innerHTML = `<div class="loading"><div class="spin"></div>${esc(msg)}</div>`;
 }
 // hand off the moment the app is ready: content fades in behind, splash fades out
 function bootOff(ready){
-  const b = $("#boot"); if(!b || bootDone) return; bootDone = true; clearTimeout(bootSlow);
+  const b = $("#boot"); if(!b || bootDone) return; bootDone = true; clearTimeout(bootSlow); clearInterval(bootTick); bootProg(1);
   /* Today is already rendered underneath an opaque boot screen. Fading BOTH
      meant each was semi-transparent at the same moment, so the screen dipped
      through black between them. Dissolve the boot screen only. */
-  const leave = () => { b.classList.add("gone"); setTimeout(() => b.remove(), 380); warmRest(); };
+  const leave = () => { b.classList.add("gone"); tintBar(); setTimeout(() => b.remove(), 380); warmRest(); };
   setTimeout(() => { ready ? ready.then(leave, leave) : leave(); },
              Math.max(0, BOOT_ANIM - (Date.now() - (animT || bootT))));
 }
@@ -3854,11 +4317,27 @@ async function boot(){
   if(!S.user) return setup();
   loading("Loading your leagues…");
   try{
+    /* fire everything we can predict from last launch, all at once */
+    const hint = store.get("gd_hint"), lid0 = store.get("gd_league");
+    pre(API + "/state/nfl");
+    if(hint && hint.season){
+      pre(API + `/user/${S.user.user_id}/leagues/nfl/${hint.season}`);
+      if(lid0){
+        ["", "/rosters", "/users", `/matchups/${hint.week}`].forEach(x => pre(API + `/league/${lid0}${x}`));
+        pre(sbUrl(hint.st === "post" ? 3 : 2, hint.week, hint.sseason));
+        const pc = store.get(`gd_proj_${lid0}_${hint.sseason}_${hint.week}`);
+        if(!(pc && Date.now() - pc.t < 2*3600e3)) pre(API + `/projections/nfl/regular/${hint.sseason}/${hint.week}`);
+      }
+    }
+    bootProg(.06, .28);
     S.state = await api("/state/nfl");
     S.state.week = Math.max(1, S.state.week || S.state.display_week || 1);
+    bootProg(.28, .5);
     await loadPlayers(false);
+    bootProg(.5, .66);
     const season = S.state.league_season || S.state.season;
     S.leagues = (await api(`/user/${S.user.user_id}/leagues/nfl/${season}`)) || [];
+    bootProg(.66, .9);
     if(!S.leagues.length){
       bootOff();
       $("#app").innerHTML = `<div class="setup"><h1>No leagues found</h1><div class="c2">${esc(S.user.display_name)} isn't in any NFL leagues this season.</div><button class="btn" id="ag">Try another username</button></div>`;
@@ -3870,9 +4349,14 @@ async function boot(){
     S.week = S.state.week; S.tab = "home";
     loading("Loading " + S.league.name + "…");
     await loadLeague();
+    PRE.clear();
+    store.set("gd_hint", {season, sseason:S.state.season, week:S.state.week, st:S.state.season_type, lid:S.league.league_id});
+    bootProg(.92, .99);
     $("#bar").style.display = ""; $("#nav").style.display = ""; $("#fab").style.display = ""; pfFill();
     render(true);
-    const warming = prewarm(criticalImgs(), 2600);
+    const warming = prewarm(criticalImgs(), 2000);
+    /* yesterday's player list got us in; fetch today's now that nobody is waiting */
+    if(playersStale) setTimeout(() => loadPlayers(true, true).then(() => render()).catch(() => {}), 5000);
     checkUpdate();
     bootOff(warming); startLive(); checkWin();
     if(location.hash && route(location.hash)) history.replaceState(null, "", location.pathname + location.search);
