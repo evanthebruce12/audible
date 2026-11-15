@@ -874,7 +874,7 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.6.2";
+const VERSION = "1.6.3";
 const RELEASES = [
   {v:"1.6.2", date:"Nov 14, 2026", title:"The field has the right shape", items:[
     ["Not stretched any more","The first 3D field was tilted far too hard, so it looked impossibly deep and the goalposts ended up somewhere near the 10. Measured against ESPN's own drive graphic and rebuilt to match: a shallow strip with a gentle lean."],
@@ -2010,7 +2010,9 @@ function animPlay(svg, pl){
       bg.setAttribute("fill", scored ? "rgba(48,209,88,.92)" : isFG ? "rgba(10,132,255,.92)" : tr && tr.k === "turn" ? "rgba(255,69,58,.92)" : "rgba(0,0,0,.6)");
       gain.querySelector("text").textContent = lbl;
       gain.setAttribute("class", "gain" + (scored || isFG ? " score" : ""));
-      gain.setAttribute("transform", `translate(${fN(Math.max(w / 2 + 6, Math.min(354 - w / 2, p1.x)))} ${H ? 20 : fN(p1.y - 14)})`);
+      /* the canvas got narrower in 1.6.2, so the old 354 clamp let a wide plate
+   like TOUCHDOWN run off the right edge on a short scoring run */
+      gain.setAttribute("transform", `translate(${fN(Math.max(w / 2 + 10, Math.min(350 - w / 2, p1.x)))} ${H ? 20 : fN(p1.y - 14)})`);
       gain.setAttribute("opacity", "1");
       svg.querySelector(".rz").setAttribute("opacity", pl.e <= 20 && !scored ? ".14" : "0");
       if(scored && flash && !reduce){
@@ -2265,7 +2267,7 @@ function abPop(){ if(!S.set.celebrate) return; document.querySelectorAll(".abot 
 
 /* the service worker serves the shell from cache, so a new build lands quietly.
    Say so rather than leaving them on an old version without knowing. */
-const SHELL_CACHE = "audible-shell-v12";   /* keep in step with sw.js */
+const SHELL_CACHE = "audible-shell-v13";   /* keep in step with sw.js */
 /* The shell is served from cache, so without this a new build would not show
    up until the launch after next. The launch animation gives us two seconds
    of cover: fetch the live copy, and if the version moved, write it into the
