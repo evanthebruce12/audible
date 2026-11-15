@@ -1098,8 +1098,11 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.9";
+const VERSION = "1.9.1";
 const RELEASES = [
+  {v:"1.9.1", date:"Nov 15, 2026", title:"Only players who can play count", items:[
+    ["Game cards count who's actually playing","A player who's Out or on IR no longer adds to the blue \"of your players\" line on a game."],
+    ["On the field shows your whole roster","Bench players in a live game now show up there too, marked BN, under your starters. Anyone ruled out is left off."]]},
   {v:"1.9", date:"Nov 15, 2026", title:"Audible for iPad and Mac", items:[
     ["A real layout for big screens","Open the same link on an iPad or a Mac. The tab bar becomes a sidebar, and each screen spreads into two columns: your briefing beside the NFL slate, starters beside the bench, standings beside scores and activity."],
     ["Players and games open beside what you were looking at","On a big screen they slide in as a panel on the right instead of covering everything."],
@@ -1630,6 +1633,15 @@ const hasProj = () => Object.keys(S.proj).length > 20;
 
 /* =============== lineup + Audible =============== */
 const BAD = new Set(["Out","IR","PUP","Sus","NA","DNR","COV","Doubtful"]);
+/* ruled out of this week: can't score, so they don't count as "playing" anywhere.
+   Doubtful and Questionable players still might go, so they stay in. */
+const OUTS = new Set(["Out","IR","PUP","Sus","NA","DNR","COV"]);
+function sidelined(p){
+  if(!p || p.empty) return true;
+  if(OUTS.has(p.inj)) return true;
+  const r = S.rosters && S.rosters.find(x => x.roster_id === S.myRid);
+  return !!(r && (r.reserve || []).includes(p.id));
+}
 function benchOf(rid){
   const r = S.rosters.find(x => x.roster_id === rid), m = mOf(rid);
   if(!r) return [];
@@ -2728,7 +2740,8 @@ async function openGame(gid){
   const side = t => `<div>${t.logo ? `${imgTag(esc(t.logo))}` : ""}<div class="ab">${esc(t.abbr)}</div><div class="xs c2">${esc(t.rec)}</div></div>`;
   const head = `<div class="gbox" id="gBox"><div class="gt">${side(g.away)}<div><div class="gs2">${g.state === "pre" ? "@" : `${g.away.score} – ${g.home.score}`}</div><div class="gsd ${g.state === "in" ? "live" : ""}">${g.state === "pre" ? `${day(g.date)} ${tm(g.date)}` : esc(g.detail)}</div></div>${side(g.home)}</div>
     ${[g.odds, g.ou ? "O/U " + g.ou : "", g.net].filter(Boolean).length ? `<div class="xs c2" style="text-align:center;margin-top:10px">${[g.odds, g.ou ? "O/U " + g.ou : "", g.net].filter(Boolean).map(esc).join(" · ")}</div>` : ""}</div>`;
-  const own = ownerMap(), mine = Object.keys(own).filter(id => own[id] === S.myRid).map(P).filter(p => p.team === g.home.abbr || p.team === g.away.abbr);
+  const own = ownerMap(), mine = Object.keys(own).filter(id => own[id] === S.myRid).map(P).filter(p => p.team === g.home.abbr || p.team === g.away.abbr)
+    .sort((a, b) => sidelined(a) - sidelined(b));
   const mineH = mine.length ? `<div class="lbl">Your players</div><div class="grp">${mine.map(p => tRow(p, null, weekPts(p.id))).join("")}</div>` : "";
   S.sheetArt = null;
   openSheet(`${g.away.abbr} @ ${g.home.abbr}`, head + mineH + `<div id="gtrk"><div class="skel"></div><div class="skel"></div></div>`, true);
@@ -3152,13 +3165,18 @@ function vHome(){
     <button class="aibtn" id="askBtn">Ask ${esc(S.set.botName)} anything</button></div>`;
   const me = mOf(S.myRid), op = oppOf(me);
   if(me && isCur()){
-    const live = (me.starters || []).map((id, i) => ({p:P(id), pts:(me.starters_points || [])[i], slot:slots()[i]})).filter(x => !x.p.empty && gState(x.p) === "in");
+    /* everyone of yours in a game right now: starters first, then bench */
+    const st = me.starters || [], seen = new Set(st);
+    const r = S.rosters.find(x => x.roster_id === S.myRid) || {};
+    const live = st.map((id, i) => ({p:P(id), pts:(me.starters_points || [])[i], slot:slots()[i]}))
+      .concat((r.players || []).filter(id => !seen.has(id)).map(id => ({p:P(id), pts:weekPts(id), slot:"BN"})))
+      .filter(x => !x.p.empty && gState(x.p) === "in" && !sidelined(x.p));
     if(live.length) h += `<div class="sec"><h2>On the field</h2><span class="sm" style="color:var(--red);font-weight:600">● Live</span></div><div class="grp">${live.map(x => tRow(x.p, x.slot, x.pts)).join("")}</div>`;
   }
   if(me) h += `<div class="sec"><h2>Your matchup</h2><button data-go="matchup">See all</button></div>` + scoreBug(me, op, true);
   if(S.games && S.games.length){
     const own = ownerMap(), mine = {};
-    Object.keys(own).forEach(id => { if(own[id] === S.myRid){ const t = P(id).team; if(t) mine[t] = (mine[t] || 0) + 1; } });
+    Object.keys(own).forEach(id => { if(own[id] === S.myRid){ const q = P(id); if(q.team && !sidelined(q)) mine[q.team] = (mine[q.team] || 0) + 1; } });
     const ord = {in:0, pre:1, post:2};
     const sorted = [...S.games].sort((a,b) => (ord[a.state] - ord[b.state]) || (a.date - b.date));
     side += `<div class="sec"><h2>NFL · Week ${S.week}</h2></div><div class="rail">${sorted.map(g => gameCard(g, (mine[g.home.abbr] || 0) + (mine[g.away.abbr] || 0))).join("")}</div>`;

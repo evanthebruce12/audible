@@ -2,6 +2,13 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.9.1 — Only players who can play count
+*Nov 15, 2026*
+
+- **Game cards skip ruled-out players.** The blue "of your players" count included anyone on your roster from either team, so a starter listed Out or a player on IR still counted. A `sidelined()` check now leaves out Out, IR, PUP, Suspended, NA, DNR and COV statuses and anyone in a roster's reserve slots. Doubtful and Questionable still count, since they might play.
+- **On the field includes the bench.** It only looked at starters, so a bench player in a live game never appeared. Bench players in live games now show under the starters, marked BN, with ruled-out players left off.
+- **The game sheet lists ruled-out players last**, below the ones who are playing.
+
 ## 1.9 — Audible for iPad and Mac
 *Nov 15, 2026*
 
