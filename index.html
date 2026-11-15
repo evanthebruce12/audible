@@ -550,7 +550,7 @@ nav button:active{transform:scale(.9)}
 .trkhd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 14px;font-size:14px;font-weight:600}
 .field{display:block;width:100%;height:auto}
 .field .fn{fill:rgba(255,255,255,.55);font:700 9px -apple-system,sans-serif;text-anchor:middle}
-.field .ezt{fill:#fff;font:800 8px -apple-system,sans-serif;text-anchor:middle;letter-spacing:.08em;opacity:.95}
+.field .ezt{fill:#fff;font-family:-apple-system,system-ui,sans-serif;font-weight:900;text-anchor:middle;opacity:.97}
 .field .gt2{fill:#fff;font:700 11px -apple-system,sans-serif;text-anchor:middle}
 .lastp{padding:10px 14px;font-size:13px;line-height:1.35}
 .play{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 14px;position:relative}
@@ -885,8 +885,13 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.7";
+const VERSION = "1.7.1";
 const RELEASES = [
+  {v:"1.7.1", date:"Nov 14, 2026", title:"Endzones and goalposts, properly", items:[
+    ["Endzone names fill the endzone","Sized and stretched to the space and laid into the plane of the field, instead of small type standing upright."],
+    ["Goalposts in three dimensions","A grey weighted base, a gooseneck carrying the uprights out over the endline, and one upright a touch taller because you are seeing them at an angle."],
+    ["The field has thickness","A front edge along the near sideline, tinted to each team in their endzone, so it reads as a slab rather than a sticker."],
+    ["Fixed a stuck banner","Tapping another play while the touchdown graphic was still up left it on screen."]]},
   {v:"1.7", date:"Nov 14, 2026", title:"Touchdown graphic", items:[
     ["A proper celebration","Score, and the card goes over to a banner in your team's colour with TOUCHDOWN spread across it and the team's abbreviation ghosted behind, then hands back to the field for the next play."],
     ["Endzone names lie on the grass","They were standing bolt upright. Now they lean with the endzone the way painted lettering actually does."]]},
@@ -1913,13 +1918,19 @@ function fQuad(a0, a1, c0, c1){
   const C = FP(a1, c1 == null ? 1 : c1), D = FP(a0, c1 == null ? 1 : c1);
   return `${fN(A.x)},${fN(A.y)} ${fN(B.x)},${fN(B.y)} ${fN(C.x)},${fN(C.y)} ${fN(D.x)},${fN(D.y)}`;
 }
-function fPost(a){
-  const b = FP(a, .5), s = b.s, W = 6.5 * s, cb = 5 * s, up = 26 * s;
-  return `<g class="gp" stroke="#ffd60a" stroke-width="${fN(1.6*s)}" fill="none" stroke-linecap="round">
-    <line x1="${fN(b.x)}" y1="${fN(b.y+2)}" x2="${fN(b.x)}" y2="${fN(b.y-cb)}"/>
-    <line x1="${fN(b.x-W)}" y1="${fN(b.y-cb)}" x2="${fN(b.x+W)}" y2="${fN(b.y-cb)}"/>
-    <line x1="${fN(b.x-W)}" y1="${fN(b.y-cb)}" x2="${fN(b.x-W)}" y2="${fN(b.y-cb-up)}"/>
-    <line x1="${fN(b.x+W)}" y1="${fN(b.y-cb)}" x2="${fN(b.x+W)}" y2="${fN(b.y-cb-up)}"/></g>`;
+/* A flat U read as a sticker. Real posts have a grey weighted base, a
+   gooseneck that carries the uprights out over the endline, and one upright
+   slightly taller than the other because you are seeing them at an angle. */
+function fPost(a, dir){
+  const b = FP(a, .5), s = b.s, W = 6.2 * s, up = 30 * s, neck = 9 * s, gw = 2.1 * s;
+  const bw = 3.4 * s, bh = 7 * s, nx = b.x + neck * dir, ny = b.y - bh - neck;
+  return `<g class="gp">
+    <rect x="${fN(b.x-bw/2)}" y="${fN(b.y-bh)}" width="${fN(bw)}" height="${fN(bh+1.5)}" rx="${fN(bw/2)}" fill="#8e8e93"/>
+    <rect x="${fN(b.x-bw/2)}" y="${fN(b.y-bh)}" width="${fN(bw*.42)}" height="${fN(bh+1.5)}" rx="${fN(bw/4)}" fill="#c7c7cc" opacity=".5"/>
+    <path d="M${fN(b.x)} ${fN(b.y-bh)} L${fN(b.x)} ${fN(b.y-bh-neck*.5)} Q${fN(b.x)} ${fN(ny)} ${fN(nx)} ${fN(ny)}" fill="none" stroke="#ffd60a" stroke-width="${fN(gw)}" stroke-linecap="round"/>
+    <line x1="${fN(nx-W)}" y1="${fN(ny)}" x2="${fN(nx+W)}" y2="${fN(ny)}" stroke="#ffd60a" stroke-width="${fN(gw)}" stroke-linecap="round"/>
+    <line x1="${fN(nx-W)}" y1="${fN(ny)}" x2="${fN(nx-W-1.2*s)}" y2="${fN(ny-up)}" stroke="#e8c200" stroke-width="${fN(gw)}" stroke-linecap="round"/>
+    <line x1="${fN(nx+W)}" y1="${fN(ny)}" x2="${fN(nx+W+1.2*s)}" y2="${fN(ny-up*1.06)}" stroke="#ffd60a" stroke-width="${fN(gw)}" stroke-linecap="round"/></g>`;
 }
 function fieldSVG(off, def){
   let g = `<polygon points="${fQuad(0,1)}" fill="url(#turf)"/>`;
@@ -1936,7 +1947,12 @@ function fieldSVG(off, def){
   g += `<line x1="${fN(N0.x)}" y1="${fN(N0.y)}" x2="${fN(N1.x)}" y2="${fN(N1.y)}" stroke="rgba(255,255,255,.55)" stroke-width="1.3"/>`;
   [10,20,30,40,50,40,30,20,10].forEach((n, i) => { const q = FP(FEZ + ((i+1)*10/120), .68);
     g += `<text class="fn" x="${fN(q.x)}" y="${fN(q.y)}" font-size="${fN(8.5*q.s)}">${n}</text>`; });
-  g += fPost(-.045) + fPost(1.045);
+  /* a front edge so the field reads as a solid slab rather than a sticker */
+  const S0 = FP(0,1), S1 = FP(1,1), SE = FP(FEZ,1), SD = FP(1-FEZ,1), TH = 4;
+  g += `<polygon points="${fN(S0.x)},${fN(S0.y)} ${fN(S1.x)},${fN(S1.y)} ${fN(S1.x)},${fN(S1.y+TH)} ${fN(S0.x)},${fN(S0.y+TH)}" fill="#15713e"/>`;
+  g += `<polygon class="slo" points="${fN(S0.x)},${fN(S0.y)} ${fN(SE.x)},${fN(S0.y)} ${fN(SE.x)},${fN(S0.y+TH)} ${fN(S0.x)},${fN(S0.y+TH)}" fill="${esc(off && off.color || "#0a84ff")}" opacity=".62"/>`;
+  g += `<polygon class="sld" points="${fN(SD.x)},${fN(S1.y)} ${fN(S1.x)},${fN(S1.y)} ${fN(S1.x)},${fN(S1.y+TH)} ${fN(SD.x)},${fN(S1.y+TH)}" fill="${esc(def && def.color || "#ff453a")}" opacity=".62"/>`;
+  g += fPost(-.045, 1) + fPost(1.045, -1);
   return `<svg class="field" viewBox="0 0 360 ${FVH}" aria-hidden="true"><defs>
     <linearGradient id="turf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b6f3f"/><stop offset="1" stop-color="#31a461"/></linearGradient>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#06080f"/></linearGradient>
@@ -1950,8 +1966,8 @@ function fieldSVG(off, def){
     <line class="fdl" x1="0" x2="0" y1="0" y2="0" stroke="#ffd60a" stroke-width="2.2" opacity="0"/>
     <circle class="bglow" r="15" fill="url(#glow)" opacity="0"/>
     <g class="ball" opacity="0"><ellipse rx="7" ry="4.4" fill="#8a4b22" stroke="#fff" stroke-width="1"/><line x1="-2.8" y1="0" x2="2.8" y2="0" stroke="#fff" stroke-width="1"/></g>
-    <text class="ezt ezot" transform="${ezTx(FEZ/2)}">${esc(off && off.abbr || "")}</text>
-    <text class="ezt ezdt" transform="${ezTx(1-FEZ/2)}">${esc(def && def.abbr || "")}</text>
+    ${ezText(FEZ/2, "ezot", off && off.abbr)}
+    ${ezText(1-FEZ/2, "ezdt", def && def.abbr)}
     <g class="tdbn" opacity="0">
       <rect width="360" height="${FVH}" fill="#07090f"/>
       <rect width="360" height="${FVH}" fill="url(#tdg)"/>
@@ -1961,13 +1977,25 @@ function fieldSVG(off, def){
     <g class="gain" opacity="0"><rect class="gbg" x="-26" y="-11" width="52" height="20" rx="10" fill="rgba(0,0,0,.6)"/><text y="4" class="gt2"></text></g>
   </svg>`;
 }
-/* Endzone wordmarks lie flat in the plane of the field, so they lean with the
-   endzone's own edge rather than standing straight up. The angle is taken from
-   the near-to-far vector at that point, which is the slant of the endzone. */
-function ezTx(a){
+/* Endzone lettering is laid INTO the plane of the field, not merely turned.
+   The matrix uses unit vectors, so font-size and textLength are in real field
+   units: the type is sized to the endzone's width and stretched to span its
+   depth, the way paint on grass actually sits. */
+function ezFit(a){
   const near = FP(a, 1), far = FP(a, 0), mid = FP(a, .5);
-  const ang = Math.atan2(far.y - near.y, far.x - near.x) * 180 / Math.PI;
-  return `translate(${fN(mid.x)} ${fN(mid.y)}) rotate(${fN(ang)})`;
+  let ux = far.x - near.x, uy = far.y - near.y;
+  const depth = Math.hypot(ux, uy); ux /= depth; uy /= depth;
+  const o = FP(a + .004, .5);
+  let vx = o.x - mid.x, vy = o.y - mid.y;
+  const vl = Math.hypot(vx, vy); vx /= vl; vy /= vl;
+  const e0 = FP(a - FEZ/2, .5), e1 = FP(a + FEZ/2, .5);
+  const across = Math.hypot(e1.x - e0.x, e1.y - e0.y);
+  return {m: `matrix(${fN(ux)} ${fN(uy)} ${fN(vx)} ${fN(vy)} ${fN(mid.x)} ${fN(mid.y)})`,
+          size: fN(across * .64), len: fN(depth * .80)};
+}
+function ezText(a, cls, txt){
+  const z = ezFit(a);
+  return `<text class="ezt ${cls}" transform="${z.m}" font-size="${z.size}" textLength="${z.len}" lengthAdjust="spacingAndGlyphs" dominant-baseline="central">${esc(txt || "")}</text>`;
 }
 
 /* a yard line drawn across the field in perspective */
@@ -1984,8 +2012,13 @@ function orient(svg, off, def){
   if(!svg || !off || !off.abbr) return;
   svg.querySelector(".ezo").setAttribute("fill", off.color || "#0a84ff");
   svg.querySelector(".ezd").setAttribute("fill", (def && def.color) || "#ff453a");
+  const so = svg.querySelector(".slo"), sd = svg.querySelector(".sld");
+  if(so) so.setAttribute("fill", off.color || "#0a84ff");
+  if(sd) sd.setAttribute("fill", (def && def.color) || "#ff453a");
   const ot = svg.querySelector(".ezot"), dt = svg.querySelector(".ezdt");
   ot.textContent = off.abbr; dt.textContent = (def && def.abbr) || "";
+  /* textLength is baked in, so refit when the names change length */
+  ot.setAttribute("textLength", ezFit(FEZ/2).len); dt.setAttribute("textLength", ezFit(1-FEZ/2).len);
   ot.setAttribute("fill", "#fff"); dt.setAttribute("fill", "#fff");
   const c = svg.closest(".trkcard"), dv = c && c.querySelector(".drv"); if(dv) dv.textContent = off.abbr + " driving →";
 }
@@ -2011,6 +2044,9 @@ function animPlay(svg, pl){
   orient(svg, pl.team, pl.def);
   placeBall(svg, pl.s, {los:true, dist:pl.dist});
   gain.setAttribute("opacity", "0"); trail.setAttribute("d", "");
+  /* tapping another play while the banner is still up used to leave it there */
+  const bn0 = svg.querySelector(".tdbn");
+  if(bn0){ clearTimeout(bn0._t); bn0.setAttribute("class", "tdbn"); bn0.setAttribute("opacity", "0"); }
   const tr = tr0, scored = tr && tr.k === "td", reduce = !S.set.celebrate;
   const span = Math.abs(p1.x - p0.x);
   const base = Math.min(1500, 650 + span * 6);
@@ -2061,7 +2097,7 @@ function animPlay(svg, pl){
           if(gr && pl.team && pl.team.color) gr.querySelectorAll("stop").forEach(st => st.setAttribute("stop-color", pl.team.color));
           const gh = bn.querySelector(".tdghost"); if(gh) gh.textContent = (pl.team && pl.team.abbr) || "";
           bn.setAttribute("class", "tdbn run");
-          setTimeout(() => bn.setAttribute("class", "tdbn"), 2400);
+          bn._t = setTimeout(() => { bn.setAttribute("class", "tdbn"); bn.setAttribute("opacity", "0"); }, 2400);
         }
       }
     }
@@ -2310,7 +2346,7 @@ function abPop(){ if(!S.set.celebrate) return; document.querySelectorAll(".abot 
 
 /* the service worker serves the shell from cache, so a new build lands quietly.
    Say so rather than leaving them on an old version without knowing. */
-const SHELL_CACHE = "audible-shell-v14";   /* keep in step with sw.js */
+const SHELL_CACHE = "audible-shell-v15";   /* keep in step with sw.js */
 /* The shell is served from cache, so without this a new build would not show
    up until the launch after next. The launch animation gives us two seconds
    of cover: fetch the live copy, and if the version moved, write it into the
