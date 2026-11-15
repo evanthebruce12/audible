@@ -157,6 +157,17 @@ html[data-theme=light] .chd{background:#fafafc}
 .tour .tdemo .tdrow{margin-top:10px}
 .tour .tdemo .play{padding:8px 10px}
 .tour .tdemo .play .pt{font-size:13px}
+/* ---- touchdown banner, in the spirit of ESPN's ---- */
+.field .tdbn{pointer-events:none}
+.field .tdbig{fill:#fff;font:800 19px -apple-system,sans-serif;text-anchor:middle;letter-spacing:.34em}
+.field .tdghost{fill:#fff;opacity:.10;font:900 54px -apple-system,sans-serif;text-anchor:middle;letter-spacing:.04em}
+.field .tdbn.run{animation:tdbn 2.4s cubic-bezier(.22,.9,.3,1) both}
+.field .tdbn.run .tdbig{animation:tdbig 2.4s cubic-bezier(.18,.9,.25,1) both}
+.field .tdbn.run .tdghost{animation:tdgh 2.4s cubic-bezier(.18,.9,.25,1) both}
+@keyframes tdbn{0%{opacity:0}9%{opacity:1}76%{opacity:1}100%{opacity:0}}
+@keyframes tdbig{0%{opacity:0;letter-spacing:.9em}14%{opacity:1}26%{letter-spacing:.34em}80%{opacity:1;letter-spacing:.34em}100%{opacity:0;letter-spacing:.2em}}
+@keyframes tdgh{0%{opacity:0;transform:translateX(26px)}20%{opacity:.10}80%{opacity:.10;transform:translateX(0)}100%{opacity:0;transform:translateX(-14px)}}
+.reduce .field .tdbn.run,.reduce .field .tdbn.run *{animation:none}
 </style>
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="favicon.png">
@@ -874,8 +885,11 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.6.3";
+const VERSION = "1.7";
 const RELEASES = [
+  {v:"1.7", date:"Nov 14, 2026", title:"Touchdown graphic", items:[
+    ["A proper celebration","Score, and the card goes over to a banner in your team's colour with TOUCHDOWN spread across it and the team's abbreviation ghosted behind, then hands back to the field for the next play."],
+    ["Endzone names lie on the grass","They were standing bolt upright. Now they lean with the endzone the way painted lettering actually does."]]},
   {v:"1.6.2", date:"Nov 14, 2026", title:"The field has the right shape", items:[
     ["Not stretched any more","The first 3D field was tilted far too hard, so it looked impossibly deep and the goalposts ended up somewhere near the 10. Measured against ESPN's own drive graphic and rebuilt to match: a shallow strip with a gentle lean."],
     ["Posts where they belong","Standing beyond the back of each endzone, tall and thin, instead of planted on the goal line."],
@@ -1926,7 +1940,8 @@ function fieldSVG(off, def){
   return `<svg class="field" viewBox="0 0 360 ${FVH}" aria-hidden="true"><defs>
     <linearGradient id="turf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b6f3f"/><stop offset="1" stop-color="#31a461"/></linearGradient>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#06080f"/></linearGradient>
-    <radialGradient id="glow"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+    <radialGradient id="glow"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <linearGradient id="tdg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${esc(off && off.color || "#0a84ff")}" stop-opacity=".85"/><stop offset=".55" stop-color="${esc(off && off.color || "#0a84ff")}" stop-opacity=".18"/><stop offset="1" stop-color="${esc(off && off.color || "#0a84ff")}" stop-opacity="0"/></linearGradient></defs>
     <rect width="360" height="${FVH}" fill="url(#sky)"/>
     ${g}
     <polygon class="ezflash" points="${fQuad(1-FEZ,1)}" fill="#fff" opacity="0"/>
@@ -1935,11 +1950,26 @@ function fieldSVG(off, def){
     <line class="fdl" x1="0" x2="0" y1="0" y2="0" stroke="#ffd60a" stroke-width="2.2" opacity="0"/>
     <circle class="bglow" r="15" fill="url(#glow)" opacity="0"/>
     <g class="ball" opacity="0"><ellipse rx="7" ry="4.4" fill="#8a4b22" stroke="#fff" stroke-width="1"/><line x1="-2.8" y1="0" x2="2.8" y2="0" stroke="#fff" stroke-width="1"/></g>
-    <text class="ezt ezot" transform="translate(${fN(FP(FEZ/2,.5).x)} ${fN(FP(FEZ/2,.5).y)}) rotate(-90)">${esc(off && off.abbr || "")}</text>
-    <text class="ezt ezdt" transform="translate(${fN(FP(1-FEZ/2,.5).x)} ${fN(FP(1-FEZ/2,.5).y)}) rotate(-90)">${esc(def && def.abbr || "")}</text>
+    <text class="ezt ezot" transform="${ezTx(FEZ/2)}">${esc(off && off.abbr || "")}</text>
+    <text class="ezt ezdt" transform="${ezTx(1-FEZ/2)}">${esc(def && def.abbr || "")}</text>
+    <g class="tdbn" opacity="0">
+      <rect width="360" height="${FVH}" fill="#07090f"/>
+      <rect width="360" height="${FVH}" fill="url(#tdg)"/>
+      <text class="tdghost" x="180" y="${FVH*.72}">${esc((off && off.abbr) || "")}</text>
+      <text class="tdbig" x="180" y="${FVH*.58}">TOUCHDOWN</text>
+    </g>
     <g class="gain" opacity="0"><rect class="gbg" x="-26" y="-11" width="52" height="20" rx="10" fill="rgba(0,0,0,.6)"/><text y="4" class="gt2"></text></g>
   </svg>`;
 }
+/* Endzone wordmarks lie flat in the plane of the field, so they lean with the
+   endzone's own edge rather than standing straight up. The angle is taken from
+   the near-to-far vector at that point, which is the slant of the endzone. */
+function ezTx(a){
+  const near = FP(a, 1), far = FP(a, 0), mid = FP(a, .5);
+  const ang = Math.atan2(far.y - near.y, far.x - near.x) * 180 / Math.PI;
+  return `translate(${fN(mid.x)} ${fN(mid.y)}) rotate(${fN(ang)})`;
+}
+
 /* a yard line drawn across the field in perspective */
 function fLine(el, yte, op){
   if(!el) return;
@@ -2013,14 +2043,27 @@ function animPlay(svg, pl){
       /* the canvas got narrower in 1.6.2, so the old 354 clamp let a wide plate
    like TOUCHDOWN run off the right edge on a short scoring run */
       gain.setAttribute("transform", `translate(${fN(Math.max(w / 2 + 10, Math.min(350 - w / 2, p1.x)))} ${H ? 20 : fN(p1.y - 14)})`);
-      gain.setAttribute("opacity", "1");
+      gain.setAttribute("opacity", scored && !reduce ? "0" : "1");
+      if(scored && !reduce) setTimeout(() => gain.setAttribute("opacity", "1"), 2350);
       svg.querySelector(".rz").setAttribute("opacity", pl.e <= 20 && !scored ? ".14" : "0");
       if(scored && flash && !reduce){
         flash.setAttribute("opacity", "0"); void flash.getBBox();
         flash.setAttribute("class", "ezflash lit");
         setTimeout(() => flash.setAttribute("class", "ezflash"), 900);
       }
-      if(scored && !reduce) abFlash("hyped", 2600);
+      if(scored && !reduce){
+        abFlash("hyped", 2600);
+        /* ESPN drops a banner over the whole card for a beat, then gives the
+           field back for the next play. Same idea, kept short. */
+        const bn = svg.querySelector(".tdbn");
+        if(bn){
+          const gr = svg.querySelector("#tdg");
+          if(gr && pl.team && pl.team.color) gr.querySelectorAll("stop").forEach(st => st.setAttribute("stop-color", pl.team.color));
+          const gh = bn.querySelector(".tdghost"); if(gh) gh.textContent = (pl.team && pl.team.abbr) || "";
+          bn.setAttribute("class", "tdbn run");
+          setTimeout(() => bn.setAttribute("class", "tdbn"), 2400);
+        }
+      }
     }
   };
   requestAnimationFrame(step);
@@ -2267,7 +2310,7 @@ function abPop(){ if(!S.set.celebrate) return; document.querySelectorAll(".abot 
 
 /* the service worker serves the shell from cache, so a new build lands quietly.
    Say so rather than leaving them on an old version without knowing. */
-const SHELL_CACHE = "audible-shell-v13";   /* keep in step with sw.js */
+const SHELL_CACHE = "audible-shell-v14";   /* keep in step with sw.js */
 /* The shell is served from cache, so without this a new build would not show
    up until the launch after next. The launch animation gives us two seconds
    of cover: fetch the live copy, and if the version moved, write it into the
