@@ -2,6 +2,11 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.6.1 — Field goals actually kick
+*Nov 14, 2026*
+
+- **A field goal replayed as nothing.** `pl.s` and `pl.e` are the same yard line on a kick, so the ball had nowhere to travel and the animation sat still. `animPlay` now detects the `fg` tier, retargets the end point to the uprights, adds a terminal lift so the ball finishes level with the crossbar instead of dropping back to the turf, spins it faster, and labels it in blue with the distance.
+
 ## 1.6 — The field in 3D
 *Nov 14, 2026*
 

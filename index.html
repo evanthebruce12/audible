@@ -874,8 +874,10 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.6";
+const VERSION = "1.6.1";
 const RELEASES = [
+  {v:"1.6.1", date:"Nov 14, 2026", title:"Field goals actually kick", items:[
+    ["The kick flies at the uprights","A field goal started and ended on the same yard line, so replaying one did nothing at all. Now the ball sails downfield, climbs, and finishes up at the crossbar with the distance called out."]]},
   {v:"1.6", date:"Nov 14, 2026", title:"The field in 3D", items:[
     ["A real camera angle","The field is drawn in perspective now, like a broadcast shot from the sideline, instead of a flat diagram from above. Yard lines converge, the far side sits further away, and the numbers shrink with distance."],
     ["Goalposts","Standing at the back of each endzone, planted with a shadow, sized to how far away they are."],
@@ -1963,40 +1965,45 @@ function placeBall(svg, yte, opts){
 }
 function animPlay(svg, pl){
   if(!svg || pl.s == null || pl.e == null) return;
-  const a0 = FA(pl.s), a1 = FA(pl.e), p0 = FP(a0, .5), p1 = FP(a1, .5);
+  const tr0 = playTier(pl), isFG = !!(tr0 && tr0.k === "fg");
+  /* A kick started and ended on the same yard line, so nothing moved. Send it
+     at the uprights instead, and leave it up there rather than dropping it. */
+  const a0 = FA(pl.s), a1 = isFG ? .988 : FA(pl.e), p0 = FP(a0, .5), p1 = FP(a1, .5);
   const isPass = /pass/i.test(pl.type) && !/incomplete|intercept|sack/i.test(pl.text);
   const ball = svg.querySelector(".ball"), trail = svg.querySelector(".trail"),
         gain = svg.querySelector(".gain"), gl = svg.querySelector(".bglow");
   orient(svg, pl.team, pl.def);
   placeBall(svg, pl.s, {los:true, dist:pl.dist});
   gain.setAttribute("opacity", "0"); trail.setAttribute("d", "");
-  const tr = playTier(pl), scored = tr && tr.k === "td", reduce = !S.set.celebrate;
+  const tr = tr0, scored = tr && tr.k === "td", reduce = !S.set.celebrate;
   const span = Math.abs(p1.x - p0.x);
   const base = Math.min(1500, 650 + span * 6);
   const dur = reduce ? 1 : Math.min(scored ? 1750 : 1500, Math.round(base * (scored ? 1.35 : tr && tr.rank >= 4 ? 1.12 : 1)));
   /* lift is measured off the ground plane, which now slopes with perspective,
      so the arc is added to the projected y rather than a fixed centre line */
-  const H = isPass ? Math.min(40, 12 + span * .22) * (scored ? 1.1 : 1) : 0;
+  const H = isFG ? Math.min(46, 16 + span * .2) : isPass ? Math.min(40, 12 + span * .22) * (scored ? 1.1 : 1) : 0;
+  /* the ball finishes level with the crossbar on a kick, not back on the turf */
+  const END = isFG ? (7 + 15) * p1.s * .9 : 0;
   const t0 = performance.now();
   const flash = svg.querySelector(".ezflash"); if(flash) flash.setAttribute("opacity", "0");
   let d = `M${fN(p0.x)} ${fN(p0.y)}`;
   const step = now => {
     const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-    const g = FP(a0 + (a1 - a0) * e, .5), lift = H * 4 * e * (1 - e);
+    const g = FP(a0 + (a1 - a0) * e, .5), lift = H * 4 * e * (1 - e) + END * e;
     const x = g.x, y = g.y - lift, sc = g.s * (1 + (H ? .3 * 4 * e * (1 - e) : 0));
-    const rot = isPass ? (p1.x >= p0.x ? -1 : 1) * (1 - 2 * e) * 25 : 0;
+    const rot = (isPass || isFG) ? (p1.x >= p0.x ? -1 : 1) * (1 - 2 * e) * (isFG ? 40 : 25) : 0;
     ball.setAttribute("transform", `translate(${fN(x)} ${fN(y)}) rotate(${fN(rot)}) scale(${fN(sc)})`);
     d += ` L${fN(x)} ${fN(y)}`; trail.setAttribute("d", d);
     if(k < 1) requestAnimationFrame(step);
     else {
-      gl.setAttribute("cx", fN(p1.x)); gl.setAttribute("cy", fN(p1.y)); gl.setAttribute("r", fN(15 * p1.s));
+      gl.setAttribute("cx", fN(p1.x)); gl.setAttribute("cy", fN(p1.y - END)); gl.setAttribute("r", fN(15 * p1.s));
       gl.setAttribute("opacity", scored ? "1" : tr && tr.rank >= 4 ? ".6" : ".35");
-      const lbl = scored ? "TOUCHDOWN" : (/incomplete/i.test(pl.text) ? "Inc" : tr && tr.k === "turn" ? tr.lbl.toUpperCase() : (pl.yds > 0 ? "+" : "") + pl.yds + " yds");
+      const lbl = scored ? "TOUCHDOWN" : isFG ? tr.lbl.toUpperCase() + " GOOD" : (/incomplete/i.test(pl.text) ? "Inc" : tr && tr.k === "turn" ? tr.lbl.toUpperCase() : (pl.yds > 0 ? "+" : "") + pl.yds + " yds");
       const w = Math.max(52, lbl.length * 9 + 22), bg = gain.querySelector(".gbg");
       bg.setAttribute("x", -w / 2); bg.setAttribute("width", w);
-      bg.setAttribute("fill", scored ? "rgba(48,209,88,.92)" : tr && tr.k === "turn" ? "rgba(255,69,58,.92)" : "rgba(0,0,0,.6)");
+      bg.setAttribute("fill", scored ? "rgba(48,209,88,.92)" : isFG ? "rgba(10,132,255,.92)" : tr && tr.k === "turn" ? "rgba(255,69,58,.92)" : "rgba(0,0,0,.6)");
       gain.querySelector("text").textContent = lbl;
-      gain.setAttribute("class", "gain" + (scored ? " score" : ""));
+      gain.setAttribute("class", "gain" + (scored || isFG ? " score" : ""));
       gain.setAttribute("transform", `translate(${fN(Math.max(w / 2 + 6, Math.min(354 - w / 2, p1.x)))} ${H ? 28 : fN(p1.y - 16)})`);
       gain.setAttribute("opacity", "1");
       svg.querySelector(".rz").setAttribute("opacity", pl.e <= 20 && !scored ? ".14" : "0");
@@ -2252,7 +2259,7 @@ function abPop(){ if(!S.set.celebrate) return; document.querySelectorAll(".abot 
 
 /* the service worker serves the shell from cache, so a new build lands quietly.
    Say so rather than leaving them on an old version without knowing. */
-const SHELL_CACHE = "audible-shell-v10";   /* keep in step with sw.js */
+const SHELL_CACHE = "audible-shell-v11";   /* keep in step with sw.js */
 /* The shell is served from cache, so without this a new build would not show
    up until the launch after next. The launch animation gives us two seconds
    of cover: fetch the live copy, and if the version moved, write it into the
