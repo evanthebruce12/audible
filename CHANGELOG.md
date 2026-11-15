@@ -8,7 +8,7 @@ All notable changes to Audible. Newest first.
 - **Stale colour band on player cards.** A strip of `#f2f2f7`, the light theme's `--bg`, could sit frozen across a card in dark mode. Theme switching only swaps CSS variables, so a layer the compositor had already rasterised kept the old palette. `applyTheme` now forces a reflow on the sheet, chat and app after the switch. The permanent `will-change:transform` on `.sheet` that made the sheet a long-lived layer in the first place went in 1.4.9.
 - **Deep passes left the field.** The arc height was `min(60, 18 + dist*.35) * 1.25` for scores, up to 75, against a ball sitting at y=75 in a 150-unit viewBox, so the peak hit y=0 and the ball clipped out the top. Capped at 44 (×1.1 for scores); measured peak is now y=27.
 
- The tour lets you touch things
+## 1.5.1 — The tour lets you touch things
 *Nov 14, 2026*
 
 - **The spotlight passes touches through.** `.tour` was a full-screen overlay with `touch-action:none`, so it described a feature while making it untouchable. It is now `pointer-events:none`, and four blocker panels positioned around the spotlight swallow taps instead. The highlighted control is the only live part of the screen. Verified: a tap on the highlighted element reaches it, a tap anywhere else does not.
@@ -16,7 +16,7 @@ All notable changes to Audible. Newest first.
 - **Opening something pauses the tour.** Tapping a player during the tour opens his card for real; the overlay hides, a watcher waits for the sheet to close, then the tour resumes and advances. Verified end to end.
 - **A big-play demo step.** A canned touchdown with real yard lines, rendered on a field inside the tip and looping, so a new user watches a replay rather than reading about one. Works with no live games.
 
- Big plays
+## 1.5 — Big plays
 *Nov 14, 2026*
 
 - **Plays are tiered rather than flagged.** `big` was `scored || 20+ yards`, so a 60-yard touchdown and a 21-yard catch rendered identically. `playTier()` now ranks every play: TD, INT, Fumble, Safety, Explosive (40+), Big play (20+), long field goals, big sacks, 4th-down conversions. Each gets its own chip colour, a left rule and a background wash. Nullified plays and missed kicks are correctly excluded. Verified against 16 real ESPN play strings.
@@ -24,13 +24,13 @@ All notable changes to Audible. Newest first.
 - **Big plays on NFL game cards.** The game sheet showed only the current drive and scoring plays. It now also lists the highest-rated non-scoring plays of the game, newest first, each replayable on the field.
 - **Row markers on My Team and Matchup.** `bigBadge()` reads the week stats already in memory and marks players who scored, hit a 50+ yard field goal, or forced a turnover, so you can tell at a glance who is worth opening. Costs no extra requests.
 
- Smooth all the way up
+## 1.4.9 — Smooth all the way up
 *Nov 14, 2026*
 
 - **Sheets no longer catch at the end of the slide.** Frame analysis of a 60fps recording: through the 25-frame slide the frame-to-frame delta decelerates smoothly, then climbs back up twice in the last ~100ms (3.8 → 5.3, and 1.7 → 4.2). A compositor-driven ease-out only ever decreases, so that was main-thread work landing mid-animation: the game log, the news and the week stats each resolving and rebuilding the sheet while it moved. Rebuilds are now held until the slide finishes, released on `transitionend` with a timeout as backstop.
 - **`will-change: transform` on `.sheet` was permanent**, keeping every sheet promoted to its own compositing layer for its whole life. That is the same condition that was rasterising the chat header below device resolution in 1.4.6. It is applied only while the sheet is actually moving now.
 
- Updates in one open, and a ready first run
+## 1.4.8 — Updates in one open, and a ready first run
 *Nov 14, 2026*
 
 - **One open per update, not two.** Cache-first serving meant a new build only appeared on the launch after next. The boot animation runs for ~2s regardless, so the page now fetches the live document during it, compares the `VERSION` constant, writes the new copy into the cache and reloads before the splash ever lifts. If the app is already interactive it shows a tap-to-update banner instead.
@@ -38,7 +38,7 @@ All notable changes to Audible. Newest first.
 - **Fixed `addAll` precaching.** It rejects as a unit, so a single missing asset left the whole shell cache empty and silently fell back to the network. Each asset is cached independently now.
 - **The update check needs a network escape hatch.** `isShell` was intercepting the check itself and serving it from cache, so it compared the old version against itself and never detected anything. Requests carrying `?fresh=` now bypass the worker.
 
- Photos stop flashing
+## 1.4.7 — Photos stop flashing
 *Nov 14, 2026*
 
 - **Images are cached on device.** Headshots and team logos from sleepercdn went to the network on every render, and iOS discards decoded image data when an app is backgrounded, so returning from the app switcher blanked every photo. The service worker now serves them cache-first from a dedicated store that survives shell updates.
@@ -47,7 +47,7 @@ All notable changes to Audible. Newest first.
 - **The player sheet rebuilds once, not three times.** The game log, news and week stats each arrived separately and each triggered a full rebuild. Coalesced into one frame.
 - **Fixed the shell matcher.** `ASSETS` contains `"./"`, which became `""`, and `endsWith("")` is always true, so the shell handler was intercepting every same-origin GET. It matches real filenames now.
 
- The chat header is sharp
+## 1.4.6 — The chat header is sharp
 *Nov 14, 2026*
 
 - **Measured, then fixed.** On a native PNG screenshot, text in the chat header had a 20-80% edge width of 5 device px while body text 300px below it measured 1px, on the same screen at the same moment. `.chat` slides in on a `transform`, which promotes the whole panel to a compositing layer; `#chLog` scrolls so it kept repainting at device resolution, but the static header kept whatever scale the layer was rasterised at. The header is now a sibling of the panel rather than a child, fixed to the top and fading in, so it is never inside a transformed layer.
