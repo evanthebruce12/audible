@@ -361,6 +361,20 @@ html[data-theme=light] .seg button.on{background:#fff}
 @keyframes pop{30%{transform:scale(1.14);color:var(--green)}}
 .wkpick{display:flex;align-items:center;gap:6px}
 .wkpick button{width:30px;height:30px;border-radius:50%;background:var(--fill);color:var(--blue);font-size:18px;font-weight:600;display:grid;place-items:center}
+.wkrow{justify-content:space-between;margin-top:10px}
+.wkmid{display:flex;flex-direction:column;align-items:center;gap:2px}
+.wkmid small{font-size:12px;color:var(--label3)}
+.wkl{display:inline-flex;align-items:center;gap:7px}
+.wkl b{font-size:15px;font-weight:600}
+.wkt{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:var(--fill);color:var(--label2)}
+.wkt.live{background:rgba(255,69,58,.18);color:var(--red)}
+.wkt.cur{background:rgba(10,132,255,.18);color:var(--blue)}
+.wkt.next{background:rgba(255,159,10,.16);color:var(--orange,#ff9f0a)}
+.wkpick button.wknow,.wkc button.wknow{width:auto;height:auto;border-radius:0;background:none;font-size:13px;font-weight:600;color:var(--blue);padding:0}
+.wkc{display:flex;align-items:center;gap:8px;align-self:center;white-space:nowrap;flex:none}
+.wkl,.wknow{white-space:nowrap}
+.wkc button{width:26px;height:26px;border-radius:50%;background:var(--fill);color:var(--blue);font-size:16px;font-weight:600;display:grid;place-items:center}
+.wkc .wknow{margin-right:4px}
 
 /* matchup rows */
 .mrow{display:grid;grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr);align-items:center;gap:4px;padding:9px 10px;position:relative}
@@ -974,6 +988,9 @@ kbd{font:600 11px/1 -apple-system,system-ui,sans-serif;color:var(--label2);backg
   .dash>.dside{grid-column:2;grid-row:1;min-width:0}
   .dash.solo{display:block;max-width:820px}
   .dash>.dside>.sec:first-child,.dash>.dmain>.sec:first-child{margin-top:14px}
+  /* headers in the two columns sit on one line whatever controls they carry */
+  .dash>div>.sec{min-height:32px;align-items:center}
+  .dash .btns{max-width:none}
   .dash>.dmain>.bot:first-child,.dash>.dmain>.bug:first-child{margin-top:14px}
   .rail{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
   .summ{max-width:none}
@@ -1098,8 +1115,12 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.9.1";
+const VERSION = "1.9.2";
 const RELEASES = [
+  {v:"1.9.2", date:"Nov 15, 2026", title:"Cleaner big screens, clearer weeks", items:[
+    ["You can always tell which week you're on","Every week picker now says Live, This week, Final or Upcoming, and if you've moved off the current week there's a link straight back."],
+    ["Standings and Scores line up","On iPad and Mac the week picker moved into the Scores heading, so both lists start level."],
+    ["Columns end closer together","League activity sits under your matchup on Today, and the League tab shows the latest six moves with a Show all."]]},
   {v:"1.9.1", date:"Nov 15, 2026", title:"Only players who can play count", items:[
     ["Game cards count who's actually playing","A player who's Out or on IR no longer adds to the blue \"of your players\" line on a game."],
     ["On the field shows your whole roster","Bench players in a live game now show up there too, marked BN, under your starters. Anyone ruled out is left off."]]},
@@ -1575,6 +1596,19 @@ const mOf = rid => S.matchups.find(m => m.roster_id === rid);
 const oppOf = m => (m && m.matchup_id != null) ? S.matchups.find(x => x.matchup_id === m.matchup_id && x.roster_id !== m.roster_id) : null;
 const ownerMap = () => { const o = {}; S.rosters.forEach(r => (r.players||[]).forEach(id => o[id] = r.roster_id)); return o; };
 const isCur = () => S.week === S.state.week;
+/* Which week you're looking at, said plainly: live, this week, final or upcoming,
+   plus a way straight back to the current week when you've wandered off it. */
+function wkState(){
+  const c = S.state.week;
+  if(S.week === c) return (S.games || []).some(g => g.state === "in") ? ["live", "Live"] : ["cur", "This week"];
+  return S.week < c ? ["past", "Final"] : ["next", "Upcoming"];
+}
+function wkCtl(where, note){
+  const [k, t] = wkState(), back = isCur() ? "" : `<button class="wknow" data-wk="${S.state.week - S.week}">${where === "hdr" ? "This week" : "Back to week " + S.state.week}</button>`;
+  const label = `<span class="wkl"><b>Week ${S.week}</b><i class="wkt ${k}">${t}</i></span>`;
+  if(where === "hdr") return `<div class="wkc">${back}<button data-wk="-1" aria-label="Previous week">‹</button>${label}<button data-wk="1" aria-label="Next week">›</button></div>`;
+  return `<div class="wkpick wkrow"><button data-wk="-1" aria-label="Previous week">‹</button><span class="wkmid">${label}${back || (note ? `<small>${note}</small>` : "")}</span><button data-wk="1" aria-label="Next week">›</button></div>`;
+}
 
 async function loadLeague(){
   const id = S.league.league_id;
@@ -3182,8 +3216,10 @@ function vHome(){
     side += `<div class="sec"><h2>NFL · Week ${S.week}</h2></div><div class="rail">${sorted.map(g => gameCard(g, (mine[g.home.abbr] || 0) + (mine[g.away.abbr] || 0))).join("")}</div>`;
   }
   const tx = (S.tx || []).slice(0, 4);
-  if(tx.length) side += `<div class="sec"><h2>League activity</h2><button data-go="league" data-seg="activity">See all</button></div><div class="grp">${tx.map(txCell).join("")}</div>`;
-  side += `<div class="btns"><a class="btn gray" href="https://sleeper.com/leagues/${S.league.league_id}/trades" target="_blank" rel="noopener">Check trade offers in Sleeper</a></div>`;
+  let tail = "";
+  if(tx.length) tail += `<div class="sec"><h2>League activity</h2><button data-go="league" data-seg="activity">See all</button></div><div class="grp">${tx.map(txCell).join("")}</div>`;
+  tail += `<div class="btns"><a class="btn gray" href="https://sleeper.com/leagues/${S.league.league_id}/trades" target="_blank" rel="noopener">Check trade offers in Sleeper</a></div>`;
+  if(DOCK()) h += tail; else side += tail;
   const cut = h.indexOf('<div class="bot">');
   return h.slice(0, cut) + dash(h.slice(cut), side);
 }
@@ -3240,7 +3276,7 @@ function matchupBody(a, b){
 }
 function vMatchup(){
   let h = head("Matchup", liveSub());
-  h += `<div class="wkpick" style="justify-content:space-between;margin-top:6px"><button data-wk="-1">‹</button><span class="sm c2">${isCur() ? "This week" : "Week " + S.week}${S.updated ? " · updated " + tm(S.updated) : ""}</span><button data-wk="1">›</button></div>`;
+  h += wkCtl("row", S.updated ? "Updated " + tm(S.updated) : "");
   if(!S.myRid) return h + `<div class="empty">Couldn't find your team in this league.</div>`;
   const me = mOf(S.myRid);
   if(!me) return h + `<div class="empty">No matchup for week ${S.week} yet.</div>`;
@@ -3342,7 +3378,7 @@ function scoresList(){
   const byM = {};
   (S.matchups || []).forEach(m => { if(m.matchup_id != null) (byM[m.matchup_id] = byM[m.matchup_id] || []).push(m); });
   const pairs = Object.values(byM);
-  return pairs.length ? `<div class="grp" style="margin-top:10px">${pairs.map(([a,b]) => {
+  return pairs.length ? `<div class="grp" style="margin-top:12px">${pairs.map(([a,b]) => {
     const A = team(a.roster_id), B = b ? team(b.roster_id) : null, ap = a.points||0, bp = b ? b.points||0 : 0;
     const ln = (T, p, win) => `<div style="display:flex;align-items:center;gap:9px;${win?"":"color:var(--label2)"}">${av(T, "s")}<span class="t1" style="flex:1;font-weight:${win?700:500}">${esc(T.name)}</span><span class="num bold">${f1(p)}</span></div>`;
     return `<button class="cell noimg" data-team="${a.roster_id}" style="flex-direction:column;align-items:stretch;gap:8px">${ln(A, ap, ap >= bp)}${B ? ln(B, bp, bp > ap) : ""}</button>`;
@@ -3355,17 +3391,17 @@ function standingsList(){
 function vLeague(){
   let h = head("League", esc(S.league.name));
   if(DOCK()){
-    const wk = `<div class="wkpick" style="justify-content:space-between;margin-top:0"><button data-wk="-1">‹</button><span class="sm c2">Week ${S.week}</span><button data-wk="1">›</button></div>`;
-    const act = !S.tx ? `<div class="skel"></div><div class="skel"></div>` : S.tx.length ? `<div class="grp">${S.tx.slice(0, 14).map(txCell).join("")}</div>` : `<div class="empty">No transactions in the last few weeks.</div>`;
-    return h + dash(`<div class="sec" style="margin-top:14px"><h2>Standings</h2></div>` + standingsList(),
-      `<div class="sec" style="margin-top:14px"><h2>Scores</h2></div>${wk}${scoresList()}<div class="sec"><h2>Activity</h2></div>${act}`);
+    const n = S.txMore ? 40 : 6, tx = S.tx || [];
+    const act = !S.tx ? `<div class="skel"></div><div class="skel"></div>` : tx.length ? `<div class="grp">${tx.slice(0, n).map(txCell).join("")}</div>` : `<div class="empty">No transactions in the last few weeks.</div>`;
+    return h + dash(`<div class="sec"><h2>Standings</h2></div>` + standingsList(),
+      `<div class="sec"><h2>Scores</h2>${wkCtl("hdr")}</div>${scoresList()}<div class="sec"><h2>Activity</h2>${tx.length > 6 ? `<button id="txMore">${S.txMore ? "Show less" : "Show all"}</button>` : ""}</div>${act}`);
   }
   const seg = S.seg.league;
   h += `<div class="seg">${[["standings","Standings"],["scores","Scores"],["activity","Activity"]].map(([k,l]) => `<button data-seg="${k}" class="${seg===k?"on":""}">${l}</button>`).join("")}</div>`;
   if(seg === "standings"){
     h += standingsList();
   } else if(seg === "scores"){
-    h += `<div class="wkpick" style="justify-content:space-between;margin-top:12px"><button data-wk="-1">‹</button><span class="sm c2">Week ${S.week}</span><button data-wk="1">›</button></div>`;
+    h += wkCtl("row");
     h += scoresList();
   } else {
     if(!S.tx) return h + `<div class="loading"><div class="spin"></div></div>`;
@@ -4272,6 +4308,7 @@ function bind(){
   $$("#app [data-pos]").forEach(b => b.onclick = () => { S.pos = b.dataset.pos; render(); });
   $$("#app [data-nf]").forEach(b => b.onclick = () => { S.seg.news = b.dataset.nf; render(); });
   $$("#app [data-wk]").forEach(b => b.onclick = () => changeWeek(+b.dataset.wk));
+  { const m = $("#txMore"); if(m) m.onclick = () => { S.txMore = !S.txMore; render(); }; }
   bindPlayers($("#app"));
   $$("#app [data-team]").forEach(el => el.onclick = () => openTeam(+el.dataset.team));
   const q = $("#q");
@@ -4291,7 +4328,7 @@ function go(tab, seg){
   render(true);
 }
 async function changeWeek(d){
-  const w = S.week + d; if(w < 1 || w > 18) return;
+  const w = S.week + d; if(!d || w < 1 || w > 18) return;
   S.week = w; await switchWeek(true);
 }
 async function switchWeek(anim){

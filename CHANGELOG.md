@@ -2,6 +2,14 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.9.2 — Cleaner big screens, clearer weeks
+*Nov 15, 2026*
+
+- **Every week picker says what week it is.** A `wkCtl()` control replaces three hand-built pickers: the week number plus a tag (Live, This week, Final, Upcoming), and a "Back to week N" link whenever you are off the current week. On the Matchup tab the update time sits under it.
+- **League headers line up.** On the two-column layout the week picker sat between the Scores heading and its card, so Scores started lower than Standings. It now lives in the Scores heading, section headings in both columns share a 32px row, and both cards share a 12px top margin. Measured: both headings at the same y, both cards at the same y.
+- **Columns end closer together.** On Today the side column (NFL slate plus league activity) ran far longer than the main one, leaving a blank area under the matchup. Activity and the trade button now sit under the matchup on the two-column layout. The League tab shows the latest six transactions with Show all.
+- Buttons inside a column now span it.
+
 ## 1.9.1 — Only players who can play count
 *Nov 15, 2026*
 
