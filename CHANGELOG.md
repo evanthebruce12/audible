@@ -2,7 +2,14 @@
 
 All notable changes to Audible. Newest first.
 
-## 1.6.1 — Field goals actually kick
+## 1.6.2 — The field has the right shape
+*Nov 14, 2026*
+
+- **Retuned against the real thing.** Measured ESPN's drive graphic from a screen recording: far width / near width = 0.91, depth / near width = 0.17. The 1.6 field used 0.47 and 0.28, which is why it read as impossibly deep and stretched, with the goalposts appearing to sit near the 10. Now 144/158 half-widths over a 54-unit depth, with the perspective parameter dropped from 1.1 to 0.35 and the depth scale narrowed to 0.72–1.0. The canvas is 360×108 instead of 360×150.
+- **Goalposts stand beyond each endline** at a = −0.045 and 1.045, taller and thinner, rather than planted on the goal line inside the field.
+- **Endzone wordmarks are back in the endzones**, rotated 90° so they fit the narrow slanted shape, as ESPN draws them and as a real field is painted. They had been moved above the field in 1.6 because horizontal text spilled past the edges of a hard-tapered endzone; a gentle taper makes the rotated form fit.
+
+ Field goals actually kick
 *Nov 14, 2026*
 
 - **A field goal replayed as nothing.** `pl.s` and `pl.e` are the same yard line on a kick, so the ball had nowhere to travel and the animation sat still. `animPlay` now detects the `fg` tier, retargets the end point to the uprights, adds a terminal lift so the ball finishes level with the crossbar instead of dropping back to the turf, spins it faster, and labels it in blue with the distance.
