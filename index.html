@@ -940,6 +940,9 @@ kbd{font:600 11px/1 -apple-system,system-ui,sans-serif;color:var(--label2);backg
   .btns{max-width:420px}
   .dash.solo{max-width:760px}
   .toasts{left:var(--side)}
+  .wkrow{justify-content:flex-start;gap:12px}
+  .wkrow .wkmid{align-items:flex-start;order:0}
+  .wkrow>button:last-child{order:1}
 
   /* ---- sheets become a panel on the right ---- */
   .sheet{left:auto;right:0;top:0;bottom:0;width:min(var(--panel),100vw - var(--side));max-width:none;max-height:none;height:100%;margin:0;border-radius:0;
@@ -991,6 +994,7 @@ kbd{font:600 11px/1 -apple-system,system-ui,sans-serif;color:var(--label2);backg
   /* headers in the two columns sit on one line whatever controls they carry */
   .dash>div>.sec{min-height:32px;align-items:center}
   .dash .btns{max-width:none}
+  .dash .btns .btn{width:100%}
   .dash>.dmain>.bot:first-child,.dash>.dmain>.bug:first-child{margin-top:14px}
   .rail{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
   .summ{max-width:none}
@@ -1115,8 +1119,11 @@ const S = {
   timer:null, updated:null, chat:[], chatBusy:false, wstats:null, wsT:0, wsW:0, sheetPid:null, sheetGid:null, sum:{}, set:{...DEF_SET}
 };
 
-const VERSION = "1.9.2";
+const VERSION = "1.9.3";
 const RELEASES = [
+  {v:"1.9.3", date:"Nov 15, 2026", title:"Tidier iPad and Mac details", items:[
+    ["Edit lineup button matches the starters","On a big screen it sits under your starters and is the same width as the list."],
+    ["Week arrows sit next to the week","On iPad and Mac they hug the label instead of stretching across the page."]]},
   {v:"1.9.2", date:"Nov 15, 2026", title:"Cleaner big screens, clearer weeks", items:[
     ["You can always tell which week you're on","Every week picker now says Live, This week, Final or Upcoming, and if you've moved off the current week there's a link straight back."],
     ["Standings and Scores line up","On iPad and Mac the week picker moved into the Scores heading, so both lists start level."],
@@ -3313,8 +3320,10 @@ function vTeam(){
   if((r.reserve || []).length) side += `<div class="sec"><h2>Injured reserve</h2></div><div class="grp">${r.reserve.map(id => tRow(P(id), "IR", ptsOf(id))).join("")}</div>`;
   if((r.taxi || []).length) side += `<div class="sec"><h2>Taxi squad</h2></div><div class="grp">${r.taxi.map(id => tRow(P(id), "TX", ptsOf(id))).join("")}</div>`;
   const cutT = h.indexOf('<div class="sec"><h2>Starters</h2>');
-  h = h.slice(0, cutT) + dash(h.slice(cutT), side);
-  h += `<div class="btns"><a class="btn" href="https://sleeper.com/leagues/${S.league.league_id}/team" target="_blank" rel="noopener">Edit lineup in Sleeper</a></div><div class="foot">Tap any player for live stats, game info, and news.</div>`;
+  const edit = `<div class="btns"><a class="btn" href="https://sleeper.com/leagues/${S.league.league_id}/team" target="_blank" rel="noopener">Edit lineup in Sleeper</a></div>`;
+  /* side by side, the button belongs to the starters column and matches its width */
+  h = h.slice(0, cutT) + (DOCK() ? dash(h.slice(cutT) + edit, side) : dash(h.slice(cutT), side) + edit);
+  h += `<div class="foot">Tap any player for live stats, game info, and news.</div>`;
   return h;
 }
 

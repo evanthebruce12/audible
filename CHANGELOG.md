@@ -2,6 +2,12 @@
 
 All notable changes to Audible. Newest first.
 
+## 1.9.3 — Tidier iPad and Mac details
+*Nov 15, 2026*
+
+- **Edit lineup matches the starters.** On the two-column layout the button sat below both columns, capped at 420px, so it didn't line up with anything. It now ends the starters column and spans it (491px each at 1180 wide). On a phone it stays below the bench.
+- **Week arrows hug the week.** The Matchup week row stretched across the full page on wide screens, pushing the arrows hundreds of pixels apart. From 760px wide they sit either side of the label. The phone layout is unchanged.
+
 ## 1.9.2 — Cleaner big screens, clearer weeks
 *Nov 15, 2026*
 
